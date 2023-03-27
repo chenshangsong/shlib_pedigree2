@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" type="text/css" href="css/mirador-combined.css">
+    <title>Mirador Viewer</title>
+    <style type="text/css">
+     #viewer {
+       width: 100%;
+       height: 100%;
+       position: fixed;
+     }
+    </style>
+  </head>
+  <body>
+    <div id="viewer"></div>
+
+    <script src="mirador.min.js"></script>
+    <script type="text/javascript">
+
+     $(function() {
+       myMiradorInstance = Mirador({
+         id: "viewer",
+         layout: "1x1",
+         buildPath: "/",
+         data: [
+           { manifestUri: "http://full-link.library.sh.cn/manifests/1yb3kcsrzkpwbue9/b1035932.json", location: "Shanghai Library"},
+         ],
+		 mainMenuSettings: {
+			show: false
+		  },
+         windowObjects: [{
+			loadedManifest: "http://full-link.library.sh.cn/manifests/1yb3kcsrzkpwbue9/b1035932.json",
+			viewType: "ThumbnailsView",
+			displayLayout: false,
+			//bottomPanel: false,
+			//bottomPanelAvailable: false,
+			//bottomPanelVisible: false,
+			//sidePanel: false,
+			//annotationLayer: false
+		  }],
+         annotationEndpoint: {
+           name:"Local Storage",
+           module: "LocalStorageEndpoint" }
+       });
+     });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:cache="http://www.springframework.org/schema/cache" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/util 
+	http://www.springframework.org/schema/util/spring-util.xsd
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context.xsd 
+	http://www.springframework.org/schema/cache 
+	http://www.springframework.org/schema/cache/spring-cache.xsd 
+	http://www.springframework.org/schema/aop 
+    http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+	<util:properties id="cfg"
+		location="classpath:resources/pedigree.properties" />
+	<!-- 数据源配置 chenss 20230322-->
+	<import resource="classpath:resources/applicationContext-dataSources.xml"/>
+	<!-- 事务配置 chenss 20230322-->
+  <!--   <import resource="classpath:resources/applicationContext-TransactionManager.xml"/> -->
+   <bean id="ontModel" class="com.hp.hpl.jena.rdf.model.ModelFactory"
+		factory-method="createOntologyModel" />
+	<bean id="nsPrefix" class="java.lang.StringBuffer" />
+	<!-- spring cache -->
+	<bean id="springCacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager"
+		p:cacheManager-ref="ehcacheManager" />
+	<bean id="ehcacheManager"
+		class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean"
+		p:configLocation="classpath:resources/ehcache/ehcache.xml" />
+</beans>
+

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.SystemMenuMapper">
+	<resultMap id="dtoMenu" type="MenuModel" />
+	
+	<update id="updateMenu">
+		UPDATE t_sys_menu
+		SET
+			menuName	= #{menuName},
+			UPDATED_BY	= #{UPDATED_BY},
+			UPDATED_ON 	= getdate()
+		WHERE 
+			systemId = '2' AND id = #{id}
+	</update>
+	
+	<select id="getEditMenu" parameterType="String" resultMap="dtoMenu">
+			SELECT 
+				menuId,
+				parMenuId,
+				menuName,
+				menuFunction,
+				menuEnglishName,
+				menuSort,
+				remarks,
+				STATUS,
+				CREATED_BY,
+				UPDATED_BY,
+				CONVERT(varchar(100), CREATED_ON, 23) AS CREATED_ON,
+				CONVERT(varchar(100), UPDATED_ON, 23) AS UPDATED_ON,
+				level,
+				id,
+				color,
+				icon
+			FROM t_sys_menu ST 
+			WHERE 
+				ST.systemId = '2' AND ST.id = #{id}
+	</select>
+	
+	<select id="getMenuDetail" parameterType="String" resultMap="dtoMenu">
+			SELECT 
+				menuId,
+				parMenuId,
+				menuName,
+				menuFunction,
+				menuEnglishName,
+				menuSort,
+				remarks,
+				STATUS,
+				CREATED_BY,
+				UPDATED_BY,
+				CONVERT(varchar(100), CREATED_ON, 23) AS CREATED_ON,
+				CONVERT(varchar(100), UPDATED_ON, 23) AS UPDATED_ON,
+				level,
+				id,
+				color,
+				icon
+			FROM t_sys_menu ST 
+			WHERE 
+				ST.systemId = '2' AND ST.menuId = #{menuId}
+			ORDER BY ST.menuSort
+	</select>
+	
+	<select id="getMenuList" parameterType="String" resultMap="dtoMenu">
+			SELECT 
+				menuId,
+				parMenuId,
+				menuName,
+				menuFunction,
+				menuEnglishName,
+				menuSort,
+				remarks,
+				STATUS,
+				CREATED_BY,
+				UPDATED_BY,
+				CONVERT(varchar(100), CREATED_ON, 23) AS CREATED_ON,
+				CONVERT(varchar(100), UPDATED_ON, 23) AS UPDATED_ON,
+				level,
+				id,
+				color,
+				icon
+			FROM t_sys_menu ST 
+			WHERE ST.STATUS = '0' AND ST.systemId = '2'
+			ORDER BY ST.menuSort
+	</select>
+	
+</mapper>

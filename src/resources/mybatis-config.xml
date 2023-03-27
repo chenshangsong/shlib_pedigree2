@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration> 
+	<plugins>  
+	    <plugin interceptor="cn.sh.library.pedigree.framework.mybatis.MybatisPlugin">  
+	        <!-- <property name="dialect" value="sqlserver"/>   -->
+	         <property name="dialect" value="sqlserver"/> 
+	        <property name="pageSqlId" value=".*ListPage.*"/>  
+	        <property name="insertSqlId" value=".*insert.*"/>  
+	        <property name="updateSqlId" value=".*update.*"/>  
+	        <property name="exclusiveSqlId" value="MExclusive"/>  
+	        <property name="exclusiveField" value="MUPDATED_ON"/>  
+	    </plugin>  
+	</plugins> 
+</configuration>

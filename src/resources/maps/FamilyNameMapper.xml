@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.FamilyNameMapper">
+	<resultMap id="dtoFamily" type="FamilyNameModel" />
+	<resultMap id="dtoPlace" type="PlaceModel" />
+	<resultMap id="dtoJigou" type="JigouModel" />
+	<resultMap id="dtoCategory" type="CategoryModel" />
+	<resultMap id="dtoShumu" type="ShumuModel" />
+	<resultMap id="dtoChaodai" type="ChaodaiModel" />
+	<resultMap id="dtoChaodaiYear" type="ChaodaiYearModel" />
+	<resultMap id="dtoHuPersonModel" type="HuPersonModel" />
+	<!-- 获取胡家配偶人员表列表 -->
+	<select id="getHushiPeiouTableData" resultType="HuPersonModel"
+		resultMap="dtoHuPersonModel">
+		SELECT * from t_hushiPersonPeiou where fname !=''
+	</select>
+	<!-- 获取胡家人员表列表 -->
+	<select id="getHushiTableData" resultType="HuPersonModel"
+		resultMap="dtoHuPersonModel">
+		SELECT * from t_hushiPerson where fname !=''
+	</select>
+	<!-- 获取胡家配偶（根据老公ID）列表 -->
+	<select id="getHushiPeiouByid" resultType="HuPersonModel"
+		resultMap="dtoHuPersonModel">
+		SELECT * from t_hushiPersonPeiou where laogongid =#{id}
+	</select>
+	<!-- 更新姓氏表selfUri -->
+	<update id="updateHushiFamilyNameById">
+		UPDATE t_hushiPersonPeiou SET selfUri=#{selfUri}
+		WHERE
+		id=#{id}
+	</update>
+	<!-- 获取姓氏表列表 -->
+	<select id="getTableData" resultType="FamilyNameModel"
+		resultMap="dtoFamily">
+		SELECT a.id,a.identifier
+		,a.familyNameS,a.familyNameT,a.pinyin,
+		'http://data.library.sh.cn/authority/familyname/'+a.uri as
+		selfUri,description
+		from shlFamilyName a
+	</select>
+	<!-- 更新姓氏表selfUri -->
+	<update id="updateFamilyNameById">
+		UPDATE shlFamilyName SET selfUri=#{selfUri} WHERE
+		id=#{id}
+	</update>
+	<!-- 获取先祖列表 -->
+	<select id="getXZData" resultType="FamilyNameModel" resultMap="dtoFamily">
+		SELECT p.id,p.identifier,p.familyID,p.familyNameS, p.familyNameT,
+		'http://data.library.sh.cn/jp/vocab/ancestor/xian-zu' as
+		'roleOfFamilyUri',
+		'http://data.library.sh.cn/jp/entity/person/'
+		+p.selfUri as selfUri,
+		'http://data.library.sh.cn/authority/familyname/'+f.uri as familyUri,
+		f.familyNameT as xingshiT
+		from shlPerson p left JOIN shlFamilyName f
+		on
+		p.familyID = f.identifier
+		where p.selfID !=''
+		<if test="selfID!= null and selfID!= ''">
+			and p.selfID = #{selfID}
+		</if>
+	</select>
+	<!-- 更新姓氏表selfUri -->
+	<update id="updatePersonById">
+		UPDATE shlPerson SET selfUri=#{selfUri} WHERE
+		id=#{id}
+	</update>
+	<!-- 获取名人列表 -->
+	<select id="getMRData" resultType="FamilyNameModel" resultMap="dtoFamily">
+		SELECT p.id,p.identifier,p.familyID,p.familyNameS, p.familyNameT,
+		'http://data.library.sh.cn/jp/vocab/ancestor/ming-ren' as
+		'roleOfFamilyUri',
+		'http://data.library.sh.cn/jp/entity/person/'
+		+p.selfUri as selfUri,
+		'http://data.library.sh.cn/authority/familyname/'+f.uri as familyUri,
+		f.familyNameT as xingshiT
+		from shlPerson2 p left JOIN shlFamilyName f
+		on p.familyID =
+		f.identifier
+		where p.selfID !=''
+		<if test="selfID!= null and selfID!= ''">
+			and p.selfID = #{selfID}
+		</if>
+	</select>
+	<!-- 更新姓氏表selfUri -->
+	<update id="updatePerson2ById">
+		UPDATE shlPerson2 SET selfUri=#{selfUri} WHERE
+		id=#{id}
+	</update>
+	<!-- 获取纂修者列表 -->
+	<select id="getZXZData" resultType="FamilyNameModel" resultMap="dtoFamily">
+		SELECT p.id,p.identifier,p.familyID,p.familyNameS, p.familyNameT,
+		'' as
+		'roleOfFamilyUri',
+		'http://data.library.sh.cn/jp/entity/person/'
+		+p.selfUri as selfUri,
+		'http://data.library.sh.cn/authority/familyname/'+f.uri as familyUri
+		from shlPersonZXZ p left JOIN shlFamilyName f
+		on p.familyID =
+		f.identifier
+		where p.selfID !=''
+		<if test="selfID!= null and selfID!= ''">
+			and p.selfID = #{selfID}
+		</if>
+	</select>
+	<!-- 更新姓氏表selfUri -->
+	<update id="updatePersonZXZById">
+		UPDATE shlPersonZXZ SET selfUri=#{selfUri} WHERE
+		id=#{id}
+	</update>
+	<!-- 获取堂号列表 -->
+	<select id="getTangHaoData" resultType="FamilyNameModel"
+		resultMap="dtoFamily">
+		SELECT a.id,a.identifier,a.familyNameS , a.familyNameT,
+		'http://data.library.sh.cn/jp/authority/titleofancestraltemple/'
+		+a.selfUri as selfUri,
+		'http://data.library.sh.cn/authority/familyname/'+f.uri as familyUri
+		from (Select b.* from shlPersonTanghao b where id in(select min(ID)
+		from shlPersonTanghao group by familyID,familyNameS)
+		and b.familyID
+		!=0) a LEFT JOIN shlFamilyName f on a.familyID =
+		f.identifier
+	</select>
+	<!-- 更新堂号表selfUri -->
+	<update id="updateTanghaoById">
+		UPDATE shlPersonTanghao SET selfUri=#{selfUri} WHERE
+		id=#{id}
+	</update>
+	<!-- 获取谱名列表 -->
+	<select id="getPumingData" resultType="FamilyNameModel"
+		resultMap="dtoFamily">
+		Select
+		a.id,a.identifier,a.familyNameS,a.familyNameT,a.selfID
+		,a.selfUri as
+		selfUri
+		from shlPersonPuming a where
+		selfID!='' and a.id in(SELECT
+		min(id) as
+		identifier from shlPersonPuming
+		GROUP BY familyNameS,selfID)
+		order by identifier
+	</select>
+	<!-- 更新谱名表selfUri -->
+	<update id="updatePumingById">
+		UPDATE shlPersonPuming SET selfUri=#{selfUri} WHERE
+		id=#{id}
+	</update>
+	<!-- 获取地点列表 -->
+	<select id="getPlaceData" resultType="PlaceModel" resultMap="dtoPlace">
+		Select a.id,a.identifier,a.guojiaS,a.guojiaT,
+		a.parm1S,a.parm2S,a.shengS,a.shiS,a.xianS,a.labelS,a.labelT,a.point,a.selfUri
+		as selfUri from shlPersonPlace a
+		ORDER BY id
+	</select>
+	<!-- 更新地点表selfUri -->
+	<update id="updatePlaceById">
+		UPDATE shlPersonPLace set point=#{point}
+		WHERE
+		id=#{id}
+	</update>
+<!-- 更新地点表selfUri -->
+	<!-- <update id="updatePlaceById">
+		UPDATE shlPersonPLace SET
+		selfUri=#{selfUri},shengS=#{shengS},shiS=#{shiS},xianS=#{xianS},point=#{point}
+		WHERE
+		id=#{id}
+	</update> -->
+	<!-- 获取机构列表 -->
+	<select id="getJigouData" resultType="JigouModel" resultMap="dtoJigou">
+		Select
+		a.quanchengS,a.quanchengT,a.jianchengS,a.jianchengT,a.addressE,a.addressS,a.addressT,a.addressO,'http://data.library.sh.cn/entity/organization/'+a.selfUri
+		as selfUri ,p.placeUri from shlPersonJigou a
+		LEFT JOIN (Select
+		a.guojiaS,a.guojiaT,a.shengS,a.shiS,a.xianS,a.labelS,a.labelT,a.point,a.selfUri
+		as placeUri from shlPersonPlace a where id in(select min(ID) from
+		shlPersonPlace group by labelS)
+		) p
+		on a.parm1S=p.labelS
+	</select>
+	<!-- 更新谱名表selfUri -->
+	<update id="updateJigouById">
+		UPDATE shlPersonJigou SET selfUri=#{selfUri} WHERE
+		id=#{id}
+	</update>
+	<!-- 查询书目列表 增加了RefUri, WHERE t1.id BETWEEN 1 and 10000 # BETWEEN 10001 and 
+		15000 实为ChaodaiURI -->
+	<select id="getShumuData" resultType="ShumuModel" resultMap="dtoShumu">
+		SELECT
+		t1.*,SUBSTRING(t1.identifier,1,3)+'-'+SUBSTRING(t1.identifier,4,10) as
+		refIdentifier,dbo.getcdUri(t1.banbenniandai)
+		as refChaodaiUri
+		from
+		shlShumu t1
+		WHERE t1.identifier !=''
+	</select>
+	<!-- 更新书目表selfUri -->
+	<update id="updateShumuById">
+		UPDATE shlShumu SET
+		selfUri=#{selfUri},
+		instanceUri=#{instanceUri},
+		pumingUri=#{selfUri}
+		WHERE id=#{id}
+	</update>
+	<!-- 查询朝代列表 -->
+	<select id="getChaodaiData" resultType="ChaodaiModel" resultMap="dtoChaodai">
+		SELECT a.*
+		from shlChaodai a
+		where 1=1
+		<if test="chaodai!= null and chaodai!= ''">
+			and a.chaodai = #{chaodai}
+		</if>
+	</select>
+	<!-- 更新朝代表selfUri -->
+	<update id="updateChaodaiById">
+		UPDATE shlChaodai SET selfUri=#{selfUri} WHERE
+		id=#{id}
+	</update>
+	<!-- 查询年号纪年列表 -->
+	<select id="getChaodaiYearData" resultType="ChaodaiYearModel"
+		resultMap="dtoChaodaiYear">
+		SELECT a.*
+		from shlChaodaiYear a
+	</select>
+	<!-- 更新年号纪年表selfUri -->
+	<update id="updateChaodaiYearById">
+		UPDATE shlChaodaiYear SET selfUri=#{selfUri} WHERE
+		id=#{id}
+	</update>
+	<!-- 获取取词词表列表 -->
+	<select id="getCategoryData" resultType="CategoryModel"
+		resultMap="dtoCategory">
+		Select label,labelT, selfUri,type from shlCategory
+	</select>
+	<!-- 更新首页姓氏表 -->
+	<update id="updateSurname">
+		<if test="uri!= null and uri!= ''">
+			UPDATE shlSurname SET
+			originally=#{originally},
+			genealogyCnt=#{genealogyCnt},
+			celebrityCnt=#{celebrityCnt}
+			WHERE
+			'http://data.library.sh.cn/authority/familyname/' + uri=#{uri}
+		</if>
+	</update>
+	<!-- 更新首页姓氏表 -->
+	<update id="updatesSurnameDesByUri">
+		<if test="uri!= null and uri!= ''">
+			UPDATE shlSurname SET
+			<if test="description!= null and description!= ''">
+			  description=#{description},
+			</if>
+			<if test="pinyin!= null and pinyin!= ''">
+			  pinyin=#{pinyin},
+			  initial =#{initial},
+			</if>
+			<if test="familyNameS!= null and familyNameS!= ''">
+			  familyNameS=#{familyNameS},
+			</if>
+			<if test="familyNameT!= null and familyNameT!= ''">
+			  familyNameT=#{familyNameT},
+			</if>
+			identifier =identifier
+			WHERE
+			'http://data.library.sh.cn/authority/familyname/' + uri=#{uri}
+		</if>
+	</update>
+	<!-- 获取盛档Person列表 -->
+	<select id="getSDPersonData" resultType="FamilyNameModel"
+		resultMap="dtoFamily">
+		Select
+		*
+		from SDPerson
+		where generateUri = '1'
+	</select>
+	<!-- 更新Person列表 -->
+	<update id="updateSDPersonData">
+		UPDATE SDPerson SET selfUri=#{selfUri} WHERE
+		id=#{id}
+	</update>
+	<!-- 获取盛档Organization列表 -->
+	<select id="getSDOrganization" resultType="FamilyNameModel"
+		resultMap="dtoFamily">
+		Select
+		*
+		from SDOrganization
+		where generateUri = '1'
+	</select>
+	<!-- 更新Organization列表 -->
+	<update id="updateSDOrganization">
+		UPDATE SDOrganization SET selfUri=#{selfUri} WHERE
+		id=#{id}
+	</update>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

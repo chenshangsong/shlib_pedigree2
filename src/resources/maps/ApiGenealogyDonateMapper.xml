@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.ApiGenealogyDonateMapper">
+	
+	<!-- 根据 用户id(uid)与 查询条件 , 获取捐赠信息-列表 -->
+	<select id="getApiGenealogyDonateListPage" parameterType="ApiGenealogyDonateDto" resultType="ApiGenealogyDonateDto">
+	  	SELECT * from t_jp_genealogy_donate where uid = #{uid} 
+	  	<if test="gName != null and gName != ''">
+	  		and gName = #{gName} 
+	  	</if>
+	  	<if test="gPlace != null and gPlace != ''">
+	  		and gPlace = #{gPlace} 
+	  	</if>
+	  	<if test="gCreator != null and gCreator != ''">
+	  		and gCreator = #{gCreator} 
+	  	</if>
+	  	<if test="gCreateTime != null and gCreateTime != ''">
+	  		and gCreateTime = #{gCreateTime} 
+	  	</if>
+	  	<if test="gHall != null and gHall != ''">
+	  		and gHall = #{gHall} 
+	  	</if>
+	  	<if test="gSummary != null and gSummary != ''">
+	  		and gSummary = #{gSummary} 
+	  	</if>
+	  	<if test="famousId != null and famousId != ''">
+	  		and famousId = #{famousId} 
+	  	</if>
+	  	<if test="filePath != null and filePath != ''">
+	  		and filePath = #{filePath} 
+	  	</if>
+	  	<if test="status != null and status != ''">
+	  		and status = #{status} 
+	  	</if>
+	  	<if test="creator != null and creator != ''">
+	  		and creator = #{creator} 
+	  	</if>
+	  	<if test="updator != null and updator != ''">
+	  		and updator = #{updator} 
+	  	</if>
+	  	<if test="updateTime != null and updateTime != ''">
+	  		and updateTime = #{updateTime} 
+	  	</if>
+	  	<if test="isCollect != null and isCollect != ''">
+	  		and isCollect = #{isCollect} 
+	  	</if>
+	  	<if test="isCertificate != null and isCertificate != ''">
+	  		and isCertificate = #{isCertificate} 
+	  	</if>
+	  	<if test="cardId != null and cardId != ''">
+	  		and cardId = #{cardId} 
+	  	</if>
+	  	<if test="place != null and place != ''">
+	  		and place = #{place} 
+	  	</if>
+	  	<if test="createdDate != null and createdDate != ''">
+	  		and createdDate = #{createdDate} 
+	  	</if>
+	  	ORDER BY createdDate DESC
+	  	</select>
+	  	
+	<!-- 根据id,查询捐赠信息   -->
+	<select id="getApiGenealogyDonateById" parameterType="Integer" resultType="ApiGenealogyDonateDto" >
+		SELECT * from t_jp_genealogy_donate where id = #{id}
+	</select>
+	
+	<!-- 添加捐赠信息   -->
+	<insert id="insertApiGenealogyDonate">
+  		INSERT INTO t_jp_genealogy_donate
+  		(
+			uid,
+			gName,
+			gPlace,
+			gCreator,
+			gCreateTime,
+			gHall,
+			gSummary,
+			famousId,
+			filePath,
+			status,
+			creator,
+			updator,
+			updateTime,
+			isCollect,
+			isCertificate,
+			cardId,
+			place,
+			createdUser
+  		)
+		VALUES
+		(
+			#{uid},
+			#{gName},
+			#{gPlace},
+			#{gCreator},
+			#{gCreateTime},
+			#{gHall},
+			#{gSummary},
+			#{famousId},
+			#{filePath},
+			#{status},
+			#{creator},
+			#{updator},
+			#{updateTime},
+			#{isCollect},
+			#{isCertificate},
+			#{cardId},
+			#{place},
+			#{createdUser}
+		) 
+		<selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER">
+			SELECT @@IDENTITY as id
+		</selectKey>
+	</insert>
+	
+	<!-- 根据id,更新捐赠信息   -->
+	<update id="updateApiGenealogyDonate">
+		update t_jp_genealogy_donate set 
+			gName = #{gName},
+			gPlace = #{gPlace},
+			gCreator = #{gCreator},
+			gCreateTime = #{gCreateTime},
+			gHall = #{gHall},
+			gSummary = #{gSummary},
+			famousId = #{famousId},
+			filePath = #{filePath},
+			status = #{status},
+			creator = #{creator},
+			updator = #{updator},
+			updateTime = #{updateTime},
+			isCollect = #{isCollect},
+			isCertificate = #{isCertificate},
+			cardId = #{cardId},
+			place = #{place} 
+			where id = #{id}
+	</update>
+	
+	<!-- 根据id,删除捐赠信息   -->
+	<delete id="deleteApiGenealogyDonateById">
+		DELETE FROM t_jp_genealogy_donate 
+		WHERE id = #{id}
+	</delete>
+	
+</mapper>

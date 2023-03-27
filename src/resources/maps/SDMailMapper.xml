@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.SDMailMapper">
+	<resultMap id="dtoSDMail" type="SDMailModel" />
+	<resultMap id="dtoSDPerson" type="SDPersonModel" />
+	<resultMap id="dtoSDPlaceTemp" type="SDPlaceTempModel" />
+	<!-- 信函list -->
+	<select id="getListSDMail" resultMap="dtoSDMail">
+		select * from SDMail
+	</select>
+	<select id="getSDPerson" resultMap="dtoSDPerson">
+		select * from SDPerson
+		where
+		originalWord = #{originalWord} and
+		generateUri = '1'
+	</select>
+
+	<select id="getSDPlaceTemp" resultMap="dtoSDPlaceTemp">
+		select * from SDPlaceTemp
+		where
+		orginalPlace = #{orginalPlace} and
+		generateUri = '1'
+	</select>
+
+	<update id="updateSDMail">
+		UPDATE SDMail
+		SET
+		authorUri = #{authorUri},
+		sendUri =
+		#{sendUri},
+		receiverUri = #{receiverUri},
+		placeUri = #{placeUri},
+		subjectUri = #{subjectUri},
+		matchSR = #{matchSR},
+		selfUri = #{selfUri}
+		WHERE
+		id=#{id};
+	</update>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.ApiTaskMapper">
+
+	<!-- 添加任务 -->
+	<insert id="insertApiTask">
+		INSERT INTO t_jp_manager_task
+		(
+		jpUri,
+		jpTitle,
+		creatorId,
+		creatorName,
+		title,
+		edition,
+		editionTemporal,
+		creator,
+		tangh,
+		place
+		)
+		VALUES
+		(
+		#{jpUri},
+		#{jpTitle},
+		#{creatorId},
+		#{creatorName},
+		#{title},
+		#{edition},
+		#{editionTemporal},
+		#{creator},
+		#{tangh},
+		#{place}
+		)
+		<selectKey resultType="java.lang.Integer" keyProperty="id"
+			order="AFTER">
+			SELECT @@IDENTITY as id
+		</selectKey>
+	</insert>
+
+	<!-- 查询任务(根据不同检索条件) -->
+	<select id="getApiTaskListPage" parameterType="SearchTaskAndTeamUserDto"
+		resultType="ApiTaskDto">
+		SELECT t1.* from t_jp_manager_task t1 where 1=1
+		<if test="id != null and id != ''">
+			and t1.id = #{id}
+		</if>
+		
+		<if test="searchFlg != null and searchFlg != ''">
+			and ( (t1.leadId = #{uid} or (t1.isOpen = '1' and t1.task = '0'))
+		</if>
+		<if test="searchZjCoopTaskFlg != null and searchZjCoopTaskFlg != ''">
+			or exists(select 1 from t_jp_manager_task_teamUser t2 where t2.taskId = t1.id and t2.coopId = #{uid}) )
+		</if>
+		
+		<if test="jpUri != null and jpUri != ''">
+			and t1.jpUri = #{jpUri}
+		</if>
+		<if test="jpTitle != null and jpTitle != ''">
+			and t1.jpTitle like '%'+#{jpTitle}+'%' ESCAPE '$'
+		</if>
+		<if test="status != null and status != ''">
+			and t1.status = #{status}
+		</if>
+		<if test="task != null and task != ''">
+			and t1.task = #{task}
+		</if>
+		<if test="leadId != null and leadId != ''">
+			and t1.leadId = #{leadId}
+		</if>
+		<if test="leadName != null and leadName != ''">
+			and t1.leadName like '%'+#{leadName}+'%' ESCAPE '$'
+		</if>
+		<if test="leadCard != null and leadCard != ''">
+			and t1.leadCard like '%'+#{leadCard}+'%' ESCAPE '$'
+		</if>
+		<if test="isOpen != null and isOpen != ''">
+			and t1.isOpen = #{isOpen}
+		</if>
+		<if test="cooperation != null and cooperation != ''">
+			and t1.cooperation = #{cooperation}
+		</if>
+		<if test="leadDate != null and leadDate != ''">
+			and t1.leadDate = #{leadDate}
+		</if>
+		<if test="createTime != null and createTime != ''">
+			and t1.createTime = #{createTime}
+		</if>
+		<if test="creatorId != null and creatorId != ''">
+			and t1.creatorId = #{creatorId}
+		</if>
+		<if test="creatorName != null and creatorName != ''">
+			and t1.creatorName like '%'+#{creatorName}+'%' ESCAPE '$'
+		</if>
+		<if test="updateTime != null and updateTime != ''">
+			and t1.updateTime = #{updateTime}
+		</if>
+		<if test="updatorId != null and updatorId != ''">
+			and t1.updatorId = #{updatorId}
+		</if>
+
+		<if test="title != null and title != ''">
+			and t1.title like '%'+#{title}+'%' ESCAPE '$'
+		</if>
+		<if test="edition != null and edition != ''">
+			and t1.edition like '%'+#{edition}+'%' ESCAPE '$'
+		</if>
+		<if test="editionTemporal != null and editionTemporal != ''">
+			and t1.editionTemporal like '%'+#{editionTemporal}+'%' ESCAPE '$'
+		</if>
+		<if test="creator != null and creator != ''">
+			and t1.creator like '%'+#{creator}+'%' ESCAPE '$'
+		</if>
+		<if test="tangh != null and tangh != ''">
+			and t1.tangh like '%'+#{tangh}+'%' ESCAPE '$'
+		</if>
+		<if test="place != null and place != ''">
+			and t1.place like '%'+#{place}+'%' ESCAPE '$'
+		</if>
+		ORDER BY leadDate DESC
+	</select>
+
+	<!-- 查询单个任务(根据id) -->
+	<select id="getApiTaskById" parameterType="Integer" resultType="ApiTaskDto">
+		SELECT * from t_jp_manager_task where id = #{id}
+	</select>
+
+	<!-- 更新任务-任务状态 -->
+	<update id="updateApiTaskStatusByAdmin">
+		update t_jp_manager_task set status = #{status}, updateTime =
+		#{updateTime}, updatorId = #{updatorId} where id in
+		<foreach collection="ids" index="index" item="item" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+	<!-- 更新任务-开放状态 -->
+	<update id="updateApiTaskIsOpenByAdmin">
+		update t_jp_manager_task set isOpen = #{isOpen}, updateTime =
+		#{updateTime}, updatorId = #{updatorId} where id in
+		<foreach collection="ids" index="index" item="item" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+	<!-- 专家认领任务 -->
+	<update id="updateApiTaskLeadByExpert">
+		update t_jp_manager_task set task = #{task} , leadId = #{leadId},
+		leadName = #{leadName}, leadCard = #{leadCard}, leadDate = #{leadDate}
+		where id in
+		<foreach collection="ids" index="index" item="item" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+	<!-- 修改协同情况 -->
+	<update id="updateApiTaskCooperation">
+		update t_jp_manager_task set cooperation =
+		#{cooperation} where id = #{id}
+	</update>
+
+	<!-- 查询我参加的任务 -->
+	<select id="getMyAttendTaskListPage" parameterType="SearchTaskAndTeamUserDto"
+		resultType="ApiTaskDto">
+		SELECT t1.* from t_jp_manager_task t1 JOIN t_jp_manager_task_teamUser
+		t2
+		on t1.id = t2.taskId where t2.coopId = #{coopId}
+		<if test="id != null and id != ''">
+			and t1.id = #{id}
+		</if>
+		<if test="coopTime != null and coopTime != ''">
+			and t2.coopTime = #{coopTime}
+		</if>
+		<if test="coopStatus != null and coopStatus != ''">
+			and t2.coopStatus = #{coopStatus}
+		</if>
+		<if test="coopName != null and coopName != ''">
+			and t2.coopName like '%'+#{coopName}+'%' ESCAPE '$'
+		</if>
+		<if test="coopCard != null and coopCard != ''">
+			and t2.coopCard like '%'+#{coopCard}+'%' ESCAPE '$'
+		</if>
+		<if test="jpUri != null and jpUri != ''">
+			and t1.jpUri = #{jpUri}
+		</if>
+		<if test="jpTitle != null and jpTitle != ''">
+			and t1.jpTitle like '%'+#{jpTitle}+'%' ESCAPE '$'
+		</if>
+		<if test="status != null and status != ''">
+			and t1.status = #{status}
+		</if>
+		<if test="task != null and task != ''">
+			and t1.task = #{task}
+		</if>
+		<if test="leadId != null and leadId != ''">
+			and t1.leadId = #{leadId}
+		</if>
+		<if test="leadName != null and leadName != ''">
+			and t1.leadName like '%'+#{leadName}+'%' ESCAPE '$'
+		</if>
+		<if test="leadCard != null and leadCard != ''">
+			and t1.leadCard like '%'+#{leadCard}+'%' ESCAPE '$'
+		</if>
+		<if test="isOpen != null and isOpen != ''">
+			and t1.isOpen = #{isOpen}
+		</if>
+		<if test="cooperation != null and cooperation != ''">
+			and t1.cooperation = #{cooperation}
+		</if>
+		<if test="leadDate != null and leadDate != ''">
+			and t1.leadDate = #{leadDate}
+		</if>
+		<if test="createTime != null and createTime != ''">
+			and t1.createTime = #{createTime}
+		</if>
+		<if test="creatorId != null and creatorId != ''">
+			and t1.creatorId = #{creatorId}
+		</if>
+		<if test="creatorName != null and creatorName != ''">
+			and creatorName like '%'+#{creatorName}+'%' ESCAPE '$'
+		</if>
+		<if test="updateTime != null and updateTime != ''">
+			and t1.updateTime = #{updateTime}
+		</if>
+		<if test="updatorId != null and updatorId != ''">
+			and t1.updatorId = #{updatorId}
+		</if>
+
+		<if test="title != null and title != ''">
+			and t1.title like '%'+#{title}+'%' ESCAPE '$'
+		</if>
+		<if test="edition != null and edition != ''">
+			and t1.edition like '%'+#{edition}+'%' ESCAPE '$'
+		</if>
+		<if test="editionTemporal != null and editionTemporal != ''">
+			and t1.editionTemporal like '%'+#{editionTemporal}+'%' ESCAPE '$'
+		</if>
+		<if test="creator != null and creator != ''">
+			and t1.creator like '%'+#{creator}+'%' ESCAPE '$'
+		</if>
+		<if test="tangh != null and tangh != ''">
+			and t1.tangh like '%'+#{tangh}+'%' ESCAPE '$'
+		</if>
+		<if test="place != null and place != ''">
+			and t1.place like '%'+#{place}+'%' ESCAPE '$'
+		</if>
+		ORDER BY t2.coopTime DESC
+	</select>
+
+</mapper>

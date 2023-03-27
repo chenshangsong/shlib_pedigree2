@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.FeedBackMapper">
+	<resultMap id="dtoFeedBackMain" type="FeedBackMainModel" />
+	<resultMap id="dtoFeedBackDetail" type="FeedBackDetailModel" />
+<resultMap id="dtoFeedBackConfModel" type="FeedBackConfModel" />
+	<!-- 查询反馈信息，参数类型为字符串 -->
+	<select id="getFeedBackMainList" parameterType="String"
+		resultMap="dtoFeedBackMain">
+		SELECT
+		id,
+		title,
+		createdUser,
+		genealogyTitle,
+		genealogyUri,
+		CONVERT(varchar(100),
+		createdDate, 23) AS createdDate,
+		status
+		from t_feedbackMain ST
+		where ST.sysType='1'
+		<if test="createdUser!= null and createdUser!= ''">
+			and ST.createdUser = #{createdUser}
+		</if>
+		ORDER BY ST.createdDate DESC
+	</select>
+	<!-- 查询反馈信息，弹框参数类型为字符串 -->
+	<select id="getFeedBackConfList" parameterType="String"
+		resultMap="dtoFeedBackConfModel">
+		SELECT 
+			t1.status, 
+			u1.userName as createdname, 
+			u2.userName as postilname, 
+			t1.title, 
+			t1.genealogyTitle, 
+			t1.genealogyUri, 
+			t1.createdDate, 
+			t2.feedbackContent, 
+			t2.postilContent, 
+			t1.createdUser, 
+			t2.postilUser, 
+			t2.postilDate
+		from t_feedbackMain t1
+		LEFT JOIN t_feedbackList t2 on t1.id = t2.feedbackMainId
+		LEFT JOIN t_sys_userInfo u1 on t1.createdUser = u1.id
+		LEFT JOIN t_sys_userInfo u2 on t2.postilUser = u2.id
+		where t1.sysType='1'
+		<if test="genealogyUri !=null and genealogyUri!= ''">
+			and t1.genealogyUri=#{genealogyUri}
+		</if>
+		ORDER BY t1.createdDate DESC
+	</select>
+	<!-- 查询反馈详细 -->
+	<select id="getDetail" parameterType="Integer" resultMap="dtoFeedBackDetail">
+		<![CDATA[
+			SELECT 
+			ST.title,
+			ST.genealogyTitle,
+			ST.genealogyUri,
+			SA.feedbackMainId,
+			SA.id AS markId,
+			SA.postilContent,
+			SA.feedbackContent,
+			SA.feedbackUser
+			from t_feedbackMain ST, t_feedbackList SA
+			WHERE ST.sysType='1' and ST.Id = #{feedbackMainId}
+			AND SA.feedbackMainId = #{feedbackMainId}
+			ORDER BY SA.feedbackDate DESC
+		]]>
+	</select>
+
+	<!-- 添加反馈列表 -->
+	<insert id="insertFeedBackMain">
+		<selectKey resultType="java.lang.Integer" keyProperty="id"
+			order="AFTER">
+			SELECT @@IDENTITY as id
+		</selectKey>
+		INSERT INTO t_feedbackMain
+		(
+		title,
+		genealogyUri,
+		genealogyTitle,
+		createdDate,
+		createdUser,
+		status,sysType
+		)
+		VALUES
+		(
+		#{title},
+		#{genealogyUri},
+		#{genealogyTitle},
+		#{createdDate},
+		#{createdUser},
+		'0',
+		'1'
+		)
+	</insert>
+
+	<insert id="insertFeedBackList">
+		INSERT INTO t_feedbackList
+		(
+		feedbackContent,
+		feedbackDate,
+		feedbackUser,
+		feedbackMainId
+		)
+		VALUES
+		(
+		#{feedbackContent},
+		#{feedbackDate},
+		#{feedbackUser},
+		#{feedbackMainId}
+		)
+	</insert>
+
+	<!-- 更新反馈 -->
+	<update id="updatePostil">
+		UPDATE t_feedbackList
+		SET
+		postilContent=
+		#{postilContent},
+		postilDate= #{postilDate},
+		postilUser= #{postilUser}
+		WHERE id= #{markId};
+		UPDATE t_feedbackMain
+		SET
+		status = '1'
+		WHERE
+		id=#{feedbackMainId};
+	</update>
+
+</mapper>

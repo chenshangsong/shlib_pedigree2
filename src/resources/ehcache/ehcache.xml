@@ -1,0 +1,41 @@
+<!-- 详细参数说明参考 http://ehcache.org/ehcache.xml -->
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
+	updateCheck="false" monitoring="autodetect" dynamicConfig="true"
+	name="mrgf">
+
+	<diskStore path="java.io.tmpdir" />
+
+	<!-- 缓存监控 <cacheManagerPeerListenerFactory class="org.terracotta.ehcachedx.monitor.probe.ProbePeerListenerFactory" 
+		properties="monitorAddress=192.168.113.50, monitorPort=9889, memoryMeasurement=true" 
+		/ -->
+
+	<!-- 默认缓存设置 -->
+	<defaultCache maxElementsInMemory="10000" eternal="false"
+		timeToIdleSeconds="120" timeToLiveSeconds="120" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="120" memoryStoreEvictionPolicy="LRU"
+		statistics="true">
+		<persistence strategy="localTempSwap" />
+	</defaultCache>
+
+    <cache name="vocabClassesCache"
+           maxElementsInMemory="1000"
+           eternal="false" timeToLiveSeconds="120"
+           statistics="true">
+    </cache>
+
+    <cache name="vocabPropertiesCache"
+           maxElementsInMemory="1000"
+           eternal="false" timeToLiveSeconds="120"
+           statistics="true">
+    </cache>
+
+    <cache name="vocabRdfCache"
+           maxElementsInMemory="1000"
+           eternal="false" timeToLiveSeconds="120"
+           statistics="true">
+    </cache>
+
+
+
+</ehcache>

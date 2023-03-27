@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.PlaceErrorMapper">
+	<resultMap id="dtoShumu" type="ShumuModel" />
+	<resultMap id="dtoShlPersonPlaceModel" type="ShlPersonPlaceModel" />
+	<!-- 2获取Flag=0的数据，如果市不为空，用省和Lable获取经纬度。如果市为空，用省获取经纬度。（标识获取不到经纬度的地名） -->
+	<select id="getErrorPlaceList" resultType="ShlPersonPlaceModel" resultMap="dtoShlPersonPlaceModel">
+		SELECT * from
+		shlPersonPlace where flg=#{flg}
+	</select>
+	<update id="updatePlace"> 
+	  UPDATE shlPersonPlace SET point = #{point} WHERE id=#{id};
+	</update>
+	<!-- 需要替换work，机构中的placeURi -->
+	<select id="getWorkErrorPlace" resultType="ShumuModel">
+		SELECT
+		t.selfUri,t.judiUri,t2.newUri as refUri from shlShumu t ,
+		(SELECT
+		t1.selfUri as oldUri,t2.selfUri as newUri from shlPersonPlace t1
+		,shlPersonPlaceAll t2
+		WHERE t1.shengS=t2.shengS and t1.shiS=t2.shiS and
+		t1.xianS=t2.xianS) t2
+		where t.judiUri = t2.oldUri
+	</select>
+	<!-- 更新vt经纬度 -->
+	<select id="updateVTPlaceList" resultType="ShlPersonPlaceModel" resultMap="dtoShlPersonPlaceModel">
+		SELECT
+		t1.selfUri,t1.labelS,t1.labelT,t1.shengS,t1.shengT,t1.shiS,t1.shiT,t1.xianS,t1.xianT,t2.point
+		as oldpoint,t1.point from shlPersonPlace t1,shlPersonPlaceAll
+		t2 where
+		t1.selfUri=t2.selfUri and t1.flg=0
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:cache="http://www.springframework.org/schema/cache"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/mvc
+		http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		 http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+		 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+		  http://www.springframework.org/schema/task
+    http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+
+	<!-- 上下文扫描 -->
+	<context:component-scan base-package="cn.sh.library.pedigree"
+		name-generator="cn.sh.library.pedigree.spring.CustomAnnotationBeanNameGenerator">
+		<context:include-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+		<context:include-filter type="annotation"
+			expression="org.springframework.web.bind.annotation.RestController" />
+		<context:include-filter type="annotation"
+			expression="org.springframework.web.bind.annotation.ControllerAdvice" />
+	</context:component-scan>
+	<cache:annotation-driven cache-manager="springCacheManager"
+		proxy-target-class="true" />
+	<!-- 陈尚松begin -->
+	<!-- 激活 @Required @Autowired,JSR 250's @PostConstruct, @PreDestroy and @Resource 
+		等标注 -->
+	<context:annotation-config />
+	<bean id="objectMapper"
+		class="cn.sh.library.pedigree.framework.json.CustomObjectMapper">
+	</bean>
+	<bean id="jsonHttpMessageConverter"
+		class="cn.sh.library.pedigree.framework.converter.FwMappingJacksonHttpMessageConverter">
+		<property name="supportedMediaTypes">
+			<list>
+				<value>application/json</value>
+				<value>application/javascript</value>
+				<value>text/json</value>
+				<value>text/javascript</value>
+			</list>
+		</property>
+		<property name="objectMapper" ref="objectMapper"></property>
+	</bean>
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="order" value="1" />
+		<property name="webBindingInitializer">
+			<bean class="cn.sh.library.pedigree.framework.handler.WebBindHandler" />
+		</property>
+		<property name="messageConverters">
+			<list>
+				<ref bean="jsonHttpMessageConverter" />
+				<bean class="org.springframework.http.converter.FormHttpMessageConverter" />
+				<bean
+					class="org.springframework.http.converter.BufferedImageHttpMessageConverter" />
+				<bean
+					class="org.springframework.http.converter.ByteArrayHttpMessageConverter" />
+				<bean
+					class="cn.sh.library.pedigree.framework.converter.FwStringHttpMessageConverter" />
+				<bean
+					class="org.springframework.http.converter.ResourceHttpMessageConverter" />
+			</list>
+		</property>
+	</bean>
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" />
+	
+	
+	<!-- 会自动注册了validator ConversionService -->
+	<mvc:annotation-driven conversion-service="conversion-service">
+		<mvc:message-converters>
+			<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<value>text/plain;charset=UTF-8</value>
+						<value>text/html;charset=UTF-8</value>
+						<value>application/json;charset=UTF-8</value>
+						<value>application/javascript;charset=UTF-8</value>
+						<value>text/json;charset=UTF-8</value>
+						<value>text/javascript;charset=UTF-8</value>
+					</list>
+				</property>
+			</bean>
+		</mvc:message-converters>
+		<mvc:argument-resolvers>
+			<bean class="org.springframework.mobile.device.DeviceWebArgumentResolver" />
+			<bean
+				class="org.springframework.mobile.device.site.SitePreferenceWebArgumentResolver" />
+		</mvc:argument-resolvers>
+	</mvc:annotation-driven>
+	<bean id="conversion-service"
+		class="org.springframework.format.support.FormattingConversionServiceFactoryBean" />
+	<!-- 开启注解 -->
+	<mvc:annotation-driven />
+	<!-- 启用请求参数验证:hibernate-validator-4.2.0.Final.jar,validation-api-1.0.0.GA.jar:begin -->
+	<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"></bean>  
+    <mvc:annotation-driven validator="validator" />  
+    <!-- 启用请求参数验证end -->
+	<!-- 配置Handler 拦截机 -->
+	<mvc:interceptors>
+		<ref bean="frontInterceptor" />
+		<bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor" />
+		<bean
+			class="org.springframework.mobile.device.DeviceResolverHandlerInterceptor" />
+		<bean
+			class="org.springframework.mobile.device.site.SitePreferenceHandlerInterceptor" />
+		<!-- 登录拦截 -->
+		<mvc:interceptor>
+			<!-- 需拦截的地址 -->
+			<!-- 一级目录 -->
+			<mvc:mapping path="/**" />
+			<!-- 不参与拦截的路径：等同于拦截器中的url过滤 -->
+			<mvc:exclude-mapping path="/userlogin/**" />
+			<mvc:exclude-mapping path="/to_login" />
+			<mvc:exclude-mapping path="/res/**" />
+			<mvc:exclude-mapping path="/doc/**" />
+			<mvc:exclude-mapping path="/home/**" />
+			<bean class="cn.sh.library.pedigree.interceptor.LoginInterceptor" />
+		</mvc:interceptor>
+		<mvc:interceptor>
+		<!-- webapi跨域放行 -->
+		<mvc:mapping path="/webapi/**" />
+		  <bean class="cn.sh.library.pedigree.interceptor.WebAPIAccessInterceptor" />
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<!-- 需拦截的地址 -->
+			<!-- 一级目录 -->
+			<mvc:mapping path="/**" />
+			<!-- 不参与拦截的路径：等同于拦截器中的url过滤 -->
+			<mvc:exclude-mapping path="/userlogin/**" />
+			<mvc:exclude-mapping path="/to_login" />
+			<mvc:exclude-mapping path="/res/**" />
+			<mvc:exclude-mapping path="/doc/**" />
+			<mvc:exclude-mapping path="/home/**" />
+			 <bean  class="cn.sh.library.pedigree.interceptor.IpWarningInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<!--静态资源配置 -->
+	<mvc:resources mapping="/res/**" location="/WEB-INF/res/" />
+	<mvc:resources mapping="/doc/**" location="/WEB-INF/doc/" />
+	<mvc:resources mapping="/home/**" location="/WEB-INF/home/" />
+	<bean
+		class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+		<property name="ignoreAcceptHeader" value="true" />
+		<property name="favorPathExtension" value="false" />
+		<property name="favorParameter" value="true" />
+		<property name="defaultContentType" value="text/html;charset=UTF-8" />
+		<property name="contentNegotiationManager">
+			<bean
+				class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+				<property name="mediaTypes">
+					<map>
+						<entry key="html" value="text/html;charset=UTF-8" />
+						<entry key="json" value="application/json;charset=UTF-8" />
+						<entry key="xml" value="application/xml;charset=UTF-8" />
+						<entry key="excel" value="application/excel;charset=UTF-8" />
+						<entry key="pdf" value="application/pdf;charset=UTF-8" />
+					</map>
+				</property>
+			</bean>
+		</property>
+		<property name="defaultViews">
+			<list>
+				<bean
+					class="org.springframework.web.servlet.view.json.MappingJackson2JsonView">
+					<property name="objectMapper" ref="objectMapper" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+	<!-- 陈尚松 end -->
+	<!-- SpringMvc页面自动映射 -->
+	<bean
+		class="org.springframework.mobile.device.view.LiteDeviceDelegatingViewResolver">
+		<constructor-arg>
+			<bean id="viewResolver"
+				class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+				<property name="viewClass"
+					value="org.springframework.web.servlet.view.JstlView" />
+				<property name="prefix" value="/WEB-INF/views/" />
+				<property name="suffix" value=".jsp" />
+			</bean>
+		</constructor-arg>
+		<property name="enableFallback" value="true" />
+		<property name="mobilePrefix" value="normal/" />
+		<property name="tabletPrefix" value="normal/" />
+		<property name="normalPrefix" value="normal/" />
+	</bean>
+
+	<!-- mybitas自定义扫描 chenss -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="annotationClass" value="org.springframework.stereotype.Repository" />
+		<property name="basePackage" value="cn.sh.library.pedigree.sysManager.mapper" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+		<!-- 打开事务管理器的嵌套事务 -->
+		<property name="nestedTransactionAllowed">
+			<value>true</value>
+		</property>
+	</bean>
+	<!-- chenss2018upload -->
+     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="5242880" />
+		<property name="maxInMemorySize" value="4096" />
+        <!--resolveLazily属性启用是为了推迟文件解析，以便在UploadAction 中捕获文件大小异常-->
+        <property name="resolveLazily" value="true"/>  
+	</bean>
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<bean id="dbTransaction"
+		class="cn.sh.library.pedigree.framework.database.DbTransactionImpl"
+		scope="prototype">
+		<property name="txManager" ref="transactionManager" />
+	</bean>
+
+	<bean id="sysExceptionHandler"
+		class="cn.sh.library.pedigree.framework.handler.ExceptionHandler" />
+	<bean id="sysExceptionResolver"
+		class="cn.sh.library.pedigree.framework.handler.SystemExceptionResolver" />
+	<bean id="beanPostHandler"
+		class="cn.sh.library.pedigree.framework.handler.BeanPostHandler" />
+	<bean id="localeResolver"
+		class="org.springframework.web.servlet.i18n.CookieLocaleResolver" />
+		
+		<task:annotation-driven /> <!-- 定时器开关-->  
+  
+    <bean id="MyTasks" class="cn.sh.library.pedigree.framework.IpWarning.Tasks"></bean>  
+    
+   <!-- 预加载start -->
+    <bean id="PreloadDoiList"
+	 class="cn.sh.library.pedigree.framework.util.PreloadDoiList" />
+  <bean id="PreloadApiFuriPlaceList"
+		class="cn.sh.library.pedigree.framework.util.PreloadApiFuriPlaceList" />
+    
+  	<bean id="PreloadWorkJJUriList"
+		class="cn.sh.library.pedigree.framework.util.PreloadWorkJJUriList" />
+		
+	<bean id="PreloadUserList"
+	class="cn.sh.library.pedigree.framework.util.PreloadUserList" />
+	
+	<bean id="PreloadApiPersonsFromFamilyRules"
+	class="cn.sh.library.pedigree.framework.util.PreloadApiPersonsFromFamilyRules" />
+	
+	<bean id="PreloadChaodaiList"
+	class="cn.sh.library.pedigree.framework.util.PreloadChaodaiList" /> 
+	 
+	
+	<!-- 预加载end -->
+		
+    <task:scheduled-tasks>  
+        <!--  
+            这里表示的是每隔30秒执行一次  
+        -->  
+           <task:scheduled ref="MyTasks" method="run" cron="0 0/5 * * * ?" />
+       
+    </task:scheduled-tasks>  
+      
+    <!-- 自动扫描的包名 -->    
+    <context:component-scan base-package="cn.sh.library.pedigree.framework.IpWarning" />  
+	
+</beans>

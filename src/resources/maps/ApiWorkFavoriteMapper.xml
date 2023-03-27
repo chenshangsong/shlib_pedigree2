@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.ApiWorkFavoriterMapper">
+	<!-- 根据用户ID，获取收藏列表 -->
+	<select id="getApiWorkFavoriteListPage" parameterType="ApiWorkFavoriteDto" resultType="ApiWorkFavoriteDto">
+	  SELECT * from t_jp_work_favorite ST where ST.userId = #{userId} ORDER BY ST.createdDate DESC
+	</select>
+	<!--根据用户ID，workUri,获取收藏信息   -->
+	<select id="getApiWorkFavoriteByWorkUri" parameterType="String" resultType="ApiWorkFavoriteDto" >
+		SELECT top 1 * from t_jp_work_favorite ST where 1=1
+		<if test="userId != null and userId != ''">
+		  and ST.userId = #{userId}
+		</if>
+		 and ST.workUri = #{workUri}
+	</select>
+	<!--根ID获取收藏信息   -->
+	<select id="getApiWorkFavoriteById" parameterType="String" resultType="ApiWorkFavoriteDto" >
+		SELECT top 1 * from t_jp_work_favorite ST where ST.id = #{id}
+	</select>
+	<!-- 添加收藏信息 -->
+	<insert id="insertApiWorkFavorite">
+  		INSERT INTO t_jp_work_favorite
+  		(
+  			workUri,
+  			title,
+			userId,
+			edition,
+			editionTemporal,
+			creator,
+			tangh,
+			place,
+			createdUser
+  		)
+		VALUES
+		(
+			#{workUri},
+			#{title},
+			#{userId},
+			#{edition},
+			#{editionTemporal},
+			#{creator},
+			#{tangh},
+			#{place},
+			#{createdUser}
+		) 
+		<selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER">
+			SELECT @@IDENTITY as id
+		</selectKey>
+	</insert>
+	<!-- 根据ID 删除收藏信息 -->
+	<delete id="deleteApiWorkFavoriteById">
+		DELETE FROM t_jp_work_favorite
+		WHERE id = #{id}
+	</delete>
+	<!-- 根据用户ID ,workId 删除收藏信息 -->
+	<delete id="deleteApiWorkFavoriteByWorkUri">
+		DELETE FROM t_jp_work_favorite ST
+		WHERE ST.userId = #{userId} and ST.workUri = #{workUri}
+	</delete>
+</mapper>

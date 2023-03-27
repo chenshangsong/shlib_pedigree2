@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="UserLogin"
+	targetNamespace="http://www.library.sh.cn/UserLogin/" xmlns:sl="http://www.library.sh.cn/UserLogin/"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+	<wsdl:types>
+		<xsd:schema targetNamespace="http://www.library.sh.cn/UserLogin/">
+			<xsd:element name="UserLogin">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="uid" type="xsd:string" />
+						<xsd:element name="pwd" type="xsd:string" />
+					</xsd:sequence>
+					<xsd:attribute name="requestApp" type="xsd:string">
+					</xsd:attribute>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="UserLoginResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="nickname" type="xsd:string" />
+						<xsd:element name="uname" type="xsd:string" />
+						<xsd:element name="askno" type="xsd:string" />
+						<xsd:element name="pwd" type="xsd:string" />
+					</xsd:sequence>
+					<xsd:attribute name="ResultCode" type="xsd:string" />
+					<xsd:attribute name="Info" type="xsd:string" />
+					<xsd:attribute name="Time" type="xsd:string" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="BookItem">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="0" name="id"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="title"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="callno"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="category"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="content"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="isbn"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="publisher"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="author"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="place"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="date"
+							type="xsd:string">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="UserLogin_V2">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="uid" type="xsd:string" />
+						<xsd:element name="pwd" type="xsd:string" />
+						<xsd:element maxOccurs="1" minOccurs="0" name="ParmRequest">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element maxOccurs="unbounded" minOccurs="0"
+										name="Name" type="xsd:string">
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+					<xsd:attribute name="requestApp" type="xsd:string">
+					</xsd:attribute>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="UserLogin_V2Response">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<xsd:element maxOccurs="unbounded" minOccurs="0"
+							name="ParmResult">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element maxOccurs="1" minOccurs="0" name="name"
+										type="xsd:string">
+									</xsd:element>
+									<xsd:element maxOccurs="1" minOccurs="0" name="value"
+										type="xsd:string">
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+					<xsd:attribute name="TotalParmNum" type="xsd:string">
+					</xsd:attribute>
+					<xsd:attribute name="ResultCode" type="xsd:string" />
+					<xsd:attribute name="Info" type="xsd:string" />
+					<xsd:attribute name="Time" type="xsd:string" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="UserLogin_SEC">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="0" name="uid"
+							type="xsd:string" />
+						<xsd:element maxOccurs="1" minOccurs="0" name="pwd"
+							type="xsd:string" />
+						<xsd:element maxOccurs="1" minOccurs="0" name="type"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="ParmRequest">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element maxOccurs="unbounded" minOccurs="0"
+										name="Name" type="xsd:string">
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+					<xsd:attribute name="requestApp" type="xsd:string">
+					</xsd:attribute>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="UserLogin_SECResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<xsd:element maxOccurs="unbounded" minOccurs="0"
+							name="ParmResult">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element maxOccurs="1" minOccurs="0" name="name"
+										type="xsd:string">
+									</xsd:element>
+									<xsd:element maxOccurs="1" minOccurs="0" name="value"
+										type="xsd:string">
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+					<xsd:attribute name="TotalParmNum" type="xsd:string">
+					</xsd:attribute>
+					<xsd:attribute name="ResultCode" type="xsd:string" />
+					<xsd:attribute name="Info" type="xsd:string" />
+					<xsd:attribute name="Time" type="xsd:string" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="UserLogin_AccToken">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<xsd:element maxOccurs="1" minOccurs="1" name="uname"
+							type="xsd:string" />
+						<xsd:element maxOccurs="1" minOccurs="1" name="pwd"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="1" name="type"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="1" name="requestapp"
+							type="xsd:string">
+						</xsd:element>
+
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="UserLogin_AccTokenResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<xsd:element maxOccurs="1" minOccurs="0" name="code"
+							type="xsd:string" />
+						<xsd:element maxOccurs="1" minOccurs="0" name="info"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="name"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="uid"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="token"
+							type="xsd:string">
+						</xsd:element>
+
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="UserLogin_UserImf">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<xsd:element maxOccurs="1" minOccurs="1" name="token"
+							type="xsd:string" />
+						<xsd:element maxOccurs="1" minOccurs="1" name="uid"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="1" name="fromapp"
+							type="xsd:string">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="UserLogin_UserImfResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<xsd:element maxOccurs="1" minOccurs="0" name="code"
+							type="xsd:string" />
+						<xsd:element maxOccurs="1" minOccurs="0" name="info"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="total"
+							type="xsd:string">
+						</xsd:element>
+						<xsd:element maxOccurs="unbounded" minOccurs="0"
+							name="parmitem">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element maxOccurs="1" minOccurs="0" name="name"
+										type="xsd:string">
+									</xsd:element>
+									<xsd:element maxOccurs="1" minOccurs="0" name="value"
+										type="xsd:string">
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="UserLogin_AccTokenRequest">
+		<wsdl:part name="UserLogin_AccToken_IN" element="sl:UserLogin_AccToken">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="UserLogin_UserImfResponse">
+		<wsdl:part name="UserLogin_UserImf_OUT" element="sl:UserLogin_UserImfResponse">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="UserLogin_SECResponse">
+		<wsdl:part name="UserLogin_SEC_OUT" element="sl:UserLogin_SECResponse">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="UserLogin_UserImfRequest">
+		<wsdl:part name="UserLogin_UserImf_IN" element="sl:UserLogin_UserImf">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="UserLoginRequest">
+		<wsdl:part name="UserLogin_IN" element="sl:UserLogin">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="UserLogin_AccTokenResponse">
+		<wsdl:part name="UserLogin_AccToken_OUT" element="sl:UserLogin_AccTokenResponse">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="UserLogin_V2Request">
+		<wsdl:part name="UserLogin_V2_IN" element="sl:UserLogin_V2">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="UserLoginResponse">
+		<wsdl:part name="UserLogin_OUT" element="sl:UserLoginResponse">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="UserLogin_SECRequest">
+		<wsdl:part name="UserLogin_SEC_IN" element="sl:UserLogin_SEC">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="UserLogin_V2Response">
+		<wsdl:part name="UserLogin_V2_OUT" element="sl:UserLogin_V2Response">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:portType name="UserLogin">
+		<wsdl:operation name="UserLogin">
+			<wsdl:input name="UserLogin_input" message="sl:UserLoginRequest">
+			</wsdl:input>
+			<wsdl:output name="UserLogin_output" message="sl:UserLoginResponse">
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="UserLogin_V2">
+			<wsdl:input name="UserLogin_V2_input" message="sl:UserLogin_V2Request">
+			</wsdl:input>
+			<wsdl:output name="UserLogin_V2_output" message="sl:UserLogin_V2Response">
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="UserLogin_SEC">
+			<wsdl:input name="UserLogin_SEC_input" message="sl:UserLogin_SECRequest">
+			</wsdl:input>
+			<wsdl:output name="UserLogin_SEC_output" message="sl:UserLogin_SECResponse">
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="UserLogin_AccToken">
+			<wsdl:input name="UserLogin_AccToken_input" message="sl:UserLogin_AccTokenRequest">
+			</wsdl:input>
+			<wsdl:output name="UserLogin_AccToken_output" message="sl:UserLogin_AccTokenResponse">
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="UserLogin_UserImf">
+			<wsdl:input name="UserLogin_UserImf_input" message="sl:UserLogin_UserImfRequest">
+			</wsdl:input>
+			<wsdl:output name="UserLogin_UserImf_output" message="sl:UserLogin_UserImfResponse">
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="UserLoginSOAP" type="sl:UserLogin">
+		<soap:binding style="document"
+			transport="http://schemas.xmlsoap.org/soap/http" />
+		<wsdl:operation name="UserLogin">
+			<soap:operation soapAction="http://www.library.sh.cn/dzs_ws/UserLogin" />
+			<wsdl:input name="UserLogin_input">
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output name="UserLogin_output">
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="UserLogin_V2">
+			<soap:operation soapAction="http://www.library.sh.cn/dzs_ws/UserLogin_V2" />
+			<wsdl:input name="UserLogin_V2_input">
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output name="UserLogin_V2_output">
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="UserLogin_SEC">
+			<soap:operation soapAction="http://www.library.sh.cn/dzs_ws/UserLogin_SEC" />
+			<wsdl:input name="UserLogin_SEC_input">
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output name="UserLogin_SEC_output">
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="UserLogin_AccToken">
+			<soap:operation soapAction="http://www.library.sh.cn/dzs_ws/UserLogin_AccToken" />
+			<wsdl:input name="UserLogin_AccToken_input">
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output name="UserLogin_AccToken_output">
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="UserLogin_UserImf">
+			<soap:operation soapAction="http://www.library.sh.cn/dzs_ws/UserLogin_UserImf" />
+			<wsdl:input name="UserLogin_UserImf_input">
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output name="UserLogin_UserImf_output">
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="UserLogin">
+		<wsdl:port name="UserLoginSOAP" binding="sl:UserLoginSOAP">
+			<soap:address location="http://218.1.116.104:8080/axis2/services/UserLogin/" />
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

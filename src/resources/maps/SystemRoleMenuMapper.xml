@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.SystemRoleMenuMapper">
+	<resultMap id="dtoRoleOfMenu" type="SysRoleMenuModel" />
+	
+	<select id="getRoleOfMenu" parameterType="String" resultMap="dtoRoleOfMenu">
+			SELECT 
+			id,
+			roleId,
+			menuId
+			FROM sysRoleMenu ST
+			WHERE
+			ST.roleId = #{roleId}
+	</select>
+	<!-- 通过角色id, 获取权限的菜单信息 -->
+	<select id="getRoleOfMenuByRoleId" parameterType="String" resultMap="dtoRoleOfMenu">
+		SELECT 
+			ST.id,
+			ST.roleId,
+			ST.menuId
+		FROM [dbo].[t_sys_role_menu] ST
+		WHERE 
+			ST.systemId = '2' AND ST.STATUS = '1' AND ST.roleId = #{roleId}
+	</select>
+	<!-- 通过系统和角色id, 清除权限的菜单 -->
+	<update id="cleanRoleOfMenuByRoleId"  parameterType="String">
+		UPDATE ST
+			SET 
+				ST.STATUS = 0
+			FROM [dbo].[t_sys_role_menu] ST
+			WHERE 
+				ST.systemId = '2' AND ST.roleId = #{roleId};
+	</update>
+	<!-- 更新权限的菜单 -->
+	<update id="updateRoleOfMenu">
+		UPDATE [dbo].[t_sys_role_menu]
+		SET
+			STATUS 		= 1,
+			UPDATED_BY  = #{UPDATED_BY},
+			UPDATED_ON  = getdate()
+		WHERE systemId = '2' 
+		AND roleId = #{roleId} 
+		AND menuId IN ( 
+			SELECT Col FROM [dbo].SplitString(#{menuId}, ',') 
+		);
+	</update>
+	
+</mapper>

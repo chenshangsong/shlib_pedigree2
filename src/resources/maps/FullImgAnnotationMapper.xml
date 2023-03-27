@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.FullImgAnnotationMapper">
+	
+	<!-- 查询注释 -->
+	<!-- List<FullImgAnnotationModel> getFIAnnotations(FullImgAnnotationModel fullImgAnnotationModel) -->
+	<select id="getFIAnnotations" 
+			resultType="cn.sh.library.pedigree.sysManager.model.FullImgAnnotationModel" 
+			parameterType="cn.sh.library.pedigree.sysManager.model.FullImgAnnotationModel">
+		SELECT a.*, b.userName 
+		FROM [dbo].[t_sys_full_img_annotation] a LEFT JOIN [dbo].[t_sys_userInfo] b
+		ON a.userId = b.userId
+		WHERE 1=1 AND a.canvasId = #{canvasId} AND a.systype = #{systype}
+		<if test="userId != null and userId != ''">
+			AND a.userId= #{userId}
+		</if>
+		<if test="annotationId != null and annotationId != ''">
+			AND a.annotationId= #{annotationId}
+		</if>
+	</select>
+	
+	<!-- 插入注释 -->
+	<!-- void insertFIAnnotation(FullImgAnnotationModel fullImgAnnotationModel) -->
+	<insert id="insertFIAnnotation" parameterType="cn.sh.library.pedigree.sysManager.model.FullImgAnnotationModel">
+		INSERT INTO [dbo].[t_sys_full_img_annotation] 
+		(annotationId, content, userId, canvasId, createdTime, updatedTime, creator, lastUpdate, systype) 
+		VALUES 
+		(#{annotationId},#{content},#{userId},#{canvasId},CONVERT(VARCHAR,GETDATE(),120),CONVERT(VARCHAR,GETDATE(),120),#{creator},#{lastUpdate},#{systype})
+	</insert>
+	
+	<!-- 修改注释 -->
+	<!-- void updateFIAnnotation(FullImgAnnotationModel fullImgAnnotationModel) -->
+	<update id="updateFIAnnotation" parameterType="cn.sh.library.pedigree.sysManager.model.FullImgAnnotationModel">
+		UPDATE [dbo].[t_sys_full_img_annotation]
+		SET content = #{content}, updatedTime = CONVERT(VARCHAR,GETDATE(),120), lastUpdate = #{lastUpdate}
+		WHERE annotationId = #{annotationId}
+	</update>
+	
+	<!-- 删除注释 -->
+	<!-- void deleteFIAnnotation(FullImgAnnotationModel fullImgAnnotationModel) -->
+	<delete id="deleteFIAnnotation" parameterType="cn.sh.library.pedigree.sysManager.model.FullImgAnnotationModel">
+		DELETE FROM [dbo].[t_sys_full_img_annotation]
+		WHERE  annotationId = #{annotationId}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.ApiFamousMapper">
+	
+	<!-- 根据 用户id(uid)与 查询条件 , 获取捐赠信息-列表 -->
+	<select id="getApiFamousListPage" parameterType="ApiFamousDto" resultType="ApiFamousDto">
+	  	SELECT * from t_jp_famous where uid = #{uid} 
+	  	<if test="name != null and name != ''">
+	  		and name = #{name} 
+	  	</if>
+	  	<if test="birth != null and birth != ''">
+	  		and birth = #{birth} 
+	  	</if>
+	  	<if test="father != null and father != ''">
+	  		and father = #{father} 
+	  	</if>
+	  	<if test="wife != null and wife != ''">
+	  		and wife = #{wife} 
+	  	</if>
+	  	<if test="summary != null and summary != ''">
+	  		and summary = #{summary} 
+	  	</if>
+	  	<if test="status != null and status != ''">
+	  		and status = #{status} 
+	  	</if>
+	  	<if test="type != null and type != ''">
+	  		and type = #{type} 
+	  	</if>
+	  	<if test="createdDate != null and createdDate != ''">
+	  		and createdDate = #{createdDate} 
+	  	</if>
+	  	ORDER BY createdDate DESC
+	  	</select>
+	  	
+	<!-- 根据id,查询捐赠信息   -->
+	<select id="getApiFamousById" parameterType="Integer" resultType="ApiFamousDto" >
+		SELECT * from t_jp_famous where id = #{id}
+	</select>
+	
+	<!-- 添加捐赠信息   -->
+	<insert id="insertApiFamous">
+  		INSERT INTO t_jp_famous
+  		(
+			uid,
+			name,
+			birth,
+			father,
+			wife,
+			summary,
+			status,
+			type,
+			createdUser
+  		)
+		VALUES
+		(
+			#{uid},
+			#{name},
+			#{birth},
+			#{father},
+			#{wife},
+			#{summary},
+			#{status},
+			#{type},
+			#{createdUser}
+		) 
+		<selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER">
+			SELECT @@IDENTITY as id
+		</selectKey>
+	</insert>
+	
+	<!-- 根据id,更新捐赠信息   -->
+	<update id="updateApiFamous">
+		update t_jp_famous set 
+			name = #{name},
+			birth = #{birth},
+			father = #{father},
+			wife = #{wife},
+			summary = #{summary},
+			status = #{status},
+			type = #{type} 
+			where id = #{id}
+	</update>
+	
+	<!-- 根据id,删除捐赠信息   -->
+	<delete id="deleteApiFamousById">
+		DELETE FROM t_jp_famous 
+		WHERE id = #{id}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="cn.sh.library.pedigree.sysManager.mapper.DataChangeHistoryMapper">
+	<resultMap id="dtoHistoryMain" type="DataChangeHistoryMainModel" />
+	<resultMap id="dtoHistoryList" type="DataChangeHistoryListModel" />
+	<resultMap id="dtoWorkDelHistoryList" type="WorkDelHistoryModel" />
+	<!-- 历史主页面 -->
+	<select id="selectWorkDelHistoryList" parameterType="String" resultMap="dtoWorkDelHistoryList">
+			SELECT * from shlWorkDelHistory ORDER BY deleteDate DESC
+	</select>
+   <insert id="insertWorkDelHistory">
+		INSERT INTO shlWorkDelHistory
+		(
+		workUri,
+		workTitle,
+		workDtitle,
+		creator,
+		instanceUri,
+		deleteUserId
+
+		)
+		VALUES
+		(
+		#{workUri},
+		#{workTitle},
+		#{workDtitle},
+		#{creator},
+		#{instanceUri},
+		#{deleteUserId}
+		)
+	</insert>
+	<insert id="insertHistoryMain">
+		<selectKey resultType="java.lang.Integer" keyProperty="id"
+			order="AFTER">
+			SELECT @@IDENTITY as id
+		</selectKey>
+		INSERT INTO t_dataChangeHistoryMain
+		(
+		dataType,
+		remarks,
+		createUser,
+		checkStatus,
+		dataUri,
+		graphUri,
+		releaseUser,
+		releaseDate,
+		operateTime,
+		pdataUri,
+		addFlg
+		)
+		VALUES
+		(
+		#{dataType},
+		#{remarks},
+		#{createUser},
+		'0',
+		#{dataUri},
+		#{graphUri},
+		null,
+		null,
+		getdate(),
+		#{pdataUri},
+		#{addFlg}
+		)
+	</insert>
+	<insert id="insertHistoryList">
+		INSERT INTO t_dataChangeHistoryList
+		(
+		mainId,
+		oldCnNameUri,
+		oldValue,
+		newValue,
+		oldComment,
+		oldCnName,
+		oldEnName,
+		oldValueCn,
+		isUri,
+		newValueCn
+		)
+		VALUES
+		(
+		#{mainId},
+		#{oldCnNameUri},
+		#{oldValue},
+		#{newValue},
+		#{oldComment},
+		#{oldCnName},
+		#{oldEnName},
+		#{oldValueCn},
+		#{isUri},
+		#{newValueCn}
+		)
+	</insert>
+	<!-- 待办事项列表 -->
+	<select id="selectLoginHistoryMainListPage" resultType="DataChangeHistoryMainModel"
+		resultMap="dtoHistoryMain">
+		SELECT
+		SA.id,
+		SA.pdataUri,
+		SA.dataType,
+		SA.remarks,
+		SA.createUser,
+		CONVERT(varchar(100), SA.createDate, 23) AS createDate,
+		SA.checkStatus,
+		SA.dataUri,
+		SA.graphUri,
+		SA.releaseUser,
+		CONVERT(varchar(100), SA.releaseDate, 23) AS releaseDate,
+		SA.addFlg
+		from
+		t_dataChangeHistoryMain SA
+		WHERE (SA.pdataUri is null or SA.pdataUri='')
+		<if test="createUser!= null and createUser!= ''">
+			and SA.createUser = #{createUser}
+		</if>
+		<if test="dataType!= null and dataType!= ''">
+			and SA.dataType = #{dataType}
+		</if>
+		<if test="checkStatus!= null and checkStatus!= ''">
+			and SA.checkStatus = #{checkStatus}
+		</if>
+		ORDER BY SA.createDate DESC
+	</select>
+	<!-- 历史主页面 -->
+	<select id="selectHistoryMain" parameterType="String" resultMap="dtoHistoryMain">
+		<![CDATA[
+			SELECT 
+			SA.id,
+			SA.pdataUri,
+			SA.dataType,
+			SA.remarks,
+			SA.createUser,
+			CONVERT(varchar(100), SA.createDate, 23) AS createDate,
+			SA.checkStatus,
+			SA.dataUri,
+			SA.graphUri,
+			SA.releaseUser,
+			CONVERT(varchar(100), SA.releaseDate, 23) AS releaseDate,
+			SA.addFlg
+			from t_dataChangeHistoryMain SA
+			WHERE (SA.pdataUri is null or SA.pdataUri='')
+			AND SA.dataType = #{dataType}
+			AND SA.dataUri = #{dataUri}
+			ORDER BY SA.createDate DESC
+		]]>
+	</select>
+	<!-- 根据历史主表ID，查询属性列表 -->
+	<select id="selectHistoryList" parameterType="String" resultMap="dtoHistoryList">
+		<![CDATA[
+			SELECT 
+			*
+			from t_dataChangeHistoryList SA
+			WHERE SA.mainId = #{mainId}
+		]]>
+	</select>
+	<!-- 根据历史主表ID，查询属性列表 -->
+	<select id="selectInstanceHistoryList" parameterType="String"
+		resultMap="dtoHistoryList">
+		SELECT
+		*
+		from t_dataChangeHistoryList SA
+		WHERE SA.mainId =
+		(select id from
+		t_dataChangeHistoryMain where
+		pdataUri=#{mainId})
+	</select>
+	<!-- 更新发布状态 -->
+	<update id="updateHistoryMain">
+		UPDATE t_dataChangeHistoryMain
+		SET
+		checkStatus = '1',
+		releaseUser = #{releaseUser},
+		releaseDate = #{releaseDate},
+		operateTime
+		= getdate()
+		WHERE id= #{id}
+	</update>
+	<!-- 删除历史主表 -->
+	<delete id="deleteHistoryMain">
+		DELETE FROM t_dataChangeHistoryMain
+		WHERE
+		id = #{id}
+	</delete>
+	<!-- 删除历史明细表 -->
+	<delete id="deleteHistoryList">
+		DELETE FROM t_dataChangeHistoryList
+		WHERE
+		mainId =
+		#{mainId}
+	</delete>
+	<!-- 保存排他 -->
+	<select id="selectCountByDataUri" resultType="int">
+		<![CDATA[
+			SELECT 
+			count(1)  as resultCount 
+			from t_dataChangeHistoryMain SA
+			WHERE SA.checkStatus=0 and SA.dataUri = #{dataUri} and SA.dataType=#{dataType}
+		]]>
+	</select>
+	<!-- 根据ID获取历史主表信息 -->
+	<select id="getHistoryMain" parameterType="String" resultMap="dtoHistoryMain">
+		SELECT
+		*
+		from t_dataChangeHistoryMain SA
+		where 1=1
+		<if test="mainId != null and mainId !=''">
+			and SA.id= #{mainId}
+		</if>
+		<if test="pId != null and pId !=''">
+			and SA.pdataUri= #{pId}
+		</if>
+	</select>
+	<!-- 获取需要更新的姓氏信息 -->
+	<select id="getHistoryMainFamilyName" parameterType="String" resultMap="dtoHistoryMain">
+		SELECT * from t_dataChangeHistoryMain where dataUri like
+		'http://data.library.sh.cn/authority/familyname%' AND checkStatus=1
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,166 @@
+body {
+	background-color: #444;
+	color: #FFFFFF;
+}
+
+a {
+	color: White;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+#familyNameA {
+	text-decoration: none;
+}
+
+#myCarousel a:link {
+	color: #FFFFFF;
+}
+
+#myCarousel a:visited {
+	color: #FFFFFF;
+}
+
+#myCarousel a:hover {
+	color: #FFFFFF;
+}
+
+#myCarousel a:active {
+	color: #FFFFFF;
+}
+
+.carousel-indicators {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	top: 0px;
+}
+
+.rotate {
+	/* Safari */
+	-webkit-transform: rotate(90deg);
+	/* Firefox */
+	-moz-transform: rotate(90deg);
+	/* IE */
+	-ms-transform: rotate(90deg);
+	/* Opera */
+	-o-transform: rotate(90deg);
+	/* Internet Explorer */
+	/*layout-flow:vertical-ideographic*/
+	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+
+.initials {
+	
+}
+
+.initials li {
+	margin: 2px;
+}
+
+.initials li:hover {
+	background: rgba(255, 255, 255, .1);
+	cursor: pointer;
+}
+
+.both {
+	height: 5px;
+}
+
+.block {
+	display: block;
+	float: left;
+	width: 20px;
+}
+
+#myCarousel {
+	position: relative;
+	padding: 18px;
+	/* background: #444; */
+	margin: 10px;
+	height: 500px;
+	/* -webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px; */
+}
+
+#surname {
+	overflow: hidden;
+	position: relative;
+	/* background: #444; */
+	max-width: 97%;
+	height: 500px;
+	/* -webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px; */
+}
+
+#surname P {
+	font-size: xx-large;
+}
+
+#surname table:hover {
+	background: #444;
+	background: rgba(255, 255, 255, 0.1);
+	padding: 5px 10px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.leftLine {
+	border-left: 1px solid White;
+}
+
+.seniorSearch {
+	width:100%;
+}
+
+.seniorSearch tr:nth-child(1) input:nth-child(1) {
+	width: 40%;
+}
+
+.seniorSearch tr:nth-child(1) input:nth-child(2) {
+	width: 40%;
+}
+
+.seniorSearch tr:nth-child(2) input:nth-child(1) {
+	width: 60%;
+}
+
+.seniorSearch tr:nth-child(2) input:nth-child(2) {
+	width: 20%;
+}
+
+.seniorSearch tr:nth-child(3) input:nth-child(1) {
+	width: 40%;
+}
+
+.seniorSearch tr:nth-child(3) input:nth-child(2) {
+	width: 40%;
+}
+
+.seniorSearch tr:nth-child(4) input:nth-child(1) {
+	width: 60%;
+}
+
+.seniorSearch tr:nth-child(4) input:nth-child(2) {
+	width: 20%;
+}
+
+.seniorSearch input {
+	background-color: #7B7B7B;
+	color: White;
+	border: 1px solid #7B7B7B;
+}
+
+.seniorSearch label {
+	text-align: right;
+}

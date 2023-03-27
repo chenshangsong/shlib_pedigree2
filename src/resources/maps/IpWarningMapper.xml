@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.IpWarningMapper">
+<resultMap id="dtoIpWarning" type="IpWarningModel" />
+
+	<insert id="insertip">
+		insert into t_jp_IpWarning(ip,time) values(#{ip},#{time})
+	</insert>
+	
+</mapper>

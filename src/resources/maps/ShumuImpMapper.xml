@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.ShumuImpMapper">
+	<resultMap id="dtoShumu" type="ShumuModel" />
+	<!-- 需要替换work，机构中的placeURi -->
+	<select id="getWorkErrorPlace" resultType="ShumuModel">
+		SELECT t.selfUri,t.judiUri,t2.newUri as refUri from shlShumu t ,
+		(SELECT t1.selfUri as oldUri,t2.selfUri as newUri from shlPersonPlace t1
+		,shlPersonPlaceAll t2
+		WHERE t1.shengS=t2.shengS and t1.shiS=t2.shiS and t1.xianS=t2.xianS) t2
+		where t.judiUri = t2.oldUri
+	</select>
+	<!--  -->
+	<select id="getJudiUriloseList" resultType="ShumuModel"
+		resultMap="dtoShumu">
+		SELECT * from s_loseJudi
+	</select>
+	<!-- 获取书目正书名列表 -->
+	<select id="getZhengshumingData" resultType="ShumuModel"
+		resultMap="dtoShumu">
+		SELECT *,1 as id from s_shumuZhengtiming
+	</select>
+	<!-- 更新谱名表selfUri -->
+	<update id="updateZhengshumingById">
+		UPDATE s_shumuZhengtiming SET selfUri=#{selfUri}
+		WHERE
+		id=#{id}
+	</update>
+	<!-- 获取书目变异书名列表 -->
+	<select id="getBianyishumingData" resultType="ShumuModel"
+		resultMap="dtoShumu">
+		SELECT *,1 as id from s_shumuBianyitiming
+	</select>
+	<select id="getZhengshumingById" parameterType="String"
+		resultMap="dtoShumu">
+		SELECT *,1 as id
+		from s_shumuZhengtiming ST WHERE
+		ST.identifier =
+		#{identifier}
+	</select>
+	<select id="getBianyishumingById" parameterType="String"
+		resultMap="dtoShumu">
+		SELECT *,1 as id
+		from s_shumuBianyitiming ST WHERE
+		ST.identifier =
+		#{identifier}
+	</select>
+	<!-- 版本年代 -->
+	<!-- 责任者時代：1.用标识符匹配规范数据中的纂修者。获取URI。 2.修改URI对应资源的时代属性。 -->
+	<select id="getZrzsdPersonList" parameterType="String"
+		resultMap="dtoShumu">
+		<![CDATA[
+		SELECT
+		t1.zherenzheshidai,dbo.getcdUri(t1.zherenzheshidai)
+		as
+		refUri
+		,t2.familyNameT as
+		zherenzhe,t1.identifier,'http://data.library.sh.cn/jp/entity/person/'+t2.selfUri
+		as zxzUri,t1.selfUri as
+		shumuUri from shlShumu t1 LEFT JOIN
+		shlPersonZXZ t2
+		on
+		SUBSTRING(t1.identifier,1,3)+'-'+SUBSTRING(t1.identifier,4,10) =
+		t2.selfID
+		and charindex(t2.familyNameT,t1.zherenzhe)>0
+		WHERE t2.selfID
+		is not null and t1.zherenzheshidai !=''
+			]]>
+	</select>
+	<!-- 其他责任者時代：1.用标识符匹配规范数据中的纂修者。获取URI。 2.修改URI对应资源的时代属性。 -->
+	<select id="getQtZrzsdPersonList" parameterType="String"
+		resultMap="dtoShumu">
+		<![CDATA[
+		SELECT
+		t1.qitazherenzheshidai,dbo.getcdUri(t1.zherenzheshidai)
+		as refUri
+		,t2.familyNameT as
+		qitazherenzhe,t1.identifier,'http://data.library.sh.cn/jp/entity/person/'+t2.selfUri
+		as zxzUri,t1.selfUri as
+		shumuUri from shlShumu t1 LEFT JOIN
+		shlPersonZXZ t2
+		on
+		SUBSTRING(t1.identifier,1,3)+'-'+SUBSTRING(t1.identifier,4,10) =
+		t2.selfID
+		and charindex(t2.familyNameT,t1.qitazherenzhe)>0
+		WHERE
+		t2.selfID
+		is not null and t1.qitazherenzheshidai !=''
+			]]>
+	</select>
+	<!-- 责任者：1.用标识符匹配规范数据中的纂修者。获取URI。 -->
+	<select id="getZrzPersonListByIdentifier" parameterType="String"
+		resultMap="dtoShumu">
+			<![CDATA[
+		SELECT t1.zherenzhe
+		,t2.familyNameT,t1.identifier,'http://data.library.sh.cn/jp/entity/person/'+t2.selfUri
+		as
+		zxzUri,t1.selfUri as shumuUri from shlShumu t1 LEFT JOIN
+		shlPersonZXZ
+		t2
+		on
+		SUBSTRING(t1.identifier,1,3)+'-'+SUBSTRING(t1.identifier,4,10) =
+		t2.selfID
+		and charindex(t2.familyNameT,t1.zherenzhe)>0
+		WHERE t2.selfID
+		is not null and t1.identifier=#{identifier}
+		]]>
+	</select>
+	<!-- 其他责任者：1.用标识符匹配规范数据中的纂修者。获取URI。 -->
+	<select id="getQtZrzPersonListByIdentifier" parameterType="String"
+		resultMap="dtoShumu">
+	 <![CDATA[
+		SELECT t1.qitazherenzhe
+		,t2.familyNameT,t1.identifier,'http://data.library.sh.cn/jp/entity/person/'+t2.selfUri
+		as
+		zxzUri,t1.selfUri as shumuUri from shlShumu t1 LEFT JOIN
+		shlPersonZXZ
+		t2
+		on
+		SUBSTRING(t1.identifier,1,3)+'-'+SUBSTRING(t1.identifier,4,10) =
+		t2.selfID
+		and charindex(t2.familyNameT,t1.qitazherenzhe)>0
+		WHERE
+		t2.selfID
+		is not null and t1.identifier=#{identifier}
+		]]>
+	</select>
+
+	<!-- 责任方式等获取ＵＲＩ，插入 -->
+	<select id="getCategoryListByType" parameterType="String"
+		resultMap="dtoShumu">
+		SELECT M1.*,M2.selfUri as refUri from (SELECT
+		t1.zherenfangshi
+		,t2.familyNameT as
+		zherenzhe,t1.identifier,'http://data.library.sh.cn/jp/entity/person/'+t2.selfUri
+		as zxzUri,t1.selfUri as
+		shumuUri from shlShumu t1 LEFT JOIN
+		shlPersonZXZ t2
+		on
+		SUBSTRING(t1.identifier,1,3)+'-'+SUBSTRING(t1.identifier,4,10) =
+		t2.selfID
+		and charindex(t2.familyNameT,t1.zherenzhe)>0
+		WHERE t2.selfID
+		is not null and t1.zherenfangshi!='' ) M1 LEFT JOIN shlCategory M2 on
+		M1 .zherenfangshi=M2.labelT
+		and M2.type=#{type}
+		where M2.selfUri is not
+		null
+	</select>
+	<!-- 其他责任方式等获取ＵＲＩ，插入 -->
+	<select id="getQtCategoryListByType" parameterType="String"
+		resultMap="dtoShumu">
+		SELECT M1.*,M2.selfUri as refUri from (SELECT
+		t1.qitazherenzhezherenfangshi
+		,t2.familyNameT as
+		qitazherenzhe,t1.identifier,'http://data.library.sh.cn/jp/entity/person/'+t2.selfUri
+		as zxzUri,t1.selfUri as
+		shumuUri from shlShumu t1 LEFT JOIN
+		shlPersonZXZ t2
+		on
+		SUBSTRING(t1.identifier,1,3)+'-'+SUBSTRING(t1.identifier,4,10) =
+		t2.selfID
+		and charindex(t2.familyNameT,t1.qitazherenzhe)>0
+		WHERE
+		t2.selfID
+		is not null and t1.qitazherenzhezherenfangshi!='' ) M1 LEFT
+		JOIN shlCategory M2 on
+		M1 .qitazherenzhezherenfangshi=M2.labelT
+		and
+		M2.type=#{type}
+		where M2.selfUri is not
+		null
+	</select>
+	<!-- 插入堂号 ：bf:Work -->
+	<select id="getTanghaoListIdentifier" parameterType="String"
+		resultMap="dtoShumu">
+		SELECT
+		t1.tanghao,t1.identifier,t2.selfUri
+		as
+		refUri,t1.selfUri as shumuUri from shlShumu t1 LEFT
+		JOIN
+		shlPersonTanghao t2
+		on
+		SUBSTRING(t1.identifier,1,3)+'-'+SUBSTRING(t1.identifier,4,10) =
+		t2.selfID
+		where t1.tanghao !='' and t2.selfUri is not null and
+		t1.identifier=#{identifier}
+	</select>
+	<!-- Item插入List -->
+	<select id="getItemListIdentifier" parameterType="String"
+		resultMap="dtoShumu">
+		SELECT
+		t1.instanceUri,t1.itemUri,t1.zhengshuming,t1.shouchangzhe
+		,'http://data.library.sh.cn/entity/organization/'+t2.selfUri
+		as
+		refUri,t2.jianchengT as jigoujianchengT,t2.jianchengS as
+		jigoujianchengS
+		from shlShumu t1 LEFT JOIN
+		shlPersonJigou t2
+		on
+		(charindex(t2.jianchengT,t1.shouchangzhe)>0
+		or
+		charindex(t2.jianchengS,t1.shouchangzhe)>0)
+		where
+		t2.selfUri is not
+		null
+		and t1.identifier=#{identifier}
+	</select>
+	<!-- 更新谱名表selfUri -->
+	<update id="updateBianyishumingById">
+		UPDATE s_shumuBianyitiming SET selfUri=#{selfUri}
+		WHERE
+		id=#{id}
+	</update>
+	<!-- 根据朝代名称得到朝代URI -->
+	<select id="getCdUriByCdName" parameterType="String" resultType="String">
+		SELECT dbo.getcdUri(#{cdName}) as cduri
+	</select>
+	<!-- 居地是空的数据 -->
+	<select id="getShumuJudiNull" resultMap="dtoShumu">
+		SELECT * from shlShumu_2
+		t where t.judi ='' and t.identifier!=''
+	</select>
+	<!-- 获取DOI数据 -->
+	<select id="getDOIList" resultMap="dtoShumu">
+		SELECT
+		d.identifier,d.callno,d.DOI as doi,s.selfUri as workUri,s.instanceUri,
+		'http://data.library.sh.cn/entity/organization/brvqlrg8y55v1b5q' as
+		itemUri from shlShumu s,shlDOI d
+		where s.identifier = d.identifier and
+		d.DOI!=''
+	</select>
+	<!-- 获取香港中大数据，临时更新错误列表 -->
+	<select id="getErrorGCDList" resultMap="dtoShumu">
+		SELECT * From shlErrorGCD
+	</select>
+
+	<!-- 获取姓氏书目姓氏列表 -->
+	<select id="getWorkFamilyNameUriList" resultMap="dtoShumu">
+		SELECT
+		t1.identifier,t1.zhengshuming,t1.selfUri,'http://data.library.sh.cn/authority/familyname/'+t2.uri
+		as refUri from shlShumu t1 LEFT JOIN
+		shlFamilyName t2
+		on
+		SUBSTRING(t1.identifier,1,3) =
+		t2.identifier
+		where t2.uri is not null
+		and t1.selfUri is not null
+		and t1.selfUri !=''
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

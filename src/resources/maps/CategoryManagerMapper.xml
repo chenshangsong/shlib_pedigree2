@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.CategoryManagerMapper">
+	<resultMap id="dtoCategoryType" type="CategoryTypeModel" />
+	
+	<select id="getCategoryTypeList" parameterType="String" resultMap="dtoCategoryType">
+			SELECT 
+			id,
+			STATUS,
+			CREATED_BY,
+			categoryNameCn,
+			CONVERT(varchar(100), CREATED_ON, 23) AS CREATED_ON,
+			categoryNameEn,
+			categoryUriIn,
+			dataNamespace
+			from t_sys_categoryType ST 
+			ORDER BY ST.CREATED_BY DESC
+	</select>
+	
+	<select id="getCategoryType" parameterType="Integer" resultMap="dtoCategoryType">
+			SELECT 
+			id,
+			STATUS,
+			CREATED_BY,
+			categoryNameCn,
+			CONVERT(varchar(100), CREATED_ON, 23) AS CREATED_ON,
+			categoryNameEn,
+			categoryUriIn,
+			dataNamespace
+			from t_sys_categoryType ST 
+			where ST.id = #{id}
+	</select>
+	
+	<insert id="insertCategoryType">
+  		INSERT INTO t_sys_categoryType
+  		(
+  			CREATED_BY,
+  			categoryNameCn,
+  			categoryNameEn,
+  			categoryUriIn,
+  			dataNamespace
+  		)
+		VALUES
+		(
+			#{CREATED_BY},
+			#{categoryNameCn},
+			#{categoryNameEn},
+			#{categoryUriIn},
+			#{dataNamespace}
+		) 
+	</insert>
+	
+	<update id="updateCategoryType">
+		UPDATE t_sys_categoryType
+		SET
+		categoryNameCn = #{categoryNameCn},
+		categoryNameEn = #{categoryNameEn},
+		categoryUriIn = #{categoryUriIn},
+		dataNamespace = #{dataNamespace},
+		CREATED_BY = #{CREATED_BY}
+		WHERE id = #{id}
+	</update>
+	
+	<insert id="insertShlCategory">
+  		INSERT INTO shlCategory
+  		(
+  			label,
+  			selfUri,
+  			type,
+  			labelT,
+  			addFlag
+  		)
+		VALUES
+		(
+			#{label},
+			#{selfUri},
+			#{type},
+			#{labelT},
+			'1'
+		) 
+	</insert>
+	
+	<delete id="deleteCategoryType">
+		DELETE FROM t_sys_categoryType
+		WHERE id = #{id}
+	</delete>
+	
+</mapper>

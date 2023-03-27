@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>上海图书馆家谱系统</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="../res/home/styles.css" rel="stylesheet" type="text/css" />
+<script src="../res/commJS/jquery-1.8.3.js"></script>
+<script src="../res/commJS/layer/layer.js"></script>
+<script>
+$(function(){
+	$("#btnLogin").click(function(){
+		//iframe层-父子操作
+		layer.open({
+		    type: 2,
+		    area: ['30%', '60%'],
+		    fix: false, //不固定
+		    maxmin: true,
+		    content: 'http://127.0.0.1:8080/pedigree/userlogin/tologin'
+		});
+	});
+});
+</script>
+</head>
+<body>
+<div id="container">
+  <div id="header">
+  <div class="logo"></div>
+    <p id="featuredText">家谱系统<a href="#" id="learnMoreButton">家谱系统</a> </p>
+    <div id="boxContainer">
+      <a  href="http://127.0.0.1:8080/pedigree/demo/person/familyName"> <span class="box client"> </span></a>
+      <a href="http://127.0.0.1:8080/pedigree/demo/person/list"> <span class="box work"></span></a>
+      <a href="http://127.0.0.1:8080/pedigree/demo/place/list"> <span class="box book"></span></a>
+      <a href="http://127.0.0.1:8080/pedigree/demo"> <span class="box peple"> </span></a>
+    </div>
+    <div id="leftCol">
+      <h2></h2>
+      <p></p>
+    </div>
+      <form id="newsletter" action="#" method="get">
+      <input id="emailInput" name="emailInput" type="text" value="在此输入谱名/谱籍/姓氏/堂号"/>
+      <a href="http://127.0.0.1:8080/pedigree/demo/work/list"><span class="submitButton"></span></a>
+    </form>
+     <a id="btnLogin" title="登录系统" href="javascript:void(0)"><span class="loginIn"></span></a>
+  </div>
+</div>
+</body>
+</html>

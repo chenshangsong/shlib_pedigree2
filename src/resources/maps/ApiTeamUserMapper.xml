@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.ApiTeamUserMapper">
+	
+	<!-- 添加协同者 -->
+	<insert id="insertApiTeamUser">
+  		INSERT INTO t_jp_manager_task_teamUser
+  		(
+			leadId,
+  			leadName,
+  			leadCard,
+			coopId,
+			coopName,
+			coopCard,
+			taskId
+  		)
+		VALUES
+		(
+			#{leadId},
+			#{leadName},
+			#{leadCard},
+			#{coopId},
+			#{coopName},
+			#{coopCard},
+			#{taskId}
+		) 
+		<selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER">
+			SELECT @@IDENTITY as id
+		</selectKey>
+	</insert>
+	
+	<!-- 更新协同状态（coopStatus） -->
+	<update id="updateCoopStatusByTeamUser">
+		update t_jp_manager_task_teamUser set coopStatus = #{coopStatus},coopTime = #{coopTime}  where coopId = #{coopId} and taskId = #{taskId}
+	</update>
+	
+	<!-- 查询协同者（ 根据taskId [+coopStatus] ） -->
+	<select id="getApiTeamUserListByTaskId" resultType="ApiTeamUserDto">
+	  	SELECT * from t_jp_manager_task_teamUser where taskId = #{taskId} 
+	  	<if test="coopStatus != null and coopStatus != ''">
+	  		and coopStatus = #{coopStatus} 
+	  	</if>
+	  	ORDER BY createTime DESC 
+	  	</select>
+	
+	<!-- 查询协同者（根据不同查询条件） -->
+	<select id="getApiTeamUserListPage" parameterType="SearchTaskAndTeamUserDto" resultType="ApiTeamUserDto">
+	  	SELECT * from t_jp_manager_task_teamUser where 1=1 
+	  	<if test="taskId != null and taskId != ''">
+	  		and taskId = #{taskId} 
+	  	</if>
+	  	<if test="leadId != null and leadId != ''">
+	  		and leadId = #{leadId} 
+	  	</if>
+	  	<if test="leadName != null and leadName != ''">
+	  		and leadName like '%'+#{leadName}+'%' ESCAPE '$' 
+	  	</if>
+	  	<if test="leadCard != null and leadCard != ''">
+	  		and leadCard like '%'+#{leadCard}+'%' ESCAPE '$' 
+	  	</if>
+	  	<if test="coopId != null and coopId != ''">
+	  		and coopId = #{coopId} 
+	  	</if>
+	  	<if test="coopName != null and coopName != ''">
+	  		and coopName like '%'+#{coopName}+'%' ESCAPE '$' 
+	  	</if>
+	  	<if test="coopCard != null and coopCard != ''">
+	  		and coopCard like '%'+#{coopCard}+'%' ESCAPE '$' 
+	  	</if>
+	  	<if test="coopStatus != null and coopStatus != ''">
+	  		and coopStatus = #{coopStatus} 
+	  	</if>
+	  	<if test="coopTime != null and coopTime != ''">
+	  		and coopTime = #{coopTime} 
+	  	</if>
+	  	ORDER BY createTime DESC
+	  	</select>
+	  	
+	<!-- 删除协同者（根据taskId,coopId） -->
+	<delete id="deleteApiTeamUser">
+		DELETE FROM t_jp_manager_task_teamUser WHERE taskId = #{taskId} and coopId = #{coopId}
+	</delete>
+	
+	<!-- 查询 coopStatus-协同状态（根据taskId-任务id, 1个任务可能有多个协同者） -->
+	<select id="getCoopStatusListByTaskId" parameterType="SearchTaskAndTeamUserDto" resultType="ApiTeamUserDto">
+	  	SELECT coopStatus from t_jp_manager_task_teamUser where taskId = #{taskId} GROUP BY coopStatus
+	  	</select>
+	
+</mapper>

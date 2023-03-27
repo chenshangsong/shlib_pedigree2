@@ -1,0 +1,133 @@
+body{
+    font-family:'微软雅黑';
+    padding-bottom:30px;
+    background-color:#FFF
+}
+td{
+    word-wrap:break-word
+}
+
+table.tablesorter{
+    width:100%;
+    text-align:left
+}
+table.tablesorter thead tr th,table.tablesorter tfoot tr th{
+    background-color:#eeeeee;
+    border:1px solid #FFF
+}
+table.tablesorter thead tr .header{
+    background-image:url(images/bg.gif);
+    background-repeat:no-repeat;
+    background-position:center right;
+    cursor:pointer
+}
+table.tablesorter tbody td{
+    vertical-align:top
+}
+table.tablesorter tbody tr.odd td{
+
+}
+table.tablesorter thead tr .headerSortUp{
+    background-image:url(images/asc.gif)
+}
+table.tablesorter thead tr .headerSortDown{
+    background-image:url(images/desc.gif)
+}
+table.tablesorter thead tr .headerSortDown,table.tablesorter thead tr .headerSortUp{
+    background-color:#cccccc
+}
+.footer-bottom ul>li{padding:0}
+.footer-bottom ul>li+li:before{padding:0 10px;color:#ccc;content:"|"}
+.list-group2{
+    font-size:16px;
+    line-height:30px;
+    padding:15px 40px 15px
+}
+.desc{font-size:16px}
+.desc p{text-indent:2em; line-height:25px}
+@media (min-width: 768px) {
+    .navbar {
+        min-height: 40px
+    }
+
+    .navbar-nav > li > a {
+        font-size: 14px;
+        padding-top: 11px;
+        padding-bottom: 11px
+    }
+
+    .navbar-brand {
+        padding-top: 0;
+        padding-bottom: 0;
+        line-height: 42px;
+        height: 42px
+    }
+}
+
+.footer {color: #777;}
+.footer a { color: #777}
+.footer-top .about > div { margin-bottom: 10px}
+.footer-top .about > div h4 { color: #563d7c; font-size: 16px;}
+.footer-bottom {font-size: 13px}
+.footer-bottom ul > li { padding: 0}
+.footer-bottom ul > li + li:before {padding: 0 10px; color: #ccc; content: "|"}
+/* .page-header{margin:8px 0 5px;}  chenss */
+.page-header{margin:0px 0 0px;}
+ul.left_ul{overflow: auto;}
+ul.left_ul>li{list-style:none; width: auto; margin-right:10px; float:left;}
+
+ul.work>li{list-style:none;margin-left: -20px;}
+
+.photo{width:100px;height:100px;}
+h1,.h1{font-size:30px;}
+h2,.h2{font-size:25px;}
+h3,.h3{font-size:20px;}
+.header h1{line-height: 50px;}
+.modal-loading{width:200px;margin-top:-10px!important;}
+
+.dialog-alert{text-align:center; position: fixed;top:0px;width:100%;display:none;z-index: 9999;}
+.dialog-alert .alert{width:200px!important; margin:0px auto;}
+.dialog-alert .alert-msg{padding-left: 15px;font-size: 15px;}
+.dialog-alert .alert-icon{font-size:30px;float:left;margin-top:-6px;}
+
+.pagination{margin:0 0 10px;}
+.pagination a{cursor:pointer;}
+
+.tab-pane{padding-top: 10px;}
+
+.data_list{line-height: 30px; min-height: 50px;}
+
+.person{line-height: 40px;}
+.person .name{display: inline-block;min-width:50px;}
+
+.rdf{background:url("../images/rdf.gif") no-repeat;padding: 0 24px 0 0;font-size: 20px;}
+.eye{background:url("../images/eye.png") no-repeat;padding: 0 24px 0 0;font-size:20px;}
+
+.popover-content{white-space:nowrap;}
+
+.min-loading{background:url("../images/loading-min.gif") no-repeat; padding: 10px 16px 0 0;}
+
+div#switch {
+    float: right;
+}
+
+div#switch a:hover {
+    background:#000000;
+    color: #ffffff;
+}
+.node circle {
+    cursor: pointer;
+    fill: #fff;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+}
+
+.node text {
+    font-size: 11px;
+}
+
+path.link {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 1.5px;
+}

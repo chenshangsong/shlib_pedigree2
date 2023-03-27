@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+    ">
+
+    <!-- 1 引用数据库连接配置文件 -->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">  
+        <property name="locations">
+            <list>
+                 <value>classpath:resources/dbConfig.properties</value>
+            </list>
+        </property>
+    </bean>
+
+  <!-- 2.1 配置tomcat dbcp连接池,destroy-method="close"是将用完的connect重新放回连接池 -->
+    <bean id="dbcpDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <!-- 数据库基本信息配置 -->
+        <property name="driverClassName" value="${jdbc.sqlserver.driverClassName}" />
+        <property name="url" value="${jdbc.sqlserver.url}" />
+        <property name="username" value="${jdbc.sqlserver.userName}" />
+        <property name="password" value="${jdbc.sqlserver.passWord}" />
+        <!-- 配置验证连接有效与否的SQL,不同的数据库配置不同 -->
+        <property name="validationQuery" value="${jdbc.sqlserver.validationQuery}" />
+        
+        <!-- 初始连接 -->
+        <property name="initialSize" value="${dbcp.initialSize}" />
+        <!-- 最大连接 -->
+        <property name="maxActive" value="${dbcp.maxActive}" />
+        <!--最小空闲连接--> 
+        <property name="minIdle" value="${dbcp.minIdle}" />
+        <!-- 最大空闲连接 -->
+        <property name="maxIdle" value="${dbcp.maxIdle}" />
+        <!-- 最大等待连接(以毫秒计数) -->
+        <property name="maxWait" value="${dbcp.maxWait}" />
+        <!--连接超时是否自动回收--> 
+        <property name="removeAbandoned" value="${dbcp.removeAbandoned}" />
+        <!-- 每隔一定时间去检测一次空闲连接是否超时(毫秒)，默认值为-1，即不开启 -->
+        <property name="timeBetweenEvictionRunsMillis" value="${dbcp.timeBetweenEvictionRunsMillis}" />
+        <!-- 连接池中连接,在时间段内一直空闲,被逐出连接池的时间(毫秒) -->
+        <property name="minEvictableIdleTimeMillis" value="${dbcp.minEvictableIdleTimeMillis}" />
+        <!-- 后台对象清理时,每次检查几个连接，建议设置和maxActive一样大，这样每次可以有效检查所有的连接 -->
+        <property name="numTestsPerEvictionRun" value="${dbcp.numTestsPerEvictionRun}" />
+        <!-- 定时对线程池中的连接进行校验,对无效的链接进行关闭后,会适当建立连接保证最小的minIdle连接数 -->
+        <property name="testWhileIdle" value="${dbcp.testWhileIdle}" />
+    </bean>
+    
+    <!-- 2.2 配置c3p0连接池,destroy-method="close"是将用完的connect重新放回连接池 -->
+    <bean id="c3p0DataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${jdbc.sqlserver.driverClassName}" />
+        <property name="jdbcUrl" value="${jdbc.sqlserver.url}" />
+        <property name="user" value="${jdbc.sqlserver.userName}" />
+        <property name="password" value="${jdbc.sqlserver.passWord}" />
+        <!--定义所有连接测试都执行的测试语句.在使用连接测试的情况下这个一显著提高测试速度 -->
+        <property name="preferredTestQuery" value="${jdbc.sqlserver.validationQuery}" />
+        
+        <!--连接池中保留的最小连接数.默认为:3-->
+        <property name="minPoolSize" value="${c3p0.minPoolSize}" />
+        <!--连接池中保留的最大连接数.默认为:15 -->
+        <property name="maxPoolSize" value="${c3p0.maxPoolSize}" />
+        <!--初始化时创建的连接数,应在minPoolSize与maxPoolSize之间取值.默认为3 -->
+        <property name="initialPoolSize" value="${c3p0.initialPoolSize}" />
+        <!--最大空闲时间，60秒内未使用则连接被丢弃.若为0则永不丢弃.默认值: 0 -->
+        <property name="maxIdleTime" value="${c3p0.maxIdleTime}" />
+        <!--JDBC的标准参数，用以控制数据源内加载的PreparedStatements数量,如果maxStatements与maxStatementsPerConnection均为0,则缓存被关闭.默认值:0-->
+        <property name="maxStatements" value="${c3p0.maxStatements}" />
+        <!--定义了连接池内单个连接所拥有的最大缓存statements数.默认值:0 -->
+        <property name="maxStatementsPerConnection" value="${c3p0.maxStatementsPerConnection}" />
+        <!--每60秒检查所有连接池中的空闲连接.默认值:0,不检查-->
+        <property name="idleConnectionTestPeriod" value="${c3p0.idleConnectionTestPeriod}" />
+        <!--当连接池中的连接耗尽的时候c3p0一次同时获取的连接数.默认值:3 -->
+        <property name="acquireIncrement" value="${c3p0.acquireIncrement}" />
+        <!--c3p0是异步操作的，缓慢的JDBC操作通过帮助进程完成.扩展这些操作可以有效的提升性能,通过多线程实现多个操作同时被执行.默认值:3-->    
+        <property name="numHelperThreads" value="${c3p0.numHelperThreads}" />
+    </bean>
+    
+    <!-- 2.3  配置阿里 druid数据库连接池,destroy-method="close"是将用完的connect重新放回连接池 -->
+    <bean id="druidDataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">  
+         <!-- 数据库基本信息配置 -->
+         <property name="driverClassName" value="${jdbc.sqlserver.driverClassName}" />
+         <property name="url" value="${jdbc.sqlserver.url}" />
+         <property name="username" value="${jdbc.sqlserver.userName}" />
+         <property name="password" value="${jdbc.sqlserver.passWord}" />
+         <!-- 配置验证连接有效与否的SQL,不同的数据库配置不同 -->
+         <property name="validationQuery" value="${jdbc.sqlserver.validationQuery}" />
+         
+         <!-- 属性类型是字符串,通过别名的方式配置扩展插件,常用的插件有:监控统计用的filter:stat日志用的filter:log4j防御sql注入的filter:wall -->
+         <property name="filters" value="${druid.filters}" />
+            <!-- 最大并发连接数 -->
+         <property name="maxActive" value="${druid.maxActive}" />
+         <!-- 初始化连接数量 -->
+         <property name="initialSize" value="${druid.initialSize}" />
+         <!-- 配置获取连接等待超时的时间 -->
+         <property name="maxWait" value="${druid.maxWait}" />
+         <!-- 最小空闲连接数 -->
+         <property name="minIdle" value="${druid.minIdle}" />
+         <!-- 最大空闲连接数 -->
+         <!-- <property name="maxIdle" value="${druid.maxIdle}" /> -->
+            <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+         <property name="timeBetweenEvictionRunsMillis" value="${druid.timeBetweenEvictionRunsMillis}" />
+         <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+         <property name="minEvictableIdleTimeMillis" value="${druid.minEvictableIdleTimeMillis}" />  
+         <!-- 建议配置为true,不影响性能,并且保证安全性.申请连接的时候检测,如果空闲时间大于timeBetweenEvictionRunsMillis,执行validationQuery检测连接是否有效. --> 
+         <property name="testWhileIdle" value="${druid.testWhileIdle}" />
+         <!-- 申请连接时执行validationQuery检测连接是否有效,这里建议配置为TRUE,防止取到的连接不可用,但会降低性能,默认值:true--> 
+         <property name="testOnBorrow" value="${druid.testOnBorrow}" />
+         <!-- 归还连接时执行validationQuery检测连接是否有效,会降低性能,默认值:false -->
+         <property name="testOnReturn" value="${druid.testOnReturn}" />
+         <!-- 缓存preparedStatement,也就是PSCache,对支持游标的数据库性能提升巨大,比如说oracle,在mysql5.5以下的版本中没有PSCache功能,建议关闭掉,5.5及以上版本有PSCache，建议开启 -->
+         <property name="maxOpenPreparedStatements" value="${druid.maxOpenPreparedStatements}" />
+    </bean>
+   <!-- sqlSessionFactory自动映射 chenss 20230322-->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation" value="classpath:resources/mybatis-config.xml" />
+		<property name="typeAliasesPackage" value="cn.sh.library.pedigree.sysManager.model" />
+		<property name="mapperLocations"   value="classpath:resources/maps/*Mapper.xml" />
+		 <!-- 注入数据库连接池,mybatis的sqlSessionFactory中的配置需要与这里保持一致 -->
+        <!--   <property name="dataSource" ref="dbcpDataSource" /> -->
+        <!-- <property name="dataSource" ref="c3p0DataSource" /> -->
+		<property name="dataSource" ref="c3p0DataSource" />
+	</bean>
+	<!-- vto数据源 -->
+	<bean id="dataSource" class="virtuoso.jdbc4.VirtuosoConnectionPoolDataSource"
+		destroy-method="close">
+		<property name="serverName" value="${db.host}" />
+		<property name="portNumber" value="${db.port}" />
+		<property name="user" value="${db.user}" />
+		<property name="password" value="${db.password}" />
+		<property name="charset" value="${db.charset}" />
+		<property name="initialPoolSize" value="${db.poolSize}" />
+	</bean>
+	<bean id="ontModel" class="com.hp.hpl.jena.rdf.model.ModelFactory"
+		factory-method="createOntologyModel" />
+	<bean id="nsPrefix" class="java.lang.StringBuffer" />
+	 <!-- redis连接池 begin -->
+  <!-- redis连接池 -->
+	<bean id="jedisConfig" class="redis.clients.jedis.JedisPoolConfig"> 
+		<property name="maxActive" value="${redis_max_active}"></property>
+		<property name="maxIdle" value="${redis_max_idle}"></property>
+		<property name="maxWait" value="${redis_max_wait}"></property>
+		<property name="testOnBorrow" value="${redis_test_on_borrow}"></property>
+	</bean>
+	<!-- redis连接工厂 -->
+	<bean id="connectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis_addr}"></property>
+		<property name="port" value="${redis_port}"></property>
+		<property name="password" value="${redis_auth}"></property>
+		<property name="poolConfig" ref="jedisConfig"></property>
+	</bean>
+	<!-- redis操作模板，这里采用尽量面向对象的模板 -->
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+	<!--  	如果不配置Serializer，那么存储的时候只能使用String，如果用对象类型存储，那么会提示错误 can't cast to String！！！-->
+		<property name="keySerializer">
+			<bean class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+		<property name="valueSerializer">
+			<bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
+		</property>
+	</bean>
+  <!-- redis连接池 end  chenss 20230322 -->
+</beans>

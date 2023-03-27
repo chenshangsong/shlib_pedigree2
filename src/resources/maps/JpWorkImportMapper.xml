@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.JpWorkImportMapper">
+	<resultMap id="dtoJpWork" type="JpWorkModel" />
+	<resultMap id="dtoJpPerson" type="JpPersonModel" />
+	<!-- 需要替换work，机构中的placeURi -->
+	<select id="getWorkList" resultType="JpWorkModel">
+		SELECT * from jp_work where timing !='' 
+	</select>
+	<!-- 需要替换work，机构中的placeURi -->
+	<select id="getXzmrList" resultType="JpPersonModel">
+		SELECT * from jp_xzmr where xingming !=''
+	</select>
+	<!-- 需要替换work，机构中的placeURi -->
+	<select id="getZrzList" resultType="JpPersonModel">
+		SELECT * from jp_zerenzhe where xingming !=''
+	</select>
+	<!-- 需要替换work，机构中的placeURi -->
+	<select id="getZrzQtList" resultType="JpPersonModel">
+		SELECT * from jp_zerenzheqt where xingming !=''
+	</select>
+	<!-- 需要替换work，机构中的placeURi -->
+	<select id="getDOIAccesslevelList" resultType="JpWorkModel">
+		SELECT * from jp_doiLevel where accesslevel ='0'
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

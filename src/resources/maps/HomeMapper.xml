@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.HomeMapper">
+<resultMap id="dtoSurname" type="SurnameModel" />
+<resultMap id="dtoDoiSys" type="DoiSysModel" />
+	<!-- 查询DOI列表，参数类型为字符串 -->
+	<select id="getDoisysList"  resultMap="dtoDoiSys">
+		SELECT * from shldoisys
+	</select>
+	<select id="getSurnameList" parameterType="String" resultMap="dtoSurname">
+		SELECT
+		id,
+		identifier,
+		familyNameT,
+		familyNameS,
+		'http://data.library.sh.cn/authority/familyname/'+uri as uri,
+		pinyin,
+		originally,
+		genealogyCnt,
+		celebrityCnt,
+		initial,
+		'' AS randColor,
+		description
+		from shlSurname
+		where 1=1 
+		<if test="initial!= null and initial!= 'all'">
+			and initial = #{initial} 
+		</if>
+		ORDER BY genealogyCnt DESC
+	</select>
+	
+	<select id="getSurname" parameterType="String" resultMap="dtoSurname">
+		SELECT
+		id,
+		identifier,
+		familyNameT,
+		familyNameS,
+		'http://data.library.sh.cn/authority/familyname/'+uri as uri,
+		pinyin,
+		originally,
+		genealogyCnt,
+		celebrityCnt,
+		initial,
+		'' AS randColor,
+		description
+		from shlSurname
+		where 1=1 
+		<if test="familyNameS!= null and familyNameS!= 'all'">
+			and familyNameS = #{familyNameS}
+		</if>
+	</select>
+
+</mapper>

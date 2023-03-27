@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.UserInfoMapper">
+	<resultMap id="dtoUserInfo" type="UserInfoModel" />
+	
+	<!-- 查询用户，参数类型为字符串 -->
+	<select id="getUser" parameterType="String" resultMap="dtoUserInfo">
+		<![CDATA[
+			SELECT 
+				ST.*, UR.roleId 
+			FROM t_sys_userInfo ST 
+			LEFT JOIN t_sys_user_role	UR ON ST.id = UR.userId AND UR.systemId = '2'
+			WHERE ST.userId = #{userId} and ST.userPwd = #{userPwd}
+		]]>
+	</select>
+	<!-- 查询用户，参数类型为字符串 -->
+	<select id="getUserByShLibIdentityNo" resultMap="dtoUserInfo">
+		<![CDATA[
+			SELECT 
+				ST.*, UR.roleId 
+			FROM t_sys_userInfo ST 
+			LEFT JOIN t_sys_user_role	UR ON ST.id = UR.userId AND UR.systemId = '2'
+			WHERE ST.shLibIdentityNo = #{shLibIdentityNo}
+		]]>
+	</select>
+	<!-- 查询用户，参数类型为字符串 -->
+	<select id="getUserById" parameterType="String" resultMap="dtoUserInfo">
+		<![CDATA[
+			SELECT 
+				ST.*, UR.roleId 
+			FROM t_sys_userInfo ST 
+			LEFT JOIN t_sys_user_role	UR ON ST.id = UR.userId AND UR.systemId = '2' 
+			WHERE ST.id = #{id}
+		]]>
+	</select>
+	<!-- 查询用户，参数类型为对象 -->
+	<select id="getUserByInfo" resultMap="dtoUserInfo">
+		<![CDATA[
+			SELECT 
+				ST.*, UR.roleId 
+			FROM t_sys_userInfo ST 
+			LEFT JOIN t_sys_user_role	UR ON ST.id = UR.userId AND UR.systemId = '2'
+			WHERE ST.userId = #{userId} AND ST.shLibIdentityNo = #{shLibIdentityNo}
+		]]>
+	</select>
+	<!-- 查询用户，参数类型为对象 -->
+	<select id="getUserByUserId" resultMap="dtoUserInfo">
+		<![CDATA[
+			SELECT 
+				ST.*, UR.roleId 
+			FROM t_sys_userInfo ST 
+			LEFT JOIN t_sys_user_role	UR ON ST.id = UR.userId AND UR.systemId = '2' 
+			WHERE ST.userId = #{userId}
+		]]>
+	</select>
+	<!-- 插入用户 -->
+	<insert id="insertUser">
+		INSERT INTO userInfo
+		(
+		userId,
+		userName,
+		shLibAskNo,
+		shLibIdentityNo,
+		shLibSex,
+		shLibBorrower,
+		userPwd,
+		roleId,
+		mobile,
+		mail)
+		VALUES
+		(#{userId},
+		#{userName},
+		#{shLibAskNo},
+		#{shLibIdentityNo},
+		#{shLibSex},
+		#{shLibBorrower},
+		#{userPwd},
+		#{roleId},
+		#{mobile},
+		#{mail} )
+	</insert>
+	<!-- 用户是否存在验证 -->
+	<select id="selectCountUser" resultType="UserInfoModel" resultMap="dtoUserInfo">
+		SELECT 
+			ST.*, UR.roleId 
+		FROM t_sys_userInfo ST 
+		LEFT JOIN t_sys_user_role	UR ON ST.id = UR.userId AND UR.systemId = '2'
+		WHERE shLibIdentityNo = #{shLibIdentityNo}
+	</select>
+	<!-- 获取用户列表 -->
+	<select id="getTableDataListPage" resultType="UserInfoModel" resultMap="dtoUserInfo">
+		SELECT 
+			ST.*, UR.roleId 
+		FROM t_sys_userInfo ST 
+		LEFT JOIN t_sys_user_role UR ON ST.id = UR.userId AND UR.systemId = '2'
+		Where 1=1 
+		<if test="userName!= null and userName!= ''">
+			and ((ST.userName like '%'+#{userName}+'%' ESCAPE '$') OR (ST.shLibAskNo like '%'+#{userName}+'%' ESCAPE '$'))
+		</if>
+		<if test="userId!= null and userId!= ''">
+			and ST.userId like '%'+#{userId}+'%' ESCAPE '$'
+		</if>
+		 ORDER BY ST.userId
+	</select>
+	<!-- 更新用户角色 -->
+	<update id="updateUserRoleById">
+	  UPDATE t_sys_user_role 
+	  SET 
+	  	roleId = #{roleId} 
+	  WHERE systemId = '2' AND userId = #{id}
+	</update>
+	<!-- 更新用户角色 -->
+	<update id="updateUserById">
+		UPDATE t_sys_userInfo
+		SET
+		userId= #{userId},
+		userName= #{userName},
+		shLibAskNo= #{shLibAskNo},
+		shLibIdentityNo= #{shLibIdentityNo},
+		shLibSex= #{shLibSex},
+		shLibBorrower= #{shLibBorrower},
+		userPwd= #{userPwd},
+		mobile= #{mobile},
+		mail= #{mail}
+		WHERE id= #{id}
+	</update>
+</mapper>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules>
+<![CDATA[
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix bf: <http://bibframe.org/vocab/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix shlgen: <http://gen.library.sh.cn/vocab/> .
+
+[rule1: (?a foaf:name ?a_n), (?a shlgen:temporal ?a_t),(?b foaf:name ?b_n), (?b shlgen:temporal ?b_t), equal(?a_t,?b_t), equal(?a_n, ?b_n), notEqual(?a,?b) -> (?a owl:sameAs ?b)]
+]]>
+</rules>

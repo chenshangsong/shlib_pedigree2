@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="sdsxh"
+  id="myeclipse.1436241056615"
+  context-root="/sdsxh"
+  j2ee-spec="5.0"
+  archive="sdsxh.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+

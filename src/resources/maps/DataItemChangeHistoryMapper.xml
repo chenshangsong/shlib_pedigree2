@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="cn.sh.library.pedigree.sysManager.mapper.DataItemChangeHistoryMapper">
+	<resultMap id="dtoItemHistoryList" type="DataItemChangeHistoryModel" />
+	<insert id="insertItemHistory">
+		<selectKey resultType="java.lang.Integer" keyProperty="id"
+			order="AFTER">
+			SELECT @@IDENTITY as id
+		</selectKey>
+		INSERT INTO t_dataItemChangeHistory
+		(
+		itemUri,
+		graphUri,
+		engName,
+		oldValueUri,
+		oldValueCn,
+		newValueUri,
+		newValueCn,
+		oldValueCnBook,
+		newValueCnBook,
+		engNameBook,
+		oldValueCnDoi,
+		newValueCnDoi,
+		engNameDoi,
+		oldValueAccessLevel,
+		newValueAccessLevel,
+		engNameAccessLevel,
+		instanceUri,
+		mainInstanceId,
+		deleteFlg
+		)
+		VALUES
+		(
+		#{itemUri},
+		#{graphUri},
+		#{engName},
+		#{oldValueUri},
+		#{oldValueCn},
+		#{newValueUri},
+		#{newValueCn},
+		#{oldValueCnBook},
+		#{newValueCnBook},
+		#{engNameBook},
+		#{oldValueCnDoi},
+		#{newValueCnDoi},
+		#{engNameDoi},
+		#{oldValueAccessLevel},
+		#{newValueAccessLevel},
+		#{engNameAccessLevel},
+		#{instanceUri},
+		#{mainInstanceId},
+		#{deleteFlg}
+		)
+	</insert>
+	<!-- 根据历史主表ID，查询Item属性列表 -->
+	<select id="selectItemHistoryList" parameterType="String"
+		resultMap="dtoItemHistoryList">
+		SELECT
+		*
+		from t_dataItemChangeHistory SA
+		WHERE SA.mainInstanceId = (select id from
+		t_dataChangeHistoryMain where
+		pdataUri=#{mainId} and dataType='10')
+	</select>
+	<!-- 更新发布状态 -->
+	<update id="updateHistoryMain">
+		UPDATE t_dataChangeHistoryMain
+		SET
+		checkStatus = '1',
+		releaseUser = #{releaseUser},
+		releaseDate = #{releaseDate},
+		operateTime
+		= getdate()
+		WHERE dataType='10' and
+		id= #{id} or pdataUri=#{id}
+	</update>
+	
+	<!-- 删除work和instance历史主表 -->
+	<delete id="deleteHistoryMain">
+		DELETE FROM t_dataChangeHistoryMain
+		WHERE
+		dataType='10'
+		and id = #{id} or pdataUri=#{id}
+	</delete>
+	<!-- 删除Item历史明细表 -->
+	<delete id="deleteItemHistoryList">
+		DELETE FROM t_dataItemChangeHistory
+		WHERE
+		mainInstanceId = (select id from
+		t_dataChangeHistoryMain where
+		pdataUri=#{mainId} and dataType='10');
+	</delete>
+	<!-- 更新发布状态为：新增并已保存 -->
+	<update id="updateItemHistoryDeleteFlg">
+		UPDATE t_dataItemChangeHistory
+		SET deleteFlg=#{deleteFlg}
+		WHERE
+		id= #{id};
+	</update>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.ApiWorkViewsCountMapper">
+
+	<select id="getInfoByWorkUri" resultType="ApiWorkViewsCountDto">
+		select viewCount from t_jp_work_viewscount where workUri=#{workUri}
+	</select>
+	
+	<insert id="insertViewsCount">
+		insert into t_jp_work_viewscount(workUri,viewCount) values(#{workUri},1)
+	</insert>
+	
+	<update id="updateViewsCount">
+		update t_jp_work_viewscount set viewCount=viewCount+1 where workUri=#{workUri}
+	</update>
+	
+</mapper>

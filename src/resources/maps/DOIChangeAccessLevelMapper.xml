@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.DOIChangeAccessLevelMapper">
+	<!-- 添加DOI修改数据至关系库   -->
+	<insert id="insertDOIChangeInfo">
+  		INSERT INTO t_jp_doistatus_manager
+  		(
+  			itemUri,
+			doiSpread,
+			doiOrigin,
+			oldStatus,
+			newStatus,
+			flg
+  		)
+		VALUES
+		(
+			#{itemUri},
+			#{doiSpread},
+			#{doiOrigin},
+			#{oldStatus},
+			#{newStatus},
+			#{flg}
+		)
+	</insert>
+	
+	<!-- 更新hasFullImg属性  -->
+	<update id="updateHasFullImg">
+		update t_jp_doistatus_manager set 
+			hasFullImg = #{hasFullImg} 
+			where doiSpread = #{doiSpread}
+	</update>
+	
+</mapper>

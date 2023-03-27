@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sh.library.pedigree.sysManager.mapper.SDPlaceMapper">
+	<resultMap id="dtoSDPlaceTemp" type="SDPlaceTempModel" />
+	<resultMap id="dtoShlPersonPlace" type="ShlPersonPlaceModel" />
+	<resultMap id="dtoSDPlace" type="SDPlaceModel" />
+
+	<select id="getOtherListSDPlace" resultMap="dtoSDPlace">
+		select * from SDPlace
+		where
+		guojiaS = #{guojiaS} and
+		labelS = #{labelS}
+	</select>
+
+	<select id="getChinaListSDPlace" resultMap="dtoSDPlace">
+		select * from SDPlace
+		where
+		guojiaS = #{guojiaS} and
+		shengS = #{shengS}
+		and
+		labelS = #{labelS}
+		<if test="shiS != null and shiS != ''">
+			and shiS = #{shiS}
+		</if>
+		<if test="shiS == null or shiS == ''">
+			and shiS is null
+		</if>
+		<if test="xianS != null and xianS != ''">
+			and xianS = #{xianS}
+		</if>
+		<if test="xianS == null or xianS == ''">
+			and xianS is null
+		</if>
+	</select>
+	<!-- 更新vt经纬度 -->
+	<select id="getListSDPlaceTemp" resultMap="dtoSDPlaceTemp">
+		SELECT
+		t1.selfUri,t1.labelS,t1.labelT,t1.shengS,t1.shengT,t1.shiS,t1.shiT,t1.xianS,t1.xianT,t2.point
+		as oldpoint,t1.point from shlPersonPlace t1,shlPersonPlaceAll
+		t2 where
+		t1.selfUri=t2.selfUri
+	</select>
+	<!--更新本地库经纬度 <select id="getListSDPlaceTemp" resultMap="dtoSDPlaceTemp"> 
+		SELECT * from shlPersonPlace t1 where t1.selfUri not in ( SELECT t1.selfUri 
+		from shlPersonPlace t1 ,shlPersonPlaceAll t2 WHERE t1.shengS=t2.shengS and 
+		t1.shiS=t2.shiS and t1.xianS=t2.xianS) and t1.point is null </select> -->
+	<!-- <select id="getListSDPlaceTemp" resultMap="dtoSDPlaceTemp"> select 
+		* from SDPlaceTemp where generateUri = '1' order by guojiaS, shengS, shiS, 
+		xianS </select> -->
+	<select id="getChinaListShlPersonPlace" resultMap="dtoShlPersonPlace">
+		select * from shlPersonPlace
+		where
+		guojiaS = #{guojiaS} and
+		shengS =
+		#{shengS} and
+		labelS = #{labelS}
+		<if test="shiS != null and shiS != ''">
+			and shiS = #{shiS}
+		</if>
+		<if test="shiS == null or shiS == ''">
+			and shiS is null
+		</if>
+		<if test="xianS != null and xianS != ''">
+			and xianS = #{xianS}
+		</if>
+		<if test="xianS == null or xianS == ''">
+			and xianS is null
+		</if>
+	</select>
+
+	<select id="getOtherListShlPersonPlace" resultMap="dtoShlPersonPlace">
+		select * from
+		shlPersonPlace
+		where
+		guojiaS = #{guojiaS} and
+		labelS = #{labelS}
+	</select>
+
+	<update id="updateSDPlaceTemp"> UPDATE shlPersonPlace SET point
+		= #{point} WHERE
+		ID=#{ID};
+	</update>
+	<!-- <update id="updateSDPlaceTemp"> UPDATE SDPlaceTemp SET selfUri = #{selfUri} 
+		WHERE ID=#{ID}; </update> -->
+	<insert id="insertSDPlace">
+		INSERT INTO SDPlace
+		(
+		guojiaS,
+		shengS,
+		shiS,
+		xianS,
+		labelS,
+		point,
+		selfUri,
+		getPoint
+		)
+		VALUES
+		(
+		#{guojiaS},
+		#{shengS},
+		#{shiS},
+		#{xianS},
+		#{labelS},
+		#{point},
+		#{selfUri},
+		#{getPoint}
+		)
+	</insert>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
