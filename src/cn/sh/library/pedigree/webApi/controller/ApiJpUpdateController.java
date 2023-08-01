@@ -43,7 +43,7 @@ public class ApiJpUpdateController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(method = RequestMethod.POST, value = "/update")
-	public String update(@RequestBody JSONObject jsonObject, HttpSession session, String source) {
+	public String update(@RequestBody JSONObject jsonObject, HttpSession session) {
 		Map<String, Object> result = new HashMap<>();
 		result.put("result", FWConstants.result_error);
 		String workUri = jsonObject.getString("workUri");
@@ -73,22 +73,17 @@ public class ApiJpUpdateController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(method = RequestMethod.POST, value = "/updateWorkAccFlag")
-	public String updateWorkAccFlag(@RequestBody JSONObject jsonObject, HttpSession session, String source) {
+	public String updateWorkAccFlag(@RequestBody JSONObject jsonObject, HttpSession session) {
 		Map<String, Object> result = new HashMap<>();
 		result.put("result", FWConstants.result_error);
-
 		UserInfoModel _user = (UserInfoModel) (session.getAttribute("userSession"));
 		try {
-			String accFlag = jsonObject.getString("workAccFlag"); // 1：禁用
 			String workUri = jsonObject.getString("workUri");
 			String redisWorkKey = RedisUtils.key_work.concat(workUri);
-			if (!StringUtilC.isEmpty(accFlag) && "1".equals(accFlag)) {// 如果是禁用的，则清空redis
-				if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
-					redisUtil.remove(redisWorkKey);
-				}
-			}
 			apiJpUpdateService.updateJpWorkAccFlag(jsonObject, _user);
-
+			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
+				redisUtil.remove(redisWorkKey);
+			}
 			result.put("result", FWConstants.result_success);
 			result.put("data", "修改成功！");
 			result.put("workUri", jsonObject.getString("workUri"));

@@ -2,11 +2,14 @@ package cn.sh.library.pedigree.webApi.services.impl;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -34,12 +37,15 @@ import cn.sh.library.pedigree.sparql.PersonSparql;
 import cn.sh.library.pedigree.sparql.PlaceSparql;
 import cn.sh.library.pedigree.sysManager.sysMnagerSparql.ItemSparql;
 import cn.sh.library.pedigree.utils.RDFUtils;
+import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.utils.WebApiUtils;
 import cn.sh.library.pedigree.webApi.dto.searchBean.ApiWorkSearchBean;
 import cn.sh.library.pedigree.webApi.services.ApiWorkService;
 import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
-
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
 /**
  * @author liuyi
  * @date 2015/1/5 0005
@@ -215,6 +221,12 @@ public class ApiWorkServiceImpl extends BaseServiceImpl implements ApiWorkServic
 		}
 		work.setInstances(instances);
 		List<Map<String, String>> familyRelations = RDFUtils.transformListMap(this.personSparql.getFamRels4Work(uri));
+		/*
+		 * familyRelations.stream().forEach(item->{
+		 * if(!StringUtil.isBlank(item.get("roles"))) {//多值的情况，取第一个 item.put("roles",
+		 * item.get("roles").split(";")[0]); } if(!StringUtil.isBlank(item.get("time")))
+		 * { item.put("time", item.get("time").split(";")[0]); } });
+		 */
 		work.setFamilyRelations(familyRelations);
 		// 是否为上图胶卷
 		if (PreloadWorkJJUriList.IsSTJJWork(uri)) {
@@ -376,92 +388,31 @@ public class ApiWorkServiceImpl extends BaseServiceImpl implements ApiWorkServic
 
 	@Override
 	public Map getDetailByWorkUri(String workUri) {
+
+		String redisWorkKey = RedisUtils.key_work.concat(workUri);
+		Map _mapTemp = null;
 		// TODO Auto-generated method stub
 		Map _map = apiworkSparql.getDetailByWorkUri(workUri);
 		// 先祖名人列表
 		List<Map<String, String>> familyRelations = RDFUtils
 				.transformListMap(this.personSparql.getFamRels4Work(workUri));
-		_map.put("familyRelations", familyRelations);
-		//修改 简介为；简介+附注项.版本信息+附注项.附注项信息 chenss 20230308 begin
-		String note_new = StringUtilC.getString(_map.get("note"));
-		Map fuzhuMap_new = (Map)_map.get("ins_pub_banben_fuzhu");
-		String fuzhu_banben = StringUtilC.getString(fuzhuMap_new.get("ins_banbenx"));
-		String fuzhu_fuzhu = StringUtilC.getString(fuzhuMap_new.get("ins_fuzhux"));
-		String fuzhu_publisher = StringUtilC.getString(fuzhuMap_new.get("publisher"));
-		
-		if(!note_new.contains(fuzhu_publisher))
-		{
-			fuzhu_publisher=fuzhu_publisher==""?"":fuzhu_publisher.concat("出版发行。");
-			note_new = note_new.concat(fuzhu_publisher);
-		}
-		if(!note_new.contains(fuzhu_fuzhu))
-		{
-			fuzhu_fuzhu=fuzhu_fuzhu==""?"":fuzhu_fuzhu.concat("。");
-			note_new = note_new.concat(fuzhu_fuzhu);
-		}
-		if(!note_new.contains(fuzhu_banben))
-		{
-			fuzhu_banben=fuzhu_banben==""?"":fuzhu_banben.concat("。");
-			note_new = note_new.concat(fuzhu_banben);
-		}
-		_map.put("note", note_new);
-		//修改 简介为；简介+附注项.版本信息+附注项.附注项信息 chenss 20230308 end
-		
-		// item列表
-		List<Map<String, String>> _itemTempList = (List<Map<String, String>>) _map.get("itemList");
-		if (_itemTempList != null && _itemTempList.size() > 0) {
-			// 根据家谱DOI，获取家谱封面
-			_map.put("imageFrontPath", WebApiUtils.GetImagePathByDoi(_itemTempList.get(0).get("doi")));
-			for (int i = _itemTempList.size() - 1; i >= 0; i--) {
-				Map map = _itemTempList.get(i);
-				String acc = StringUtilC.getString(map.get("accessLevel"));
-				String doi = StringUtilC.getString(map.get("doi"));
-				String shelfMark = StringUtilC.getString(map.get("shelfMark"));
-				String hasFullImg = StringUtilC.getString(map.get("hasFullImg"));
-				// 如果是胶卷，并且用户不是管理员,则移除该item
-				if ("9".equals(acc) && !RoleGroup.admin.getGroup().equals(CommonUtils.loginUser.getRoleId())) {
-					_itemTempList.remove(i);
-				} else {
-					String fulltext = "";
-					if (!StringUtil.isBlank(doi)) {// 如果DOI不为空
-						fulltext += "DOI为" + doi;
-						if (!StringUtil.isBlank(shelfMark)) {
-							fulltext += "（索书号：" + shelfMark + "）";
-						}
-					} else {// 如果DOI为空，则只显示索书号
-						if (!StringUtil.isBlank(shelfMark)) {
-							fulltext += "索书号：" + shelfMark;
-						}
-					}
-					// 文本
-					map.put("fulltext", fulltext);
-					// 带图标的全文链接
-					String fulltextLink = "";
-					// 带图标的全文链接 PDF
-					String fulltextLinkPDF = "";
-					// 如果acc 不是胶卷且不为空，则进行全文链接处理
-					if (!StringUtil.isBlank(doi) && !StringUtil.isBlank(acc) && !"9".equals(acc)
-							&& "true".equals(hasFullImg)) {
-						fulltextLink = FullLink4ESJP.GetFullTextImg4Detail(acc, doi, hasFullImg);
-						fulltextLinkPDF = FullLink4ESJP.GetFullTextImg_PDF(acc, doi, hasFullImg, "");
-						// 将全文图标及全文链接放入该属性
-						map.put("fulltextLink", fulltextLink);
-						map.put("fulltextLinkPDF", fulltextLinkPDF);
-						// 将访问地址放入fulltextHref属性
-						if (!StringUtilC.isEmpty(fulltextLink)) {
-							String regEx = "href=\'(.+?)\'";
-							Pattern pattern = Pattern.compile(regEx);
-							Matcher matcher = pattern.matcher(fulltextLink);
-							if (matcher.find()) {
-								String fullImgPath = matcher.group(1);
-								map.put("fulltextHref", fullImgPath);
-							}
-						}
-					}
-				}
-			}
+		/*
+		 * familyRelations.stream().forEach(item->{
+		 * 
+		 * if(!StringUtil.isBlank(item.get("roles"))) {//多值的情况，取第一个 item.put("roles",
+		 * item.get("roles").split(";")[0]); } if(!StringUtil.isBlank(item.get("time")))
+		 * { item.put("time", item.get("time").split(";")[0]); }
+		 * 
+		 * });
+		 */
+		//按照名字去重
+		 List<Map<String,String>>  dataList = familyRelations .stream().collect(
+	                collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing( o -> o.get("name") ))),
+	                        ArrayList::new)
 
-		}
+	       );
+		_map.put("familyRelations", dataList);
+		FullLink.SetFullLinkHref(_map);
 
 		return _map;
 	}
@@ -489,6 +440,5 @@ public class ApiWorkServiceImpl extends BaseServiceImpl implements ApiWorkServic
 		// TODO Auto-generated method stub
 		return apiworkSparql.getWorkCountByPlaceAndFname(place, fnameUri);
 	}
-
 
 }

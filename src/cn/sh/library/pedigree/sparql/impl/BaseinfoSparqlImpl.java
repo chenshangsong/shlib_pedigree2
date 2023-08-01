@@ -123,12 +123,15 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 		return SparqlExecution.vQuery(this.graph, query, new String[] { "char", "uri", "chs", "cht", "en" });
 	}
 
-	public ArrayList getFamilyNames(String q) {
+	public ArrayList getFamilyNames(String q,Boolean accurateFlag) {
 		String filter = "";
 
 		if (StringUtils.isNotBlank(q)) {
 			filter = " FILTER CONTAINS(str(?label), '" + q + "')";
-			// filter = " ?label bif:contains '\""+q+"\"'";
+			//如果是精确匹配 chenss 2023 0728 解决家谱联合编目0727姓氏匹配问题
+			if(accurateFlag) {
+				filter = " FILTER (str(?label)= '" + q + "')";
+			}
 
 		}
 

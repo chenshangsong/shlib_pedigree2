@@ -96,11 +96,14 @@ public class ApiPersonController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/getFamilyNameList", method = RequestMethod.GET)
-	public String getFamilyNameList(String fname) {
+	public String getFamilyNameList(String fname,Boolean accurateFlag) {
 		jsonResult = new HashMap<>();
+		if(accurateFlag ==null) {
+			accurateFlag=false;
+		}
 		try {
 			List<Map<String, String>> familyNames = this.apiPersonService
-					.listFamilyNames(fname);
+					.listFamilyNames(fname,accurateFlag);
 			jsonResult.put("data", familyNames);
 			return JSONArray.fromObject(jsonResult).toString();
 		} catch (Exception e) {

@@ -240,7 +240,7 @@
     <bean id="MyTasks" class="cn.sh.library.pedigree.framework.IpWarning.Tasks"></bean>  
     
    <!-- 预加载start -->
-    <bean id="PreloadDoiList"
+<!--    <bean id="PreloadDoiList"
 	 class="cn.sh.library.pedigree.framework.util.PreloadDoiList" />
   <bean id="PreloadApiFuriPlaceList"
 		class="cn.sh.library.pedigree.framework.util.PreloadApiFuriPlaceList" />
@@ -255,8 +255,8 @@
 	class="cn.sh.library.pedigree.framework.util.PreloadApiPersonsFromFamilyRules" />
 	
 	<bean id="PreloadChaodaiList"
-	class="cn.sh.library.pedigree.framework.util.PreloadChaodaiList" /> 
-	 
+	class="cn.sh.library.pedigree.framework.util.PreloadChaodaiList" />  -->
+	
 	
 	<!-- 预加载end -->
 		

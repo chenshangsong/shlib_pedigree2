@@ -19,6 +19,17 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+
+import net.sf.json.JSONObject;
+import sun.net.www.protocol.http.HttpURLConnection;
+
 
 
 /**
@@ -56,6 +67,44 @@ public class HttpUtils {
             return null;
         }
     }
+	/**
+	 * 
+	 * @param url
+	 * @param jsonObject
+	 * @param encoding
+	 * @return
+	 * @throws IOException
+	 */
+	   public static String HttpPost(String url, JSONObject jsonObject,String encoding) throws  IOException{
+	       String body = "";
+
+	       //创建httpclient对象
+	       CloseableHttpClient client = HttpClients.createDefault();
+	       //创建post方式请求对象
+	       HttpPost httpPost = new HttpPost(url);
+
+	       //装填参数
+	       StringEntity entity = new StringEntity(jsonObject.toString(), "UTF-8");
+	       entity.setContentEncoding("UTF-8");
+			entity.setContentType("application/json");
+	       //设置参数到请求对象中
+	       httpPost.setEntity(entity);
+	       System.out.println("请求地址："+url);
+	       httpPost.setHeader("Content-type", "application/json");
+	       //执行请求操作，并拿到结果（同步阻塞）
+	       CloseableHttpResponse response = client.execute(httpPost);
+	       //获取结果实体
+	       HttpEntity entityhttp = response.getEntity();
+	       if (entityhttp != null) {
+	           //按指定编码转换结果实体为String类型
+	           body = EntityUtils.toString(entityhttp, encoding);
+	       }
+	       EntityUtils.consume(entityhttp);
+	       //释放链接
+	       response.close();
+	       System.out.println("--创建结果--"+body);
+	       return body;
+	   }
 	public static String readResponse(HttpsURLConnection urlConnection) throws IOException {
         // ------------------------------------------------------------------------
         InputStream is;
@@ -78,7 +127,8 @@ public class HttpUtils {
         return response;
     }
 
-    
+	
+
     /**
      * 转换参数
      * @param params

@@ -27,13 +27,6 @@ public class BaseController{
 	public static HttpRequest httpRequest;
 	public static String FW_LoginUser="userSession";
 	public static  Map<String,Map> workMap = new HashMap<String, Map>();
-	/*public static List<DoiSysModel> doiList=null;
-	public static List<DoiSysModel> getDoiList() {
-		return doiList;
-	}
-	public static void setDoiList(List<DoiSysModel> doiList) {
-		BaseController.doiList = doiList;
-	}*/
 
 	public Map<String, Object> jsonResult = new HashMap<>();
 	/**

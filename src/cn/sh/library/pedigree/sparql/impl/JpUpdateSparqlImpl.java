@@ -284,14 +284,9 @@ public class JpUpdateSparqlImpl extends BaseDaoImpl implements JpUpdateSparql {
 		List<Triple> workbase = new ArrayList<Triple>();
 		try {
 			workbase.add(buildTriple(workUri, Namespace.RDF.getUri() + "type", Namespace.BF.getUri() + "Work"));
-			workbase.add(buildTriple(workUri, Namespace.DC.getUri() + "title",
-					StringUtilC.getChs(
-							jsonObject.getString("title").trim() + "（" + jsonObject.getString("placeValue") + "）")
-							+ "@chs"));
-			workbase.add(buildTriple(workUri, Namespace.DC.getUri() + "title",
-					StringUtilC.getCht(
-							jsonObject.getString("title").trim() + "（" + jsonObject.getString("placeValue") + "）")
-							+ "@cht"));
+			String titlePlace = StringUtils.isEmpty(jsonObject.getString("placeValue"))?"": "（" + jsonObject.getString("placeValue") + "）";
+			workbase.add(buildTriple(workUri, Namespace.DC.getUri() + "title",StringUtilC.getChs(jsonObject.getString("title").trim() +titlePlace)+ "@chs"));
+			workbase.add(buildTriple(workUri, Namespace.DC.getUri() + "title",StringUtilC.getCht(jsonObject.getString("title").trim() + titlePlace)+ "@cht"));
 			workGraph.getTransactionHandler().begin();
 			GraphUtil.add(workGraph, workbase);
 			insertWorkProperties(jsonObject, workUri);
@@ -366,6 +361,12 @@ public class JpUpdateSparqlImpl extends BaseDaoImpl implements JpUpdateSparql {
 			triples.add(
 					buildTriple(workUri, Namespace.SHL.getUri() + "placeValue", jsonObject.getString("placeValue")));
 		}
+		// workAccFlag 是否开放查询标记 chenss 20230704：1：不开放。
+				if (jsonObject.containsKey("workAccFlag") && StringUtils.isNotBlank(jsonObject.getString("workAccFlag"))) {
+					triples.add(
+							buildTriple(workUri, Namespace.DC.getUri() + "workAccFlag", jsonObject.getString("workAccFlag")));
+				}
+		
 		// 将三元组添加到 work的graph下。
 		GraphUtil.add(workGraph, triples);
 	}
@@ -846,6 +847,7 @@ public class JpUpdateSparqlImpl extends BaseDaoImpl implements JpUpdateSparql {
 			deleteProperties(null, Namespace.BF.getUri() + "itemOf", instanceUri, itemGraph);
 			// System.out.println("item删除：" + instanceUri.toString());
 			// 删除Instance
+			deleteProperties(instanceUri,  Namespace.BF.getUri() + "note", null, instanceGraph);
 			deleteProperties(instanceUri, null, null, instanceGraph);
 			// System.out.println("instance删除：" + instanceUri.toString());
 			// 删除Work
@@ -937,11 +939,11 @@ public class JpUpdateSparqlImpl extends BaseDaoImpl implements JpUpdateSparql {
 				List<Triple> triples = new ArrayList<Triple>();
 				// 将三元组添加到 work的graph下。
 				workGraph.getTransactionHandler().begin();
-				// 删除Work下的accFlag
+				// 先删除Work下的accFlag，即：启用
 				deleteProperties(workUri, Namespace.DC.getUri() + "workAccFlag", null, workGraph);
-				// accFlag 1:禁用，禁止访问
-				if (StringUtils.isNotBlank(accFlag) && "1".equals(accFlag)) {
-					triples.add(buildTriple(workUri, Namespace.DC.getUri() + "workAccFlag", "1"));
+				// accFlag 1:前台禁用。2，前台禁用+后台查重禁用
+				if (StringUtils.isNotBlank(accFlag) ) {
+					triples.add(buildTriple(workUri, Namespace.DC.getUri() + "workAccFlag", accFlag));
 				}
 				GraphUtil.add(workGraph, triples);
 				workGraph.getTransactionHandler().commit();

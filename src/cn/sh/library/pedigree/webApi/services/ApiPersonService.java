@@ -56,7 +56,7 @@ public interface ApiPersonService extends BaseService {
 	 * 
 	 * @return
 	 */
-	public List<Map<String, String>> listFamilyNames(String fname);
+	public List<Map<String, String>> listFamilyNames(String fname,Boolean accurateFlag);
 
 	/**
 	 * 获取具有Person的姓氏

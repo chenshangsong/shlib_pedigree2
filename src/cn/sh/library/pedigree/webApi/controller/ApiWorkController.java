@@ -1,5 +1,6 @@
 package cn.sh.library.pedigree.webApi.controller;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,22 +18,28 @@ import javax.validation.Valid;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import cn.sh.library.pedigree.base.Constant;
 import cn.sh.library.pedigree.common.CommonUtils;
 import cn.sh.library.pedigree.common.FWConstants;
 import cn.sh.library.pedigree.controller.BaseController;
 import cn.sh.library.pedigree.dto.Pager;
 import cn.sh.library.pedigree.dto.Work;
+import cn.sh.library.pedigree.framework.util.CodeMsgUtil;
 import cn.sh.library.pedigree.framework.util.JsonUtil;
 import cn.sh.library.pedigree.framework.util.PreloadApiFuriPlaceList;
 import cn.sh.library.pedigree.framework.util.PreloadUserList;
 import cn.sh.library.pedigree.framework.util.StringUtil;
+import cn.sh.library.pedigree.fullContentLink.FullLink;
 import cn.sh.library.pedigree.sysManager.model.ApiWorkFavoriteDto;
 import cn.sh.library.pedigree.sysManager.model.UserInfoModel;
 import cn.sh.library.pedigree.utils.DateUtilC;
+import cn.sh.library.pedigree.utils.HttpUtil;
+import cn.sh.library.pedigree.utils.HttpUtils;
 import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.utils.WebApiUtils;
@@ -350,37 +357,29 @@ public class ApiWorkController extends BaseController {
 	@RequestMapping(value = "/getDetailByWorkUriForbm", method = RequestMethod.GET)
 	public String getDetailByWorkUriForBM(@Valid String uri, Integer uid, HttpSession hs) throws Exception {
 		jsonResult = new HashMap<>();
-//		try {
-//			Map _mapTemp = this.workMap.get(uri);
-//			if(_mapTemp == null) {
-//				_mapTemp=apiWorkService.getDetailByWorkUri(uri);
-//				//结果繁体转简体
-//				_mapTemp = convertMapTosChs(_mapTemp);
-//				this.workMap.put(uri, _mapTemp);
-//			}
-//			jsonResult.put("data", _mapTemp);
-//			return StringUtil.getString(JSONObject.fromObject(jsonResult));
-//		} catch (Exception e) {
-//			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
-//			return "error";
-//		}
 		try {
 			String redisWorkKey = RedisUtils.key_work.concat(uri);
 			Map _mapTemp = null;
 			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
 				// 取
+				jsonResult.put("indexResult", "true");//数据来源索引标记
 				Object obj = RedisUtils.unserizlize((byte[]) redisUtil.get(redisWorkKey));
 				_mapTemp = (Map) obj;
+				FullLink.SetFullLinkHref(_mapTemp);// 从缓存中取的内容，需要重新设置全文链接
 
 			} else {// 如果不存在，则先查询，再放入缓存。
 				_mapTemp = apiWorkService.getDetailByWorkUri(uri);
 				// 结果繁体转简体
 				_mapTemp = convertMapTosChs(_mapTemp);
-
 				if (_mapTemp != null && _mapTemp.size() > 0) {
-					// 存 字节
-					redisUtil.set(redisWorkKey, RedisUtils.serialize(_mapTemp));
-
+					// 存 redis 字节
+					if (!redisUtil.exists(redisWorkKey)) {// 如果redis不存在
+						// V1直接向缓存中添加数据
+						 redisUtil.set(redisWorkKey, RedisUtils.serialize(_mapTemp));
+						//V2 向消息中间件推送
+//						String indexResult = HttpUtil.postJson(CodeMsgUtil.getConfig("rabbitmq_provider_url").concat("/send/jiapu/redis/work"),null,_mapTemp);
+//						jsonResult.put("indexResult", "create index:"+ indexResult);
+					}
 				}
 
 			}
@@ -413,14 +412,25 @@ public class ApiWorkController extends BaseController {
 				// 取
 				Object obj = RedisUtils.unserizlize((byte[]) redisUtil.get(redisWorkKey));
 				_mapTemp = (Map) obj;
+				jsonResult.put("indexResult", "true");//数据来源索引标记
+				FullLink.SetFullLinkHref(_mapTemp);// 从缓存中取的内容，需要重新设置全文链接
 
 			} else {// 如果不存在，则先查询，再放入缓存。
 				_mapTemp = apiWorkService.getDetailByWorkUri(uri);
 				// 结果繁体转简体
 				_mapTemp = convertMapTosChs(_mapTemp);
-				
+
 			}
 			if (_mapTemp != null && _mapTemp.size() > 0) {
+				// 存 redis 字节
+				if (!redisUtil.exists(redisWorkKey)) {// 如果redis不存在
+					// V1直接向缓存中添加数据
+					 redisUtil.set(redisWorkKey, RedisUtils.serialize(_mapTemp));
+					//V2 向消息中间件推送
+					//String indexResult = HttpUtil.postJson(CodeMsgUtil.getConfig("rabbitmq_provider_url").concat("/send/jiapu/redis/work"),null,_mapTemp);
+                   //jsonResult.put("indexResult", "create index:"+ indexResult);
+					
+				}
 				// 已查看数量
 				_mapTemp.put("viewCount", apiWorkViewsCountService.getInfoByWorkUri(uri).getViewCount());
 				// 是否已收藏
@@ -432,16 +442,114 @@ public class ApiWorkController extends BaseController {
 				}
 
 			}
-			// 存 redis 字节
-			if (!redisUtil.exists(redisWorkKey)) {// 如果redis不存在
-				redisUtil.set(redisWorkKey, RedisUtils.serialize(_mapTemp));
-			}
 			jsonResult.put("data", _mapTemp);
+			return StringUtil.getString(JSONObject.fromObject(jsonResult));
+		} catch (Exception e) {
+			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
+			return "error:数据获取异常。";
+		}
+	}
+
+	/**
+	 * 删除redis索引
+	 * 
+	 * @param uri
+	 * @return
+	 * @throws Exception
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/delRedis", method = RequestMethod.GET)
+	public String delRedis(@Valid String uri) throws Exception {
+		jsonResult = new HashMap<>();
+		try {
+
+			String redisWorkKey = RedisUtils.key_work.concat(uri);
+			String redisWorkViewKey = RedisUtils.key_work_view.concat(uri);
+			if (redisUtil.exists(redisWorkKey)) {
+				redisUtil.remove(redisWorkKey);// 删除 work详情索引
+				redisUtil.remove(redisWorkViewKey);// 删除work 浏览索引
+				jsonResult.put("msg", "Redis索引已删除");
+				jsonResult.put("result", "0");
+			} else {
+				jsonResult.put("msg", "Redis未找到该索引");
+				jsonResult.put("result", "1");
+			}
+			jsonResult.put("uri", uri);
 			return StringUtil.getString(JSONObject.fromObject(jsonResult));
 		} catch (Exception e) {
 			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
 			return "error";
 		}
+	}
+	/**
+	 * 添加redis索引
+	 * 
+	 * @param uri
+	 * @return
+	 * @throws Exception
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/delWorkRedisList", method = RequestMethod.POST)
+	public String delWorkRedisList(@RequestBody Map _map) throws Exception {
+//		public String delWorkRedisList(@RequestBody String[] uris) throws Exception {
+		jsonResult = new HashMap<>();
+		List<String> strList= new ArrayList<>();
+		try {
+//			Arrays.asList(uris).stream().forEach(item->{
+			((List<String>)_map.get("data")).stream().forEach(item->{
+				String redisWorkKey = RedisUtils.key_work.concat(item);
+				String redisWorkViewKey = RedisUtils.key_work_view.concat(item);
+				if (redisUtil.exists(redisWorkKey)) {
+					redisUtil.remove(redisWorkKey);// 删除 work详情索引
+					redisUtil.remove(redisWorkViewKey);// 删除work 浏览索引
+					strList.add(item);
+				} 
+				
+			} );
+			
+			jsonResult.put("msg", "Redis索引已删除: "+strList);
+			jsonResult.put("result", "0");
+			
+		} catch (Exception e) {
+			jsonResult.put("result", "1");
+			jsonResult.put("data", "索引添加失败，出现异常");
+			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
+			return "error";
+		}
+		return StringUtil.getString(JSONObject.fromObject(jsonResult));
+	}
+	/**
+	 * 添加redis索引
+	 * 
+	 * @param uri
+	 * @return
+	 * @throws Exception
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/addWorkRedis", method = RequestMethod.POST)
+	public String addWorkRedis(@RequestBody Map workMap) throws Exception {
+		jsonResult = new HashMap<>();
+		String uri = StringUtilC.getString(workMap.get("work"));
+		String redisWorkKey = RedisUtils.key_work.concat(uri);
+		jsonResult.put("uri", uri);
+		try {
+			// 存 redis 字节
+			if (!redisUtil.exists(redisWorkKey)) {// 如果redis不存在
+				redisUtil.set(redisWorkKey, RedisUtils.serialize(workMap));
+				jsonResult.put("data", "索引添加成功");
+				jsonResult.put("result", "0");
+			} else {
+				jsonResult.put("data", "索引添加失败，索引已存在");
+				jsonResult.put("result", "1");
+			}
+
+		} catch (Exception e) {
+			jsonResult.put("result", "1");
+			jsonResult.put("data", "索引添加失败，出现异常");
+			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
+			return "error";
+		}
+		return StringUtil.getString(JSONObject.fromObject(jsonResult));
 	}
 
 	/**

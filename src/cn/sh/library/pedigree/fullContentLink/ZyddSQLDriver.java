@@ -31,23 +31,23 @@ public class ZyddSQLDriver {
 		url = "";
 		classforname = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 		try {
+			//https://docs.microsoft.com/zh-cn/sql/connect/jdbc/connecting-with-ssl-encryption?view=sql-server-2017
+			//当 encrypt 属性设置为 true 且 trustServerCertificate 属性设置为 true 时，Microsoft JDBC Driver for SQL Server 将不验证SQL Server TLS 证书。 此设置常用于允许在测试环境中建立连接，如 SQL Server 实例只有自签名证书的情况
 			
 			Class.forName(classforname);
 			url = (new StringBuilder("jdbc:sqlserver://")).append(
 					"10.1.20.60:1433").append(";databaseName=").append(
 					"zydd").append(";user=").append(
 					"zydd").append(";password=").append(
-					"sysnetzydd").append(";").toString();
+					"sysnetzydd").append(";encrypt=true;trustServerCertificate=true").toString();
 			conActive = DriverManager.getConnection(url);
 			//System.out.println("OK");
 			bHasResult = false;
 		} catch (ClassNotFoundException E) {
-			System.out.println("获取全文错误："+E.getMessage());
-			E.printStackTrace();
+			System.out.println("zydd获取全文错误："+E.getMessage());
 			
 		} catch (SQLException E) {
-			System.out.println("获取全文错误："+E.getMessage());
-			E.printStackTrace();
+			System.out.println("zydd获取全文错误："+E.getMessage());
 			
 		}
 	}

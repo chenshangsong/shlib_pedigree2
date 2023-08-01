@@ -263,17 +263,21 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 	}
 
 	public ArrayList getFamRels4Work(String work_uri) {
-		String query = this.nsPrefix + "SELECT ?uri ?name ?order (GROUP_CONCAT(?role; separator=';') AS ?roles) ?time ?timeUri "
-				+ "WHERE {" + "   ?uri a shl:Person; shl:relatedWork <" + work_uri + "> ; "
-				+ "        shl:roleOfFamily ?r ; " + "        bf:label ?name . "
-				+ "   OPTIONAL {?uri shl:temporalValue ?time . }" 
-				+ "   OPTIONAL {?uri shl:temporal ?timeUri . }" 
-				+ "   OPTIONAL {?uri shl:orderOfSeniority ?order .}"
-				+ "   {SELECT ?r ?role FROM <" + "http://gen.library.sh.cn/graph/baseinfo" + "> WHERE {"
-				+ "       ?r bf:label ?role . " + "   FILTER (lang(?role)='cht')" + "   }}"
-				+ "FILTER (lang(?name)='cht') " + "} LIMIT 20";
+		String query = this.nsPrefix + "SELECT distinct ?uri ?name (GROUP_CONCAT(DISTINCT ?role; separator=';') AS ?roles)  (GROUP_CONCAT(DISTINCT ?time; separator=';') AS ?time) ?order\r\n"
+				+ "from <http://gen.library.sh.cn/graph/person>\r\n"
+				+ "from <http://gen.library.sh.cn/graph/baseinfo>\r\n"
+				+ " WHERE {   \r\n"
+				+ "?uri a shl:Person\r\n"
+				+ "{?uri shl:relatedWork <"+work_uri+">}\r\n"
+				+ "{?uri bf:label ?name .FILTER (lang(?name)='chs')}\r\n"
+				+ "{?uri  shl:roleOfFamily ?rUri. {?rUri bf:label ?role .FILTER (lang(?role)='chs')} \r\n"
+				+ "}\r\n"
+				+ "OPTIONAL {?uri shl:temporalValue ?time  }\r\n"
+				+ "OPTIONAL {?uri shl:orderOfSeniority ?order .}\r\n"
+				+ "\r\n"
+				+ "} order by ?order ?name limit 20";
 	
-		return SparqlExecution.vQuery(this.graph, query, new String[] { "uri", "name", "roles", "order", "time" , "timeUri"});
+		return SparqlExecution.vQuery(this.graph, query, new String[] { "uri", "name", "roles", "order", "time" });
 	}
 
 	private void getTriples(List fl, Model temp, String uri) {

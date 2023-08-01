@@ -38,6 +38,8 @@ public class ApiWorkViewsCountServiceImpl implements ApiWorkViewsCountService {
 			
 			if(viewDto==null || StringUtilC.isEmpty(viewDto.getViewCount())){
 				workViewsCountMapper.insertViewsCount(workUri);
+				viewDto = new ApiWorkViewsCountDto();
+				viewDto.setWorkUri(workUri);
 				tempviewCountNow=1;
 			}else{
 				tempviewCountNow=viewDto.getViewCount()+1;

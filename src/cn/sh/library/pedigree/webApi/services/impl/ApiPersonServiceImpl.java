@@ -159,11 +159,11 @@ public class ApiPersonServiceImpl extends BaseServiceImpl implements ApiPersonSe
 	}
 
 	@Override
-	public List<Map<String, String>> listFamilyNames(String fname) {
+	public List<Map<String, String>> listFamilyNames(String fname,Boolean accurateFlag) {
 		if(StringUtil.isBlank(fname)) {
 			return RDFUtils.transformListMap(this.baseinfoSparql.getAllFamilyNames());
 		}
-		return RDFUtils.transformListMap(this.baseinfoSparql.getFamilyNames(fname));
+		return RDFUtils.transformListMap(this.baseinfoSparql.getFamilyNames(fname,accurateFlag));
 	}
 
 	@Override

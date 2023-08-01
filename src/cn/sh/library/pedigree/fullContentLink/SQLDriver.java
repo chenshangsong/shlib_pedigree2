@@ -43,12 +43,10 @@ public class SQLDriver {
 			//System.out.println("OK");
 			bHasResult = false;
 		} catch (ClassNotFoundException E) {
-			System.out.println("获取全文错误："+E.getMessage());
-			E.printStackTrace();
+			System.out.println("lswx获取全文错误："+E.getMessage());
 			
 		} catch (SQLException E) {
-			System.out.println("获取全文错误："+E.getMessage());
-			E.printStackTrace();
+			System.out.println("lswx获取全文错误："+E.getMessage());
 			
 		}
 	}

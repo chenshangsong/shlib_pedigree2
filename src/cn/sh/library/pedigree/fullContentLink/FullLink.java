@@ -3,13 +3,22 @@ package cn.sh.library.pedigree.fullContentLink;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.jsoup.helper.StringUtil;
+
 import cn.sh.library.pedigree.base.Constant;
+import cn.sh.library.pedigree.common.CommonUtils;
+import cn.sh.library.pedigree.common.RoleGroup;
 import cn.sh.library.pedigree.common.onlineInfomation.RequestFilter;
 import cn.sh.library.pedigree.framework.util.HttpUtil;
 import cn.sh.library.pedigree.utils.StringUtilC;
+import cn.sh.library.pedigree.utils.WebApiUtils;
 
 public class FullLink {
 	public static void main(String[] args) throws SQLException, ClassNotFoundException {
@@ -68,6 +77,75 @@ public class FullLink {
 		return value;
 	}
 
+
+
+	/**
+	 * 
+	 * @param _map
+	 */
+	public static void SetFullLinkHref(Map _map) {
+		// item列表
+		List<Map<String, String>> _itemTempList = (List<Map<String, String>>) _map.get("itemList");
+		if (_itemTempList != null && _itemTempList.size() > 0) {
+			// 根据家谱DOI，获取家谱封面
+			_map.put("imageFrontPath", WebApiUtils.GetImagePathByDoi(_itemTempList.get(0).get("doi")));
+			for (int i = _itemTempList.size() - 1; i >= 0; i--) {
+				Map map = _itemTempList.get(i);
+				String acc = StringUtilC.getString(map.get("accessLevel"));
+				String doi = StringUtilC.getString(map.get("doi"));
+				String shelfMark = StringUtilC.getString(map.get("shelfMark"));
+				String hasFullImg = StringUtilC.getString(map.get("hasFullImg"));
+				String description = StringUtilC.getString(map.get("description"));
+				// 如果是胶卷，并且用户不是管理员,则移除该item
+				if ("9".equals(acc) && !RoleGroup.admin.getGroup().equals(CommonUtils.loginUser.getRoleId())) {
+					_itemTempList.remove(i);
+				} else {
+					String fulltext = "";
+					if (!StringUtil.isBlank(doi)) {// 如果DOI不为空
+						fulltext += "DOI为" + doi;
+						if (!StringUtil.isBlank(shelfMark)) {
+							fulltext += "（索书号：" + shelfMark + "）";
+						}
+					} else {// 如果DOI为空，则只显示索书号
+						if (!StringUtil.isBlank(shelfMark)) {
+							fulltext += "索书号：" + shelfMark;
+						}
+					}
+					//简介
+					if (!StringUtil.isBlank(description)) {
+						fulltext += " " +description;
+					}
+					// 文本
+					map.put("fulltext", fulltext);
+					// 带图标的全文链接
+					String fulltextLink = "";
+					// 带图标的全文链接 PDF
+					String fulltextLinkPDF = "";
+					// 如果acc 不是胶卷且不为空，则进行全文链接处理
+					if (!StringUtil.isBlank(doi) && !StringUtil.isBlank(acc) && !"9".equals(acc)
+							&& "true".equals(hasFullImg)) {
+						fulltextLink = FullLink4ESJP.GetFullTextImg4Detail(acc, doi, hasFullImg);
+						fulltextLinkPDF = FullLink4ESJP.GetFullTextImg_PDF(acc, doi, hasFullImg, "");
+						// 将全文图标及全文链接放入该属性
+						map.put("fulltextLink", fulltextLink);
+						map.put("fulltextLinkPDF", fulltextLinkPDF);
+						// 将访问地址放入fulltextHref属性
+						if (!StringUtilC.isEmpty(fulltextLink)) {
+							String regEx = "href=\'(.+?)\'";
+							Pattern pattern = Pattern.compile(regEx);
+							Matcher matcher = pattern.matcher(fulltextLink);
+							if (matcher.find()) {
+								String fullImgPath = matcher.group(1);
+								map.put("fulltextHref", fullImgPath);
+							}
+						}
+					}
+				}
+			}
+
+		}
+	}
+	
 	public static String GetFullTextImg(String accessLevelFlg, String doi) {
 		String link = "";
 		if (doi.startsWith("STJP") && doi.length() >= 10) {

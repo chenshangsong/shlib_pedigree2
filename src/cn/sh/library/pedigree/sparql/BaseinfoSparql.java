@@ -26,7 +26,7 @@ public abstract interface BaseinfoSparql extends BaseDao {
 
 	public abstract void export();
 
-	public abstract ArrayList getFamilyNames(String paramString);
+	public abstract ArrayList getFamilyNames(String paramString,Boolean accurateFlag);
 
 	public abstract ArrayList getPersonFamilyNames();
 
