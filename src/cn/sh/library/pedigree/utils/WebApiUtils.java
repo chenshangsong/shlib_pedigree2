@@ -113,7 +113,9 @@ public class WebApiUtils {
 		//WEB-INF绝对路径
 		String Realpath = Constant.ProjectRealPath + "/res/images/jpfm/";
 		//web路径
-		String path = Constant.ProjectPath + "/res/images/jpfm/";
+//		String path = Constant.ProjectPath + "https://jpv1.library.sh.cn/jp/res/images/jpfm/";
+		//web路径
+		String path = "https://jpv1.library.sh.cn/jp/res/images/jpfm/";
 		String fileName = "";
 		String[] dois = strdoi.split(";");
 		for (String doi : dois) {

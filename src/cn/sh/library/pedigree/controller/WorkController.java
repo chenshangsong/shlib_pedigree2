@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -21,6 +22,7 @@ import cn.sh.library.pedigree.services.DynastyService;
 import cn.sh.library.pedigree.services.PlaceService;
 import cn.sh.library.pedigree.services.WorkService;
 import cn.sh.library.pedigree.utils.DateUtilC;
+import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 
 /**
@@ -41,14 +43,18 @@ public class WorkController extends BaseController {
 
 	@Resource
 	private DynastyService dynastyService;
+
+	@Autowired
+	private RedisUtils redisUtil;
 	/**
 	 * 日志
 	 */
 	private Logger logger = Logger.getLogger(WorkController.class);
-	/*@RequestMapping(value = "/list", method = RequestMethod.GET)
-	public String list(WorkSearchBean search) {
-		return "work/list";
-	}*/
+
+	/*
+	 * @RequestMapping(value = "/list", method = RequestMethod.GET) public String
+	 * list(WorkSearchBean search) { return "work/list"; }
+	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public ModelAndView adv(WorkSearchBean search) {
 		ModelAndView modelAndView = new ModelAndView();
@@ -56,6 +62,7 @@ public class WorkController extends BaseController {
 		modelAndView.addObject("data", search);
 		return modelAndView;
 	}
+
 	/**
 	 * 先祖名人点击跳转页面，后来新增
 	 * 
@@ -84,29 +91,34 @@ public class WorkController extends BaseController {
 	@RequestMapping(value = "/list", method = RequestMethod.POST)
 	public Map<String, Object> loadList(WorkSearchBean search, Pager pager) {
 		Map<String, Object> result = new HashMap<>();
+
+		// 1分钟30次访问限制
+		if (!redisUtil.ifLimitVisit(30, 1)) {
+			result.put("result", "-1");// 数据来源索引标记
+			result.put("code", "43003");// 数据来源索引标记
+			result.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+			return result;
+		}
 		try {
 			if (!StringUtilC.isEmpty(search.getFamilyName())) {
 				search.setFamilyName(search.getFamilyName().replace("氏", ""));
-				if("all".equals(search.getFamilyName())){
+				if ("all".equals(search.getFamilyName())) {
 					search.setFamilyName("");
 				}
 			}
 			result.put("pager", pager);
 			if (StringUtils.isNotBlank(search.getPlace_uri())) {
-				Map<String, String> standPlace = this.placeService
-						.getStandPlace(search.getPlace_uri());
+				Map<String, String> standPlace = this.placeService.getStandPlace(search.getPlace_uri());
 				result.put("standPlace", standPlace);
-				List<Map<String, String>> works = this.placeService.getPlaceWorks(
-						standPlace, search.getFamilyName());
+				List<Map<String, String>> works = this.placeService.getPlaceWorks(standPlace, search.getFamilyName());
 				result.put("works", works);
 			} else {
 				result.put("works", this.workService.list(search, pager));
 			}
 		} catch (Exception e) {
-			logger.info("WorkController-list高级检索错误：" + DateUtilC.getNowDateTime()+ "----"+e 
-					);
+			logger.info("WorkController-list高级检索错误：" + DateUtilC.getNowDateTime() + "----" + e);
 		}
-		
+
 		return result;
 	}
 
@@ -117,16 +129,15 @@ public class WorkController extends BaseController {
 		try {
 			if (!StringUtilC.isEmpty(search.getFamilyName())) {
 				search.setFamilyName(search.getFamilyName().replace("氏", ""));
-				if("all".equals(search.getFamilyName())){
+				if ("all".equals(search.getFamilyName())) {
 					search.setFamilyName("");
 				}
 			}
 			result.put("count", this.workService.countItemsByWork(search));
 		} catch (Exception e) {
-			logger.info("WorkController-list高级检索错误：" + DateUtilC.getNowDateTime()+ "----"+e 
-					);
+			logger.info("WorkController-list高级检索错误：" + DateUtilC.getNowDateTime() + "----" + e);
 		}
-		
+
 		return result;
 	}
 
@@ -141,13 +152,20 @@ public class WorkController extends BaseController {
 	@RequestMapping(method = RequestMethod.POST)
 	public Map<String, Object> list(String keyword, Pager pager) {
 		Map<String, Object> result = new HashMap<>();
+
+		// 1分钟30次访问限制
+		if (!redisUtil.ifLimitVisit(30, 1)) {
+			result.put("result", "-1");// 数据来源索引标记
+			result.put("code", "43003");// 数据来源索引标记
+			result.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+			return result;
+		}
 		try {
 			List<Map<String, String>> mapList = workService.list(keyword, pager);
 			result.put("pager", pager);
 			result.put("works", mapList);
 		} catch (Exception e) {
-			logger.info("WorkController-list简单检索错误" + DateUtilC.getNowDateTime()+ "----"+e 
-					);
+			logger.info("WorkController-list简单检索错误" + DateUtilC.getNowDateTime() + "----" + e);
 		}
 		return result;
 	}
@@ -155,28 +173,38 @@ public class WorkController extends BaseController {
 	@ResponseBody
 	@RequestMapping(value = "/get", method = RequestMethod.GET)
 	public Work getWork(String uri) {
+		Work _work = new Work();
+		// 1分钟30次访问限制
+		if (!redisUtil.ifLimitVisit(30, 1)) {
+			jsonResult = new HashMap<>();
+			jsonResult.put("result", "-1");// 数据来源索引标记
+			jsonResult.put("code", "43003");// 数据来源索引标记
+			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+			_work.setResultVist(jsonResult);
+			_work.setDtitle( "对不起，您访问过于频繁，请稍后再试。");
+			return _work;
+		}
 		try {
-			return this.workService.getWork(uri,true);
+			_work = this.workService.getWork(uri, true);
+			return _work;
 		} catch (Exception e) {
-			logger.info("WorkController-get错误" + DateUtilC.getNowDateTime()+ "----"+e 
-					);
+			logger.info("WorkController-get错误" + DateUtilC.getNowDateTime() + "----" + e);
 		}
 		return null;
 	}
 
 	@ResponseBody
 	@RequestMapping(value = "/getInGeo", method = RequestMethod.GET)
-	public List<Map<String, String>> works(String beginY, String endY,
-			String uri, int unit, String name) {
+	public List<Map<String, String>> works(String beginY, String endY, String uri, int unit, String name) {
 		try {
 			if (StringUtils.isNotBlank(uri)) {
-				return workService.getWorksInTimeline(StringUtilC.StringFilter(beginY), StringUtilC.StringFilter(endY), StringUtilC.getInt(StringUtilC.StringFilter(unit)), StringUtilC.StringFilter(name));
+				return workService.getWorksInTimeline(StringUtilC.StringFilter(beginY), StringUtilC.StringFilter(endY),
+						StringUtilC.getInt(StringUtilC.StringFilter(unit)), StringUtilC.StringFilter(name));
 			}
 		} catch (Exception e) {
-			logger.info("WorkController-getInGeo错误" + DateUtilC.getNowDateTime()+ "----"+e 
-					);
+			logger.info("WorkController-getInGeo错误" + DateUtilC.getNowDateTime() + "----" + e);
 		}
-		
+
 		return null;
 	}
 

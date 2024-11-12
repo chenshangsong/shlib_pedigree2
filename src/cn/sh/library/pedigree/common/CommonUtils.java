@@ -14,7 +14,6 @@ import cn.sh.library.pedigree.webServices.model.UserLoginResultModel;
 public class CommonUtils {
 	public static HttpSession httpSession;
 	public static String userSession = "userSession";
-	//public static String userIp = "";
 	public static UserInfoModel loginUser = new UserInfoModel();
 	public static HttpResponse httpResponse;
 	public static HttpRequest httpRequest;

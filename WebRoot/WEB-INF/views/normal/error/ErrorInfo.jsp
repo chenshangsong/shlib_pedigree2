@@ -34,7 +34,7 @@
         -->
         <!-- JavaScript includes -->
 		<!-- <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script> -->
-		<script  type="text/javascript" src="${ctx}/res/sysmanager/vendors/jquery-1.12.4.js"></script>
+		<script  type="text/javascript" src="${ctx}/res/sysmanager/vendors/jquery.js"></script>
 		<script src="${ctx}/res/assets/countdown/jquery.countdown.js"></script>
 		<script src="${ctx}/res/assets/js/script.js"></script>
   

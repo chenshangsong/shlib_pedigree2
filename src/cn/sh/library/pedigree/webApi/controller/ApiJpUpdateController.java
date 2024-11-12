@@ -108,15 +108,53 @@ public class ApiJpUpdateController extends BaseController {
 		UserInfoModel _user = (UserInfoModel) (session.getAttribute("userSession"));
 		try {
 			apiJpUpdateService.chageItemOf(jsonObject, _user);
+			String workUri = jsonObject.getString("workUri");
+			String redisWorkKey = RedisUtils.key_work.concat(workUri);
+			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
+				redisUtil.remove(redisWorkKey);
+			}
 			result.put("result", FWConstants.result_success);
 			result.put("data", "修改成功！");
 			result.put("itemUri", jsonObject.getString("itemUri"));
+			result.put("workUri", workUri);
 		} catch (Exception e) {
 			result.put("data", e.getMessage());
 		}
 		return JSonUtils.toJSon(result);
 	}
-
+	
+	/**
+	 * 家谱新增删除封面属性API chenss 202400812
+	 * {
+    "graph":"http://gen.library.sh.cn/graph/work",
+    "s":"http://data.library.sh.cn/jp/resource/work/04rlz3mk133p0al2",
+    "p":"shl:coverImage"
+}
+	 * @param model
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(method = RequestMethod.POST, value = "/delTriplesBySp")
+	public String delTriplesBySp(@RequestBody JSONObject jsonObject) {
+		Map<String, Object> result = new HashMap<>();
+		result.put("result", FWConstants.result_error);
+		try {
+			String s = jsonObject.getString("s");
+			String p = jsonObject.getString("p");
+			String graph = jsonObject.getString("graph");
+			apiJpUpdateService.deleteTriplesBySp(s, p,graph);
+			String redisWorkKey = RedisUtils.key_work.concat(s);
+			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则删除缓存
+				redisUtil.remove(redisWorkKey);
+			}
+			result.put("result", FWConstants.result_success);
+			result.put("data", "删除成功！");
+			result.put("s", s);
+		} catch (Exception e) {
+			result.put("data", e.getMessage());
+		}
+		return JSonUtils.toJSon(result);
+	}
 	/**
 	 * 新增家谱
 	 * 
@@ -158,8 +196,7 @@ public class ApiJpUpdateController extends BaseController {
 			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
 				redisUtil.remove(redisWorkKey);
 			}
-
-			System.out.println("Controller +insert 成功");
+			System.out.println("新增成功：workUri:"+workUri);
 			result.put("result", FWConstants.result_success);
 			result.put("workUri", workUri);
 			result.put("instanceUri", instanceUri);
@@ -169,6 +206,42 @@ public class ApiJpUpdateController extends BaseController {
 		return JSonUtils.toJSon(result);
 	}
 
+	/**
+	 * 新增家谱
+	 * 
+	 * @param model
+	 * @return
+	 */
+//	@ResponseBody
+//	@RequestMapping(method = RequestMethod.POST, value = "/updatePerson20240929")
+//	public synchronized String updatePerson(@RequestBody JSONObject jsonObject, HttpSession session) {
+//
+//		// 开启线程进行分别测试输出类的hashCode,测试是否申请到同一个类
+//		Map<String, Object> result = new HashMap<>();
+//		// System.out.println(jsonObject.toString());
+//		result.put("result", FWConstants.result_error);
+//		UserInfoModel _user = (UserInfoModel) (session.getAttribute("userSession"));
+//		String workUri = null;
+//		String instanceUri = null;
+//		try {
+//			workUri = jsonObject.optString("workUri");
+//			apiJpUpdateService.updatePerson(jsonObject, _user, workUri);
+//
+//			String redisWorkKey = RedisUtils.key_work.concat(workUri);
+//
+//			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
+//				redisUtil.remove(redisWorkKey);
+//			}
+//			System.out.println("新增成功：workUri:"+workUri);
+//			result.put("result", FWConstants.result_success);
+//			result.put("workUri", workUri);
+//			result.put("instanceUri", instanceUri);
+//		} catch (Exception e) {
+//			result.put("data", e.getMessage());
+//		}
+//		return JSonUtils.toJSon(result);
+//	}
+	
 	/**
 	 * 删除家谱
 	 * 

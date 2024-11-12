@@ -17,6 +17,7 @@ import cn.sh.library.pedigree.common.CommonUtils;
 import cn.sh.library.pedigree.common.RoleGroup;
 import cn.sh.library.pedigree.common.onlineInfomation.RequestFilter;
 import cn.sh.library.pedigree.framework.util.HttpUtil;
+import cn.sh.library.pedigree.utils.IPUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.utils.WebApiUtils;
 
@@ -87,8 +88,16 @@ public class FullLink {
 		// item列表
 		List<Map<String, String>> _itemTempList = (List<Map<String, String>>) _map.get("itemList");
 		if (_itemTempList != null && _itemTempList.size() > 0) {
+			String fontImgPath = WebApiUtils.GetImagePathByDoi(_itemTempList.get(0).get("doi"));
+			//新增家谱封面 20240812 chenss ：本地没有的时候，取数据库。
+			if(StringUtilC.isEmpty(fontImgPath)) {
+				String coverImage = StringUtilC.getString(_map.get("coverImage"));
+				if(!StringUtilC.isEmpty(coverImage)) {
+					fontImgPath="https://img.library.sh.cn/jp/img/"+coverImage;
+				}
+			}
 			// 根据家谱DOI，获取家谱封面
-			_map.put("imageFrontPath", WebApiUtils.GetImagePathByDoi(_itemTempList.get(0).get("doi")));
+			_map.put("imageFrontPath", fontImgPath);
 			for (int i = _itemTempList.size() - 1; i >= 0; i--) {
 				Map map = _itemTempList.get(i);
 				String acc = StringUtilC.getString(map.get("accessLevel"));
@@ -96,6 +105,8 @@ public class FullLink {
 				String shelfMark = StringUtilC.getString(map.get("shelfMark"));
 				String hasFullImg = StringUtilC.getString(map.get("hasFullImg"));
 				String description = StringUtilC.getString(map.get("description"));
+				String copyDescription = StringUtilC.getString(map.get("copyDescription")); //副本说明 20240708 chenss
+				description+= " " +copyDescription;//副本说明 20240708 chenss
 				// 如果是胶卷，并且用户不是管理员,则移除该item
 				if ("9".equals(acc) && !RoleGroup.admin.getGroup().equals(CommonUtils.loginUser.getRoleId())) {
 					_itemTempList.remove(i);
@@ -121,11 +132,11 @@ public class FullLink {
 					String fulltextLink = "";
 					// 带图标的全文链接 PDF
 					String fulltextLinkPDF = "";
-					// 如果acc 不是胶卷且不为空，则进行全文链接处理
+					// 如果是胶卷则进行全文链接隐藏 
 					if (!StringUtil.isBlank(doi) && !StringUtil.isBlank(acc) && !"9".equals(acc)
 							&& "true".equals(hasFullImg)) {
 						fulltextLink = FullLink4ESJP.GetFullTextImg4Detail(acc, doi, hasFullImg);
-						fulltextLinkPDF = FullLink4ESJP.GetFullTextImg_PDF(acc, doi, hasFullImg, "");
+						fulltextLinkPDF = FullLink4ESJP.GetFullTextImg_PDF(acc, doi, hasFullImg,IPUtils.getIpAddr(RequestFilter.threadLocalRequest.get()));
 						// 将全文图标及全文链接放入该属性
 						map.put("fulltextLink", fulltextLink);
 						map.put("fulltextLinkPDF", fulltextLinkPDF);
@@ -174,8 +185,7 @@ public class FullLink {
 //		+ "/res/images/pdf2.png' width='20px' height='20px' title='点击查看全文'></a>";
 
 String DOILink = "<a href='https://dhapi.library.sh.cn/pdfview?innerflag=0&dbname=jp&doi=" + doi //chenss 20230215 pdf浏览插件升级
-		+ "' target=_blank ><img border='0' src='" + Constant.ProjectPath
-		+ "/res/images/pdf2.png' width='20px' height='20px' title='点击查看PDF全文'></a>";
+		+ "' target=_blank ><img border='0' src='https://jpv1.library.sh.cn/jp/res/images/pdf2.png' width='20px' height='20px' title='点击查看PDF全文'></a>";
 		return DOILink;
 	}
 
@@ -186,8 +196,7 @@ String DOILink = "<a href='https://dhapi.library.sh.cn/pdfview?innerflag=0&dbnam
 	 * @return
 	 */
 	public static String GetOutFullLinkTemp(String link) {
-		String DOILink = "<a href='" + link + "' target=_blank ><img border='0' src='" + Constant.ProjectPath
-				+ "/res/images/pdf.png' width='20px' height='20px' title='点击查看PDF全文'></a>";
+		String DOILink = "<a href='" + link + "' target=_blank ><img border='0' src='https://jpv1.library.sh.cn/jp/res/images/pdf.png' width='20px' height='20px' title='点击查看PDF全文'></a>";
 		return DOILink;
 	}
 
@@ -195,8 +204,14 @@ String DOILink = "<a href='https://dhapi.library.sh.cn/pdfview?innerflag=0&dbnam
 	public static String GetFulltext(String DOI) {
 		// String ipaddress = CommonUtils.userIp; chenss 2018-05-30
 		// 改为从Session中获取。chenss 2018-05-30
-		String ipaddress = StringUtilC
-				.getString(HttpUtil.getSessionValue(RequestFilter.threadLocalRequest.get(), "userIp"));
+		/*
+		 * String ipaddress = StringUtilC
+		 * .getString(HttpUtil.getSessionValue(RequestFilter.threadLocalRequest.get(),
+		 * "userIp"));
+		 */
+		//改为最新代码：2024-01-08 chenss
+		String ipaddress = IPUtils.getIpAddr(RequestFilter.threadLocalRequest.get());
+		
 		String[] result = new String[2];
 		String db = "jp";
 		SQLDriver sqlManager = new SQLDriver();
@@ -231,7 +246,8 @@ String DOILink = "<a href='https://dhapi.library.sh.cn/pdfview?innerflag=0&dbnam
 		sqlManager.CloseStatement();
 		zyddManager.Disconnect();
 		if (cnt > 0) {
-			if (!isInnerIP(ipaddress)) {
+//			if (!isInnerIP(ipaddress)) { 20240108
+			if(!IPUtils.isPrivateIP(true)) {
 				// chenss20180130
 				// result[1] =
 				// "&nbsp;<a href='javascript:alert(&quot;请到上海图书馆家谱阅览室浏览电子全文&quot;)'><img
@@ -245,8 +261,11 @@ String DOILink = "<a href='https://dhapi.library.sh.cn/pdfview?innerflag=0&dbnam
 				} else {
 					result[0] += "&type=item&idvalue=" + URLEncoder.encode(items.substring(1));
 				}
-				result[1] = "<a href='" + result[0] + "' target=_blank><img border='0' src='" + Constant.ProjectPath
-						+ "/res/images/pdf.png' width='20px' height='20px' title='点击查看全文'></a>";
+//				result[1] = "<a href='" + result[0] + "' target=_blank><img border='0' src='" + Constant.ProjectPath
+//						+ "/res/images/pdf.png' width='20px' height='20px' title='点击查看全文'></a>";
+				result[1] = "<a href='" + result[0] + "' target=_blank><img border='0' src='https://jpv1.library.sh.cn/jp/res/images/pdf.png' width='20px' height='20px' title='点击查看全文'></a>";
+				
+				
 			}
 		} else {
 			result[1] = "&nbsp;请至上海图书馆家谱阅览室借阅";
@@ -255,53 +274,6 @@ String DOILink = "<a href='https://dhapi.library.sh.cn/pdfview?innerflag=0&dbnam
 
 		return result[1];
 	}
-
-	private static boolean isInnerIP(String ip) {
-		boolean bInnerIP = false;
-
-		// 私有地址的范围:
-		// 1.A类地址中:10.0.0.0到10.255.255.255
-		// 2.B类地址中:172.16.0.0到172.31.255.255
-		// 3.C类地址中:192.168.0.0到192.168.255.255
-		// 4.本机地址: 127.0.0.1
-		utility ut = new utility();
-		String[] ips = ut.SharpString(ip, ".");
-		int[] ipaddress = new int[ips.length];
-		for (int i = 0; i < ipaddress.length; i++) {
-			ipaddress[i] = Integer.parseInt(ips[i]);
-		}
-
-		if (ipaddress[0] == 10)
-			bInnerIP = true;
-		if (ipaddress[0] == 172 && ipaddress[1] >= 16 && ipaddress[1] <= 31)
-			bInnerIP = true;
-		if (ipaddress[0] == 192 && ipaddress[1] == 168)
-			bInnerIP = true;
-		if (ip.equals("127.0.0.1"))
-			bInnerIP = true;
-		System.out.println(bInnerIP);
-		return bInnerIP;
-	}
-
-	/**
-	 * 获取客户端用户IP
-	 * 
-	 * @param request
-	 * @return
-	 */
-	public static String getIpAddr(HttpServletRequest request) {
-		String ip = request.getHeader("x-forwarded-for");
-		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-			ip = request.getHeader("Proxy-Client-IP");
-		}
-		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-			ip = request.getHeader("WL-Proxy-Client-IP");
-		}
-		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-			ip = request.getRemoteAddr();
-		}
-		// System.out.println("用户IP：" + ip);
-		return ip;
-	}
+	
 
 }

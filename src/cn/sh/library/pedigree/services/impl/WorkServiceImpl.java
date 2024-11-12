@@ -185,7 +185,7 @@ public class WorkServiceImpl extends BaseServiceImpl implements WorkService {
 				.transformListMap(this.personSparql.getFamRels4Work(uri));
 		work.setFamilyRelations(familyRelations);
 		// 是否为上图胶卷
-		if (PreloadWorkJJUriList.IsSTJJWork(uri)) {
+		if (PreloadWorkJJUriList.getInstance().IsSTJJWork(uri)) {
 			work.setJjflag("1");
 		}
 		return work;

@@ -2,26 +2,22 @@ package cn.sh.library.pedigree.webApi.services.impl;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jsoup.helper.StringUtil;
 import org.springframework.stereotype.Service;
 
 import cn.sh.library.pedigree.base.Constant;
 import cn.sh.library.pedigree.common.CommonSparql;
-import cn.sh.library.pedigree.common.CommonUtils;
-import cn.sh.library.pedigree.common.RoleGroup;
-import cn.sh.library.pedigree.common.SparqlExecution;
 import cn.sh.library.pedigree.common.dataImport.DataShumuUtilC;
 import cn.sh.library.pedigree.controller.sysmanager.common.EditDtoCommon;
 import cn.sh.library.pedigree.dto.Item;
@@ -37,15 +33,11 @@ import cn.sh.library.pedigree.sparql.PersonSparql;
 import cn.sh.library.pedigree.sparql.PlaceSparql;
 import cn.sh.library.pedigree.sysManager.sysMnagerSparql.ItemSparql;
 import cn.sh.library.pedigree.utils.RDFUtils;
-import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.utils.WebApiUtils;
 import cn.sh.library.pedigree.webApi.dto.searchBean.ApiWorkSearchBean;
 import cn.sh.library.pedigree.webApi.services.ApiWorkService;
 import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toCollection;
 /**
  * @author liuyi
  * @date 2015/1/5 0005
@@ -229,7 +221,7 @@ public class ApiWorkServiceImpl extends BaseServiceImpl implements ApiWorkServic
 		 */
 		work.setFamilyRelations(familyRelations);
 		// 是否为上图胶卷
-		if (PreloadWorkJJUriList.IsSTJJWork(uri)) {
+		if (PreloadWorkJJUriList.getInstance().IsSTJJWork(uri)) {
 			work.setJjflag("1");
 		}
 		return work;
@@ -387,35 +379,31 @@ public class ApiWorkServiceImpl extends BaseServiceImpl implements ApiWorkServic
 	}
 
 	@Override
-	public Map getDetailByWorkUri(String workUri) {
+	public Map<String, Object> getDetailByWorkUri(String workUri) {
+	    Map<String, Object> resultMap = apiworkSparql.getDetailByWorkUri(workUri);
+	    if (resultMap != null) {
+	        // 先祖名人列表
+	        List<Map<String, String>> familyRelations = RDFUtils
+	                .transformListMap(this.personSparql.getFamRels4Work(workUri));
 
-		String redisWorkKey = RedisUtils.key_work.concat(workUri);
-		Map _mapTemp = null;
-		// TODO Auto-generated method stub
-		Map _map = apiworkSparql.getDetailByWorkUri(workUri);
-		// 先祖名人列表
-		List<Map<String, String>> familyRelations = RDFUtils
-				.transformListMap(this.personSparql.getFamRels4Work(workUri));
-		/*
-		 * familyRelations.stream().forEach(item->{
-		 * 
-		 * if(!StringUtil.isBlank(item.get("roles"))) {//多值的情况，取第一个 item.put("roles",
-		 * item.get("roles").split(";")[0]); } if(!StringUtil.isBlank(item.get("time")))
-		 * { item.put("time", item.get("time").split(";")[0]); }
-		 * 
-		 * });
-		 */
-		//按照名字去重
-		 List<Map<String,String>>  dataList = familyRelations .stream().collect(
-	                collectingAndThen(toCollection(() -> new TreeSet<>(Comparator.comparing( o -> o.get("name") ))),
-	                        ArrayList::new)
+	     // 使用流处理数据
+	        List<Map<String, String>> uniqueResult = familyRelations.stream()
+	            .collect(Collectors.toMap(
+	                record -> record.get("name") + "|" + record.get("roles"),
+	                record -> record,
+	                (existing, replacement) -> existing,
+	                LinkedHashMap::new
+	            ))
+	            .values()
+	            .stream()
+	            .collect(Collectors.toList());
 
-	       );
-		_map.put("familyRelations", dataList);
-		FullLink.SetFullLinkHref(_map);
-
-		return _map;
+	        resultMap.put("familyRelations", uniqueResult);
+	        FullLink.SetFullLinkHref(resultMap);
+	    }
+	    return resultMap;
 	}
+
 
 	@Override
 	public Map getQxTjInfo(String fname) {

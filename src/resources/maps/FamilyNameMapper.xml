@@ -234,14 +234,24 @@
 	</select>
 	<!-- 更新首页姓氏表 -->
 	<update id="updateSurname">
-		<if test="uri!= null and uri!= ''">
 			UPDATE shlSurname SET
-			originally=#{originally},
+				<if test="originally!= null and originally!= ''">
+		     	originally=#{originally},
+			</if>
+				<if test="genealogyCnt!= null and genealogyCnt!= ''">
 			genealogyCnt=#{genealogyCnt},
-			celebrityCnt=#{celebrityCnt}
+				</if>
+					<if test="celebrityCnt!= null and celebrityCnt!= ''">
+			celebrityCnt=#{celebrityCnt},
+			</if>
+			updateDate = getdate()
 			WHERE
-			'http://data.library.sh.cn/authority/familyname/' + uri=#{uri}
-		</if>
+			<if test="uri!= null and uri!= ''">
+			 'http://data.library.sh.cn/authority/familyname/' + uri=#{uri}
+		    </if>
+		    <if test="familyNameS!= null and familyNameS!= ''">
+			 familyNameS=#{familyNameS}
+		    </if>
 	</update>
 	<!-- 更新首页姓氏表 -->
 	<update id="updatesSurnameDesByUri">

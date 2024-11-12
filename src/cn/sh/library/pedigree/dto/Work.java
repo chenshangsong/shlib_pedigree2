@@ -1,5 +1,6 @@
 package cn.sh.library.pedigree.dto;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class Work {
 	private String fulllink;
 
 	private List<Map<String, String>> places;
-
+	private Map<String, Object> resultVist = new HashMap<>();
 	private List<Map<String, String>> creators;
 
 	private String creator;
@@ -39,6 +40,14 @@ public class Work {
 	 * personUri
 	 */
 	private String puri;
+	public Map<String, Object> getResultVist() {
+		return resultVist;
+	}
+
+	public void setResultVist(Map<String, Object> resultVist) {
+		this.resultVist = resultVist;
+	}
+
 	private List<Map<String, String>> instances;
 
 	private List<Map<String, String>> familyRelations;

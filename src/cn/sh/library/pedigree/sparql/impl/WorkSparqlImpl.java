@@ -49,8 +49,8 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 
 	public QueryResult<Map<String, Object>> getWorksInFree(String free_text,
 			int start, int size) {
-		/* 54 */String sql = "WHERE { {   ?work a bf:Work ; "
-				+ "dc:title ?dtitle.   FILTER CONTAINS(STR(?dtitle), '"
+		String sql = "WHERE { {   ?work a bf:Work ; "
+				+ "dc:title ?dtitle .FILTER CONTAINS(STR(?dtitle), '"
 				+ free_text
 				+ "')"
 				+ "} UNION {"

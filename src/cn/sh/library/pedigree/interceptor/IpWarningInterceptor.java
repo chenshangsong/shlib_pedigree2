@@ -16,10 +16,12 @@ import org.springframework.web.servlet.ModelAndView;
 import com.sun.xml.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import cn.sh.library.pedigree.common.CommonUtils;
+import cn.sh.library.pedigree.common.onlineInfomation.RequestFilter;
 import cn.sh.library.pedigree.framework.util.CodeMsgUtil;
 import cn.sh.library.pedigree.framework.util.HttpUtil;
 import cn.sh.library.pedigree.fullContentLink.FullLink;
 import cn.sh.library.pedigree.sysManager.mapper.IpWarningMapper;
+import cn.sh.library.pedigree.utils.IPUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 
 public class IpWarningInterceptor implements HandlerInterceptor {
@@ -40,14 +42,15 @@ public class IpWarningInterceptor implements HandlerInterceptor {
 			return true;
 		}
 
-		String IP = FullLink.getIpAddr(req);
-		HttpUtil.setSessionValue(req, "userIp", IP);
+//		String IP = FullLink.getIpAddr(req);
+		//改为最新代码：2024-01-08 chenss
+		String IP = IPUtils.getIpAddr(req);
 		// CommonUtils.userIp = IP;
 		// 访问页面路径
 		String url = req.getRequestURI().toString();
 		// 如果包含禁止访问的IP，则不允许访问，直接返回到报错画面。
 		for (String strIP : ignoreIPlist) {
-			if (strIP.equals(IP)) {
+			if (strIP.equals(IPUtils.getIpAddr(req))) {
 				res.sendRedirect(req.getContextPath() + "/ipwarning/error");
 				// 必须加返回，否则报错
 				return true;

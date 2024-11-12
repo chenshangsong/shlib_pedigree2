@@ -7,7 +7,7 @@
 <script src="${ctx}/res/plugin/ol2/OpenLayers.js"></script>
 <%-- <script type="text/javascript"
 	src="${ctx}/res/plugin/timemap/lib/jquery-1.6.2.min.js"></script> --%>
-	<script  type="text/javascript" src="${ctx}/res/sysmanager/vendors/jquery-1.12.4.js"></script>
+	<script  type="text/javascript" src="${ctx}/res/sysmanager/vendors/jquery.js"></script>
 <script type="text/javascript"
 	src="${ctx}/res/plugin/timemap/lib/mxn/mxn.js?(openlayers)"></script>
 <script type="text/javascript"

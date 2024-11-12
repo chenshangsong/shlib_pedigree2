@@ -1,6 +1,5 @@
 package cn.sh.library.pedigree.webApi.controller;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,6 +14,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,23 +23,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import cn.sh.library.pedigree.base.Constant;
 import cn.sh.library.pedigree.common.CommonUtils;
 import cn.sh.library.pedigree.common.FWConstants;
 import cn.sh.library.pedigree.controller.BaseController;
 import cn.sh.library.pedigree.dto.Pager;
 import cn.sh.library.pedigree.dto.Work;
-import cn.sh.library.pedigree.framework.util.CodeMsgUtil;
 import cn.sh.library.pedigree.framework.util.JsonUtil;
 import cn.sh.library.pedigree.framework.util.PreloadApiFuriPlaceList;
 import cn.sh.library.pedigree.framework.util.PreloadUserList;
+import cn.sh.library.pedigree.framework.util.PreloadWorkJJUriList;
 import cn.sh.library.pedigree.framework.util.StringUtil;
 import cn.sh.library.pedigree.fullContentLink.FullLink;
 import cn.sh.library.pedigree.sysManager.model.ApiWorkFavoriteDto;
 import cn.sh.library.pedigree.sysManager.model.UserInfoModel;
 import cn.sh.library.pedigree.utils.DateUtilC;
-import cn.sh.library.pedigree.utils.HttpUtil;
-import cn.sh.library.pedigree.utils.HttpUtils;
 import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.utils.WebApiUtils;
@@ -85,6 +82,14 @@ public class ApiWorkController extends BaseController {
 	@ResponseBody
 	@RequestMapping(value = "/getWorkFacetList", method = RequestMethod.GET)
 	public String getWorkFacetList(ApiWorkSearchBean search) {
+		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+		if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+			jsonResult.put("result", "-1");// 数据来源索引标记
+			jsonResult.put("code", "43003");// 数据来源索引标记
+			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+			return JSONArray.fromObject(jsonResult).toString();
+		}
 		String jsonString = "";
 		// 如果空检，且缓存中已有数据，则读取缓存。
 		if (StringUtilC.isFieldNull(search)) {
@@ -92,7 +97,7 @@ public class ApiWorkController extends BaseController {
 				return CommonUtils.cache_FacetJsonString;
 			}
 		}
-		jsonResult = new HashMap<>();
+		
 		List<Object> _list = new ArrayList<>();
 		try {
 			String types[] = new String[] {};
@@ -297,6 +302,13 @@ public class ApiWorkController extends BaseController {
 	@RequestMapping(value = "/search", method = RequestMethod.GET)
 	public String searchALl(@Valid ApiWorkSearchBean search, @Valid Pager pager) {
 		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+		if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+			jsonResult.put("result", "-1");// 数据来源索引标记
+			jsonResult.put("code", "43003");// 数据来源索引标记
+			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+			return JSONArray.fromObject(jsonResult).toString();
+		}
 		Map<String, Object> result = new HashMap<>();
 		try {
 			if (search != null && search.getFamilyName() != null) {
@@ -319,32 +331,32 @@ public class ApiWorkController extends BaseController {
 	 * @return
 	 * @throws Exception
 	 */
-	@ResponseBody
-	@RequestMapping(value = "/getInfoByUri", method = RequestMethod.GET)
-	public String getInfoByUri(@Valid String uri, Integer uid, HttpSession hs) throws Exception {
-		jsonResult = new HashMap<>();
-		try {
-			// 设置当前登录用户 chenss20191205
-			CommonUtils.loginUser = new UserInfoModel();
-			CommonUtils.loginUser = PreloadUserList.getUserById(StringUtilC.getString(uid));
-			Work w = apiWorkService.getWork(uri, true);
-			// 已查看数量
-			w.setViewCount(apiWorkViewsCountService.getInfoByWorkUri(uri).getViewCount());
-			// 是否已收藏
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())) {
-				/* if(this.ifExsitUser(hs)) { */
-				ApiWorkFavoriteDto fdto = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, uri);
-				if (fdto != null && !StringUtilC.isEmpty(fdto.getId())) {
-					w.setFavoriteId(fdto.getId());
-				}
-			}
-			jsonResult.put("data", w);
-			return StringUtil.getString(JSONArray.fromObject(jsonResult));
-		} catch (Exception e) {
-			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
-			return "error";
-		}
-	}
+//	@ResponseBody
+//	@RequestMapping(value = "/getInfoByUri", method = RequestMethod.GET)
+//	public String getInfoByUri(@Valid String uri, Integer uid, HttpSession hs) throws Exception {
+//		jsonResult = new HashMap<>();
+//		try {
+//			// 设置当前登录用户 chenss20191205
+//			CommonUtils.loginUser = new UserInfoModel();
+//			CommonUtils.loginUser = PreloadUserList.getUserById(StringUtilC.getString(uid));
+//			Work w = apiWorkService.getWork(uri, true);
+//			// 已查看数量
+//			w.setViewCount(apiWorkViewsCountService.getInfoByWorkUri(uri).getViewCount());
+//			// 是否已收藏
+//			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())) {
+//				/* if(this.ifExsitUser(hs)) { */
+//				ApiWorkFavoriteDto fdto = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, uri);
+//				if (fdto != null && !StringUtilC.isEmpty(fdto.getId())) {
+//					w.setFavoriteId(fdto.getId());
+//				}
+//			}
+//			jsonResult.put("data", w);
+//			return StringUtil.getString(JSONArray.fromObject(jsonResult));
+//		} catch (Exception e) {
+//			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
+//			return "error";
+//		}
+//	}
 
 	/**
 	 * 根据家谱uri获取work-instance-item信息 编目系统专用：chens 2020-06-20。
@@ -355,40 +367,32 @@ public class ApiWorkController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/getDetailByWorkUriForbm", method = RequestMethod.GET)
-	public String getDetailByWorkUriForBM(@Valid String uri, Integer uid, HttpSession hs) throws Exception {
+	public JSONObject getDetailByWorkUriForBM(@Valid String uri, Integer uid, HttpSession hs) throws Exception {
 		jsonResult = new HashMap<>();
+		Map _mapTemp = null;
 		try {
-			String redisWorkKey = RedisUtils.key_work.concat(uri);
-			Map _mapTemp = null;
-			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
+			String redisWorkKeyBm = RedisUtils.key_work_bm.concat(uri);
+			if (redisUtil.exists(redisWorkKeyBm)) {// 如果redis缓存存在数据，则返回数据
 				// 取
-				jsonResult.put("indexResult", "true");//数据来源索引标记
-				Object obj = RedisUtils.unserizlize((byte[]) redisUtil.get(redisWorkKey));
+				Object obj = RedisUtils.unserizlize((byte[]) redisUtil.get(redisWorkKeyBm));
 				_mapTemp = (Map) obj;
-				FullLink.SetFullLinkHref(_mapTemp);// 从缓存中取的内容，需要重新设置全文链接
-
+				jsonResult.put("indexResult", "true");// 数据来源索引标记
 			} else {// 如果不存在，则先查询，再放入缓存。
 				_mapTemp = apiWorkService.getDetailByWorkUri(uri);
-				// 结果繁体转简体
-				_mapTemp = convertMapTosChs(_mapTemp);
 				if (_mapTemp != null && _mapTemp.size() > 0) {
-					// 存 redis 字节
-					if (!redisUtil.exists(redisWorkKey)) {// 如果redis不存在
-						// V1直接向缓存中添加数据
-						 redisUtil.set(redisWorkKey, RedisUtils.serialize(_mapTemp));
-						//V2 向消息中间件推送
-//						String indexResult = HttpUtil.postJson(CodeMsgUtil.getConfig("rabbitmq_provider_url").concat("/send/jiapu/redis/work"),null,_mapTemp);
-//						jsonResult.put("indexResult", "create index:"+ indexResult);
-					}
-				}
 
+					// 结果繁体转简体
+					_mapTemp = convertMapTosChs(_mapTemp); // 2024-04-07 chenss || 2024-08-31 chenss 放开简繁转换
+					// V1直接向缓存中添加数据
+					redisUtil.set(redisWorkKeyBm, RedisUtils.serialize(_mapTemp));
+				}
 			}
 			jsonResult.put("data", _mapTemp);
-			return StringUtil.getString(JSONObject.fromObject(jsonResult));
 		} catch (Exception e) {
 			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
-			return "error";
+			jsonResult.put("msg", "error");
 		}
+		return JSONObject.fromObject(jsonResult);
 	}
 
 	/**
@@ -399,55 +403,133 @@ public class ApiWorkController extends BaseController {
 	 * @throws Exception
 	 */
 	@ResponseBody
-	@RequestMapping(value = "/getDetailByWorkUri", method = RequestMethod.GET)
-	public String getDetailByWorkUri(@Valid String uri, Integer uid, HttpSession hs) throws Exception {
+	@RequestMapping(value = "/getDetailByWorkUri_noRedis", method = RequestMethod.GET)
+	public JSONObject getDetailByWorkUri(@Valid String uri, Integer uid, HttpSession hs) throws Exception {
 		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+		if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+			jsonResult.put("result", "-1");// 数据来源索引标记
+			jsonResult.put("code", "43003");// 数据来源索引标记
+			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+			return JSONObject.fromObject(jsonResult);
+		}
 		try {
-			// 设置当前登录用户 chenss20191205
-			CommonUtils.loginUser = new UserInfoModel();
-			CommonUtils.loginUser = PreloadUserList.getUserById(StringUtilC.getString(uid));
-			String redisWorkKey = RedisUtils.key_work.concat(uri);
-			Map _mapTemp = null;
-			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
-				// 取
-				Object obj = RedisUtils.unserizlize((byte[]) redisUtil.get(redisWorkKey));
-				_mapTemp = (Map) obj;
-				jsonResult.put("indexResult", "true");//数据来源索引标记
-				FullLink.SetFullLinkHref(_mapTemp);// 从缓存中取的内容，需要重新设置全文链接
-
-			} else {// 如果不存在，则先查询，再放入缓存。
-				_mapTemp = apiWorkService.getDetailByWorkUri(uri);
-				// 结果繁体转简体
-				_mapTemp = convertMapTosChs(_mapTemp);
-
+			if (uid != null) {
+				// 设置当前登录用户 chenss20191205
+				CommonUtils.loginUser = new UserInfoModel();
+				CommonUtils.loginUser = PreloadUserList.getUserById(StringUtilC.getString(uid));
 			}
+
+			Map _mapTemp = apiWorkService.getDetailByWorkUri(uri);
+			// 结果繁体转简体
+//			_mapTemp = convertMapTosChs(_mapTemp); 2024-04-07 chenss
 			if (_mapTemp != null && _mapTemp.size() > 0) {
-				// 存 redis 字节
-				if (!redisUtil.exists(redisWorkKey)) {// 如果redis不存在
-					// V1直接向缓存中添加数据
-					 redisUtil.set(redisWorkKey, RedisUtils.serialize(_mapTemp));
-					//V2 向消息中间件推送
-					//String indexResult = HttpUtil.postJson(CodeMsgUtil.getConfig("rabbitmq_provider_url").concat("/send/jiapu/redis/work"),null,_mapTemp);
-                   //jsonResult.put("indexResult", "create index:"+ indexResult);
-					
-				}
+
 				// 已查看数量
 				_mapTemp.put("viewCount", apiWorkViewsCountService.getInfoByWorkUri(uri).getViewCount());
-				// 是否已收藏
-				if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())) {
-					ApiWorkFavoriteDto fdto = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, uri);
-					if (fdto != null && !StringUtilC.isEmpty(fdto.getId())) {
-						_mapTemp.put("favoriteId", fdto.getId());
+				if (uid != null) {
+					// 是否已收藏
+					if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())) {
+						ApiWorkFavoriteDto fdto = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, uri);
+						if (fdto != null && !StringUtilC.isEmpty(fdto.getId())) {
+							_mapTemp.put("favoriteId", fdto.getId());
+						}
 					}
 				}
 
 			}
 			jsonResult.put("data", _mapTemp);
-			return StringUtil.getString(JSONObject.fromObject(jsonResult));
 		} catch (Exception e) {
 			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
-			return "error:数据获取异常。";
+			jsonResult.put("msg", "error");
 		}
+		return JSONObject.fromObject(jsonResult);
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/getDetailByWorkUri", method = RequestMethod.GET)
+	public JSONObject getDetailByWorkUri_redis(@Valid String uri, Integer uid, HttpSession hs) throws Exception {
+		jsonResult = new HashMap<>();
+		try {
+			// 1分钟30次访问限制
+			if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+				jsonResult.put("result", "-1");// 数据来源索引标记
+				jsonResult.put("code", "43003");// 数据来源索引标记
+				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+				return JSONObject.fromObject(jsonResult);
+			}
+			// 设置当前登录用户 chenss20191205
+			CommonUtils.loginUser = new UserInfoModel();
+			CommonUtils.loginUser = PreloadUserList.getUserById(StringUtilC.getString(uid));
+
+			String redisWorkKey = RedisUtils.key_work.concat(uri);
+			Map _mapTemp = null;
+
+			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
+				// 取
+				Object obj = RedisUtils.unserizlize((byte[]) redisUtil.get(redisWorkKey));
+				_mapTemp = (Map) obj;
+				jsonResult.put("indexResult", "true");// 数据来源索引标记
+				FullLink.SetFullLinkHref(_mapTemp);// 从缓存中取的内容，需要重新设置全文链接
+
+			} else {// 如果不存在，则先查询，再放入缓存。
+				_mapTemp = apiWorkService.getDetailByWorkUri(uri);
+				// 结果繁体转简体
+//				_mapTemp = convertMapTosChs(_mapTemp); 2024-04-07 chenss
+				if (_mapTemp != null && _mapTemp.size() > 0) {
+					// V1直接向缓存中添加数据
+					redisUtil.set(redisWorkKey, RedisUtils.serialize(_mapTemp));
+					// V2 向消息中间件推送
+					// String indexResult =
+					// HttpUtil.postJson(CodeMsgUtil.getConfig("rabbitmq_provider_url").concat("/send/jiapu/redis/work"),null,_mapTemp);
+					// jsonResult.put("indexResult", "create index:"+ indexResult);
+
+				}
+			}
+
+			// 是否已收藏
+			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())) {
+				ApiWorkFavoriteDto fdto = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, uri);
+				if (fdto != null && !StringUtilC.isEmpty(fdto.getId())) {
+					_mapTemp.put("favoriteId", fdto.getId());
+				}
+			}
+			if (_mapTemp != null && _mapTemp.size() > 0) {
+				// 已查看数量
+				_mapTemp.put("viewCount", apiWorkViewsCountService.getInfoByWorkUri(uri).getViewCount());
+			}
+			jsonResult.put("data", _mapTemp);
+		} catch (Exception e) {
+			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
+			jsonResult.put("msg", "error");
+		}
+		return JSONObject.fromObject(jsonResult);
+	}
+
+	/**
+	 * 根据家谱uri获取work-instance-item信息chenss20191205
+	 * 
+	 * @param searchModel
+	 * @return
+	 * @throws Exception
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/getConvertImgByWorkUri", method = RequestMethod.GET)
+	public String getConvertImgByWorkUri(@Valid String uri, HttpSession hs) throws Exception {
+		String rediskeyWorkConvertImg = RedisUtils.key_work_convertImg.concat(uri);
+		String convertImg = null;
+		// 新增convertImage chenss 20240628
+		if (redisUtil.exists(rediskeyWorkConvertImg)) {// 如果redis缓存存在数据，则返回数据
+			Object obj = redisUtil.get(rediskeyWorkConvertImg);
+			convertImg = StringUtilC.getString(obj);
+			;
+		} else {// 如果不存在，则先查询，再放入缓存。
+			convertImg = PreloadWorkJJUriList.getInstance().getConvertImgByUri(uri);
+			if (!StringUtilC.isEmpty(convertImg)) {
+				redisUtil.set(rediskeyWorkConvertImg, convertImg);
+			}
+		}
+		return convertImg;
 	}
 
 	/**
@@ -459,57 +541,90 @@ public class ApiWorkController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/delRedis", method = RequestMethod.GET)
-	public String delRedis(@Valid String uri) throws Exception {
-		jsonResult = new HashMap<>();
+	public String delRedis(@Valid String uri) {
+		Map<String, Object> jsonResult = new HashMap<>();
 		try {
-
 			String redisWorkKey = RedisUtils.key_work.concat(uri);
+			String redisWorkKeyBm = RedisUtils.key_work_bm.concat(uri);
 			String redisWorkViewKey = RedisUtils.key_work_view.concat(uri);
-			if (redisUtil.exists(redisWorkKey)) {
-				redisUtil.remove(redisWorkKey);// 删除 work详情索引
-				redisUtil.remove(redisWorkViewKey);// 删除work 浏览索引
-				jsonResult.put("msg", "Redis索引已删除");
-				jsonResult.put("result", "0");
-			} else {
-				jsonResult.put("msg", "Redis未找到该索引");
-				jsonResult.put("result", "1");
-			}
+			String rediskeyWorkConvertImg = RedisUtils.key_work_convertImg.concat(uri);
 			jsonResult.put("uri", uri);
+			jsonResult.put("result", "0");
+			// 定义 Redis 键和对应的 JSON 消息键
+			Map<String, String> redisKeys = new HashMap<>();
+			redisKeys.put(RedisUtils.key_work.concat(uri), "msg_work");
+			redisKeys.put(RedisUtils.key_work_view.concat(uri), "msg_work_view");
+			redisKeys.put(RedisUtils.key_work_convertImg.concat(uri), "msg_work_ConverImg");
+			redisKeys.put(RedisUtils.key_work_bm.concat(uri), "msg_work_bm");
+			// 删除 Redis 索引
+			for (Map.Entry<String, String> entry : redisKeys.entrySet()) {
+				String redisKey = entry.getKey();
+				String jsonKey = entry.getValue();
+				if (redisUtil.exists(redisKey)) {
+					redisUtil.remove(redisKey);
+					jsonResult.put(jsonKey, "Redis索引已删除");
+				} else {
+					jsonResult.put(jsonKey, "Redis索引未找到");
+				}
+			}
+
+			// 添加索引
+			try {
+				Map<String, Object> _mapTemp = apiWorkService.getDetailByWorkUri(uri);
+				if (_mapTemp != null && !_mapTemp.isEmpty()) {
+					redisUtil.set(redisWorkKey, RedisUtils.serialize(_mapTemp));
+					jsonResult.put("msg_work_AddFlag", "0");
+					jsonResult.put("msg_work_AddMessage", "展示详情已重新添加索引");
+					Map<String, Object> _mapTempBm = convertMapTosChs(_mapTemp);
+					redisUtil.set(redisWorkKeyBm, RedisUtils.serialize(_mapTempBm));
+					jsonResult.put("msg_work_bm_AddFlag", "0");
+					jsonResult.put("msg_work_bm_AddMessage", "编目详情已重新添加索引");
+				} else {
+					jsonResult.put("msg_work_AddFlag", "1");
+					jsonResult.put("msg_work_bm_AddFlag", "1");
+					jsonResult.put("msg_redisAdd", "索引添加失败，未找到元数据。");
+				}
+			} catch (Exception e) {
+				jsonResult.put("msg_work_AddFlag", "-1");
+				jsonResult.put("msg_work_bmAddFlag", "-1");
+				jsonResult.put("result", "1");
+				jsonResult.put("msg_redisAdd", "索引添加失败，元数据获取异常。");
+				return StringUtil.getString(JSONObject.fromObject(jsonResult));
+			}
 			return StringUtil.getString(JSONObject.fromObject(jsonResult));
 		} catch (Exception e) {
 			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
-			return "error";
+			jsonResult.put("msg", "Redis删除异常");
+			jsonResult.put("result", "1");
+			return StringUtil.getString(JSONObject.fromObject(jsonResult));
 		}
 	}
+
 	/**
-	 * 添加redis索引
+	 * 删除 pdf全文 索引
 	 * 
-	 * @param uri
+	 * @param _map
 	 * @return
 	 * @throws Exception
 	 */
 	@ResponseBody
-	@RequestMapping(value = "/delWorkRedisList", method = RequestMethod.POST)
-	public String delWorkRedisList(@RequestBody Map _map) throws Exception {
-//		public String delWorkRedisList(@RequestBody String[] uris) throws Exception {
+	@RequestMapping(value = "/delDoiRedisList", method = RequestMethod.POST)
+	public String delDoiRedisList(@RequestBody Map _map) throws Exception {
 		jsonResult = new HashMap<>();
-		List<String> strList= new ArrayList<>();
+		List<String> strList = new ArrayList<>();
 		try {
-//			Arrays.asList(uris).stream().forEach(item->{
-			((List<String>)_map.get("data")).stream().forEach(item->{
-				String redisWorkKey = RedisUtils.key_work.concat(item);
-				String redisWorkViewKey = RedisUtils.key_work_view.concat(item);
+			((List<String>) _map.get("data")).stream().forEach(item -> {
+				String redisWorkKey = RedisUtils.key_fulltextIn_pdf.concat(item);
 				if (redisUtil.exists(redisWorkKey)) {
-					redisUtil.remove(redisWorkKey);// 删除 work详情索引
-					redisUtil.remove(redisWorkViewKey);// 删除work 浏览索引
+					redisUtil.remove(redisWorkKey);// 删除 pdf全文 详情索引
 					strList.add(item);
-				} 
-				
-			} );
-			
-			jsonResult.put("msg", "Redis索引已删除: "+strList);
+				}
+
+			});
+
+			jsonResult.put("msg", "pdf_doi_Redis索引已删除: " + strList);
 			jsonResult.put("result", "0");
-			
+
 		} catch (Exception e) {
 			jsonResult.put("result", "1");
 			jsonResult.put("data", "索引添加失败，出现异常");
@@ -518,6 +633,7 @@ public class ApiWorkController extends BaseController {
 		}
 		return StringUtil.getString(JSONObject.fromObject(jsonResult));
 	}
+
 	/**
 	 * 添加redis索引
 	 * 
@@ -655,6 +771,19 @@ public class ApiWorkController extends BaseController {
 		if (_map == null) {
 			return null;
 		}
+		String[] urils = new String[] { "http://data.library.sh.cn/authority/familyname/e6yje5q4psiycska"// 于
+		};
+		// 检查逻辑 2024-10-09 chenss 特殊姓氏，不进行简繁转换。
+		List<Map<String, String>> fnameList = (List<Map<String, String>>) _map.get("fnameList");
+		if (fnameList != null && !fnameList.isEmpty()) {
+			for (Map<String, String> tempItem : fnameList) {
+				String fnameUri = tempItem.get("fnameUri");
+				if (Arrays.asList(urils).contains(fnameUri)) {
+					return _map;
+				}
+			}
+		}
+
 		Set<Entry<String, Object>> entrySet = _map.entrySet();
 		for (Entry<String, Object> e : entrySet) {
 			String strKey = e.getKey();
@@ -687,17 +816,17 @@ public class ApiWorkController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/getQxStatistics", method = RequestMethod.GET)
-	public String getQxStatistics(@Valid String fname, HttpSession hs) throws Exception {
+	public JSONObject getQxStatistics(@Valid String fname, HttpSession hs) throws Exception {
 		jsonResult = new HashMap<>();
 		try {
 			Map _mapTemp = apiWorkService.getQxTjInfo(fname);
 
 			jsonResult.put("data", _mapTemp);
-			return StringUtil.getString(JSONObject.fromObject(jsonResult));
 		} catch (Exception e) {
 			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
-			return "error";
+			jsonResult.put("msg", "error");
 		}
+		return JSONObject.fromObject(jsonResult);
 	}
 
 	/**
@@ -709,16 +838,16 @@ public class ApiWorkController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/getPlaceStatistics", method = RequestMethod.GET)
-	public String getPlaceStatistics(@Valid String fname, HttpSession hs) throws Exception {
+	public JSONObject getPlaceStatistics(@Valid String fname, HttpSession hs) throws Exception {
 		jsonResult = new HashMap<>();
 		try {
 			Map _mapTemp = apiWorkService.getPlceTjInfo(fname);
 
 			jsonResult.put("data", _mapTemp);
-			return StringUtil.getString(JSONObject.fromObject(jsonResult));
 		} catch (Exception e) {
 			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
-			return "error";
+			jsonResult.put("msg", "error");
 		}
+		return JSONObject.fromObject(jsonResult);
 	}
 }

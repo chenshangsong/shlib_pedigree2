@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -18,7 +19,9 @@ import cn.sh.library.pedigree.bean.WorkSearchBean;
 import cn.sh.library.pedigree.dto.Pager;
 import cn.sh.library.pedigree.services.WorkService;
 import cn.sh.library.pedigree.utils.DateUtilC;
+import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
+import net.sf.json.JSONArray;
 
 /**
  * @author liuyi
@@ -31,6 +34,8 @@ public class SearchController {
 	@Resource
 	private WorkService workService;
 
+	@Autowired
+	private RedisUtils redisUtil;
 	/**
 	 * 日志
 	 */
@@ -44,6 +49,14 @@ public class SearchController {
 	@RequestMapping(method = RequestMethod.POST)
 	public Map<String, Object> list(String keyword, Pager pager) {
 		Map<String, Object> result = new HashMap<>();
+		
+		// 1分钟30次访问限制
+		if (!redisUtil.ifLimitVisit(30, 1)) {
+			result.put("result", "-1");// 数据来源索引标记
+			result.put("code", "43003");// 数据来源索引标记
+			result.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+			return result;
+		}
 		try {
 			List<Map<String, String>> mapList = workService.list(keyword, pager);
 			result.put("pager", pager);
@@ -67,6 +80,13 @@ public class SearchController {
 	@RequestMapping(value = "/adv", method = RequestMethod.POST)
 	public Map<String, Object> adv(WorkSearchBean search, Pager pager) {
 		Map<String, Object> result = new HashMap<>();
+		// 1分钟30次访问限制
+				if (!redisUtil.ifLimitVisit(30, 1)) {
+					result.put("result", "-1");// 数据来源索引标记
+					result.put("code", "43003");// 数据来源索引标记
+					result.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+					return result;
+				}
 		try {
 			search.setFamilyName(search.getFamilyName().replace("氏", ""));
 			result.put("pager", pager);

@@ -27,9 +27,11 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
+import cn.sh.library.pedigree.common.onlineInfomation.RequestFilter;
 
 /**
  * chenss 20230322
+ * 
  * @author chenss
  *
  */
@@ -37,12 +39,47 @@ import org.springframework.stereotype.Repository;
 @Component
 public class RedisUtils {
 
-public static String key_work = "key_work_";
-public static String key_work_fav = "key_work_fav_";
-public static String key_work_view= "key_work_view_";
-public static String key_family= "key_family_";//姓氏
+	public static String key_work = "key_work_";
+	public static String key_work_bm = "key_work_bm_";// 编目系统用 20240911
+	public static String key_work_convertImg = "key_work_cimg_";
+//内网全文地址
+	public static String key_fulltextIn_pdf = "key_fulltextIn_pdf_";
+	public static String key_work_fav = "key_work_fav_";
+	public static String key_work_view = "key_work_view_";
+	public static String key_family = "key_family_";// 姓氏
 	@Resource
-    public RedisTemplate<String, Object> redisTemplate;
+	public RedisTemplate<String, Object> redisTemplate;
+
+	// 每分钟限流访问次数 30次
+	private static final Integer MAX_REQUESTS_PER_MINUTE = 30;
+
+	public boolean ifLimitVisit(Integer vistCount, Integer outTime) {
+		vistCount = vistCount == null ? MAX_REQUESTS_PER_MINUTE : vistCount;
+		outTime = outTime == null ? 1 : outTime;
+		String clientIp = IPUtils.getIpAddr();
+		String redisKey = "rate_limit_" + clientIp;
+		//如果是外网IP，则1分钟只让访问20次
+		if(!IPUtils.isPrivateIP(true)){
+			vistCount=20;
+		}
+		Integer requestCount = StringUtilC.getInteger(this.get(redisKey)) == null ? 0
+				: StringUtilC.getInteger(this.get(redisKey));
+		if (requestCount == null || requestCount < 1) {
+			this.set(redisKey, 1);
+		} else {
+			requestCount = requestCount + 1;
+			this.set(redisKey, requestCount);
+
+		}
+		//设置过期时间，1分钟。1分钟后，会自动重置
+		redisTemplate.expire(redisKey, outTime, TimeUnit.MINUTES);
+		//如果1分钟内，缓存中的数据大于最大量，则返回错误。
+		if (requestCount > vistCount) {
+			return false;
+		}
+
+		return true;
+	}
 
 	/**
 	 * 写入缓存
@@ -184,8 +221,8 @@ public static String key_family= "key_family_";//姓氏
 	 */
 	public long hmRemove(String key, String... hashKeys) {
 		HashOperations<String, String, Object> hash = redisTemplate.opsForHash();
-		 hash.delete(key, hashKeys);
-		 return 1;
+		hash.delete(key, hashKeys);
+		return 1;
 	}
 
 	/**
@@ -232,9 +269,6 @@ public static String key_family= "key_family_";//姓氏
 		list.remove(key, 0, value);
 	}
 
-
-
-
 	/**
 	 * 列表-获取指定范围数据
 	 *
@@ -247,6 +281,7 @@ public static String key_family= "key_family_";//姓氏
 		ListOperations<String, Object> list = redisTemplate.opsForList();
 		return list.range(key, start, end);
 	}
+
 	/**
 	 * 集合添加
 	 *
@@ -304,37 +339,36 @@ public static String key_family= "key_family_";//姓氏
 		return redisTemplate.keys(pattern);
 	}
 
-	//序列化 
-    public static byte [] serialize(Object obj){
-        ObjectOutputStream obi=null;
-        ByteArrayOutputStream bai=null;
-        try {
-            bai=new ByteArrayOutputStream();
-            obi=new ObjectOutputStream(bai);
-            obi.writeObject(obj);
-            byte[] byt=bai.toByteArray();
-            return byt;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
-    //反序列化
-    public static Object unserizlize(byte[] byt){
-        ObjectInputStream oii=null;
-        ByteArrayInputStream bis=null;
-        bis=new ByteArrayInputStream(byt);
-        try {
-            oii=new ObjectInputStream(bis);
-            Object obj=oii.readObject();
-            return obj;
-        } catch (Exception e) {
-            
-            e.printStackTrace();
-        }
-    
-        
-        return null;
-    }
+	// 序列化
+	public static byte[] serialize(Object obj) {
+		ObjectOutputStream obi = null;
+		ByteArrayOutputStream bai = null;
+		try {
+			bai = new ByteArrayOutputStream();
+			obi = new ObjectOutputStream(bai);
+			obi.writeObject(obj);
+			byte[] byt = bai.toByteArray();
+			return byt;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	// 反序列化
+	public static Object unserizlize(byte[] byt) {
+		ObjectInputStream oii = null;
+		ByteArrayInputStream bis = null;
+		bis = new ByteArrayInputStream(byt);
+		try {
+			oii = new ObjectInputStream(bis);
+			Object obj = oii.readObject();
+			return obj;
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+
+		return null;
+	}
 }

@@ -23,7 +23,7 @@ html,body {
 </style>
 
 <%-- <script type="text/javascript" src="<c:url value='/js/jquery-1.8.3.js'/>"></script> --%>
-<script  type="text/javascript" src="${ctx}/res/sysmanager/vendors/jquery-1.12.4.js"></script>
+<script  type="text/javascript" src="${ctx}/res/sysmanager/vendors/jquery.js"></script>
 <script type="text/javascript" src="<c:url value='/jquery_easy_ui/jquery.easyui.min.js'/>"></script>
 
 <script type="text/javascript" src="<c:url value='/js/jquery.form.js'/>"></script>

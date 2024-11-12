@@ -23,7 +23,7 @@
 	href="${ctx}/res/sysmanager/vendors/wysiwyg/bootstrap-wysihtml5.css"
 	rel="stylesheet" media="screen">
 
-<script src="${ctx}/res/sysmanager/vendors/jquery-1.12.4.js"></script>
+<script src="${ctx}/res/sysmanager/vendors/jquery.js"></script>
 <script src="${ctx}/res/sysmanager/bootstrap/js/bootstrap.min.js"></script>
 <script src="${ctx}/res/sysmanager/vendors/jquery.uniform.min.js"></script>
 <script src="${ctx}/res/sysmanager/vendors/chosen.jquery.min.js"></script>

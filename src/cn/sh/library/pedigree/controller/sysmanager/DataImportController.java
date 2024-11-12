@@ -55,9 +55,12 @@ import cn.sh.library.pedigree.sysManager.model.SDPersonModel;
 import cn.sh.library.pedigree.sysManager.model.SDPlaceTempModel;
 import cn.sh.library.pedigree.sysManager.model.ShumuModel;
 import cn.sh.library.pedigree.sysManager.model.SurnameModel;
+import cn.sh.library.pedigree.utils.HttpsUtil;
 import cn.sh.library.pedigree.utils.RDFUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 @Controller
 @RequestMapping("/dataImportManager")

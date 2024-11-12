@@ -14,6 +14,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +31,7 @@ import cn.sh.library.pedigree.framework.util.JsonUtil;
 import cn.sh.library.pedigree.framework.util.PreloadApiFuriPlaceList;
 import cn.sh.library.pedigree.services.AncestraltempleService;
 import cn.sh.library.pedigree.services.OrganizationService;
+import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -48,7 +50,8 @@ public class ApiCommonController extends BaseController {
 	
 	@Resource
 	private AncestraltempleService tanghaoService;//堂号 20220722
-	
+	@Autowired
+	private RedisUtils redisUtil;
 	/**
 	 * 堂号列表20220722
 	 * @param search
@@ -59,6 +62,13 @@ public class ApiCommonController extends BaseController {
 	@RequestMapping(value = "/tanghaoList", method = RequestMethod.GET)
 	public Map<String, Object> tanghaoList(AncTempSearchBean search, Pager pager) {
 		Map<String, Object> resultLast = new HashMap<>();
+		// 1分钟30次访问限制
+		if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+			resultLast.put("result", "-1");// 数据来源索引标记
+			resultLast.put("code", "43003");// 数据来源索引标记
+			resultLast.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+			return resultLast;
+		}
 		try {
 			resultLast.put("pager", pager);
 			List<Map<String, String>> list =null;

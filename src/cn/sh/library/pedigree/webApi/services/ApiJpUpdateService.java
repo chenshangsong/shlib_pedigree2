@@ -9,6 +9,9 @@ public interface ApiJpUpdateService extends BaseService {
 	public void insertJp(JSONObject jsonObject, UserInfoModel userInfoModel,
 			String workUri, String instanceUri)
 			throws Exception;
+//	public void updatePerson(JSONObject jsonObject, UserInfoModel userInfoModel,
+//			String workUri)
+//			throws Exception;
 
 	public void updateJp(JSONObject jsonObject, UserInfoModel userInfoModel);
 	
@@ -17,5 +20,7 @@ public interface ApiJpUpdateService extends BaseService {
 	public void deleteJp(String workUri, String instanceUri,UserInfoModel userInfoModel);
 
 	public void  chageItemOf (JSONObject jsonObject, UserInfoModel userInfoModel);
+	
+	public void deleteTriplesBySp(String s,String p ,String graph) ;
 
 }

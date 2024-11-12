@@ -238,15 +238,15 @@
 		<task:annotation-driven /> <!-- 定时器开关-->  
   
     <bean id="MyTasks" class="cn.sh.library.pedigree.framework.IpWarning.Tasks"></bean>  
-    
+      	<bean id="PreloadWorkJJUriList"
+		class="cn.sh.library.pedigree.framework.util.PreloadWorkJJUriList" />
    <!-- 预加载start -->
 <!--    <bean id="PreloadDoiList"
 	 class="cn.sh.library.pedigree.framework.util.PreloadDoiList" />
   <bean id="PreloadApiFuriPlaceList"
 		class="cn.sh.library.pedigree.framework.util.PreloadApiFuriPlaceList" />
     
-  	<bean id="PreloadWorkJJUriList"
-		class="cn.sh.library.pedigree.framework.util.PreloadWorkJJUriList" />
+
 		
 	<bean id="PreloadUserList"
 	class="cn.sh.library.pedigree.framework.util.PreloadUserList" />

@@ -31,7 +31,7 @@ public class ApiPreloadWorkJJUriListController extends BaseController {
 	@RequestMapping(value = "/IsSTJJWork", method = RequestMethod.GET)
 	public String IsSTJJWork(String workUri){
 		jsonResult = new HashMap<>();
-		boolean flag = PreloadWorkJJUriList.IsSTJJWork(workUri);
+		boolean flag = PreloadWorkJJUriList.getInstance().IsSTJJWork(workUri);
 		jsonResult.put("flag", flag);
 		return JSonUtils.toJSon(jsonResult);
 	}

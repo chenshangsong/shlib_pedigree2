@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import cn.sh.library.pedigree.controller.BaseController;
 import cn.sh.library.pedigree.framework.util.PreloadChaodaiList;
 import cn.sh.library.pedigree.utils.DateUtilC;
+import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.webApi.dto.WorkApiDto;
 import cn.sh.library.pedigree.webApi.services.ApiPlaceService;
@@ -30,6 +32,8 @@ public class ApiPlaceController extends BaseController {
 	private ApiPlaceService api_placeService;
 	@Resource
 	private ApiWorkService api_workService;
+	@Autowired
+	private RedisUtils redisUtil;
 	/**
 	 * 日志
 	 */
@@ -257,6 +261,13 @@ public class ApiPlaceController extends BaseController {
 	@RequestMapping(value = "/getPlaceCList", method = RequestMethod.GET)
 	public String getPlaceCList(String keyword) {
 		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+				if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+					jsonResult.put("result", "-1");// 数据来源索引标记
+					jsonResult.put("code", "43003");// 数据来源索引标记
+					jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+					return JSONArray.fromObject(jsonResult).toString();
+				}
 		try {
 			jsonResult.put("data", this.api_placeService.list(keyword));
 			return JSONArray.fromObject(jsonResult).toString();
@@ -276,6 +287,13 @@ public class ApiPlaceController extends BaseController {
 	@RequestMapping(value = "/getPlaceFList", method = RequestMethod.GET)
 	public String getPlaceFList(String keyword) {
 		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+				if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+					jsonResult.put("result", "-1");// 数据来源索引标记
+					jsonResult.put("code", "43003");// 数据来源索引标记
+					jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+					return JSONArray.fromObject(jsonResult).toString();
+				}
 		try {
 			jsonResult.put("data",
 					this.api_placeService.getForeignPlaces(keyword));

@@ -16,7 +16,7 @@
 <script src="${ctx}/res/plugin/juicer-min.js"></script>
 
 <%--chenss --%>
-<script  type="text/javascript" src="${ctx}/res/sysmanager/vendors/jquery-1.12.4.js"></script>
+<script  type="text/javascript" src="${ctx}/res/sysmanager/vendors/jquery.js"></script>
 <script src="${ctx}/res/commJS/layer/layer.js"></script>
 <script src="${ctx}/res/commJS/message.js"></script>
 <script src="${ctx}/res/commJS/json2.js"></script>

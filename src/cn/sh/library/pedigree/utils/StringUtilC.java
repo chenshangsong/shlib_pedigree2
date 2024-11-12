@@ -18,7 +18,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import com.spreada.utils.chinese.ZHConverter;
+import com.github.houbb.opencc4j.util.ZhConverterUtil;
+
+import cn.sh.library.pedigree.framework.util.StringUtil;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * 
@@ -27,14 +31,26 @@ import com.spreada.utils.chinese.ZHConverter;
  */
 public class StringUtilC {
 	public static void main(String[] args) {
-		//String uri = "1111;2ddd22;3333;11333333331;";
-		//System.out.println(getFromIndex(uri, ";", 3));
-		//System.out.println(uri.substring(0, getFromIndex(uri, ";", 3)));
-		//生成6位随机数字
-       // System.out.println(getRandomForBlankNode());
-        String A="abcd123";
-        String B=A+1;
-        System.out.println(str2Unicode("我是谁"));
+		String traditional = "本谱着录了湖北、湖南、广东、广西、海南、重庆、四川、贵州、云南、西藏、港澳等地蔚姓概况。参见《蔚姓广谱》甘肃、山东等卷（馆藏XP4961-4968）";
+        String simplified = getCht(traditional);
+        System.out.println(simplified); // 输出：繁体中文
+
+	}
+
+	public static String str2Uri(String str) {
+		if (!StringUtil.isEmpty(str)) {
+			return "<" + str + ">";
+		}
+		return null;
+
+	}
+
+	public static String str2Rdf(String str) {
+		if (!StringUtil.isEmpty(str)) {
+			return "'" + StringUtilC.str2Unicode(str) + "'";
+		}
+		return null;
+
 	}
 
 	/**
@@ -90,13 +106,16 @@ public class StringUtilC {
 	}
 
 	/*
-	 * 空节点主语使用  家谱编目新增 chenss 20200616
+	 * 空节点主语使用 家谱编目新增 chenss 20200616
 	 */
 	public static String getRandomForBlankNode() {
-		//生成6位随机数
-		String _num = String.valueOf((int)((Math.random()*9+1)*100000));
+		// 生成6位随机数
+//		String _num = String.valueOf((int)((Math.random()*9+1)*100000));
+		// 生成6位随机数
+		String _num = getRandomUriValue(16);
 		return "nodeID://b".concat(_num);
 	}
+
 	public static String getSqlEscape(String oStr) {
 		String a = "";
 		for (char c : oStr.toCharArray()) {
@@ -139,9 +158,30 @@ public class StringUtilC {
 		if (isEmpty(strCht)) {
 			return "";
 		}
-		return ZHConverter.getInstance(ZHConverter.SIMPLIFIED).convert(strCht);
+//		return ZHConverter.getInstance(ZHConverter.SIMPLIFIED).convert(strCht); 更换简繁转换插件 为 opencc1.8 20240802 
+
+		// 如果字符串中包含繁体 则进行转换
+		if (ZhConverterUtil.containsTraditional(strCht)) {
+			return ZhConverterUtil.toSimple(strCht);
+		}
+		return strCht;
+
 	}
 
+	public static String getMeta2Rdf(String strCht) {
+		if (isEmpty(strCht)) {
+			return "";
+		}
+//		return "'" + StringUtilC.str2Unicode(ZHConverter.getInstance(ZHConverter.SIMPLIFIED).convert(strCht)) + "'";
+		return "'" + StringUtilC.str2Unicode(strCht) + "'";
+	}
+	public static String getChs2Rdf(String strCht) {
+		if (isEmpty(strCht)) {
+			return "";
+		}
+//		return "'" + StringUtilC.str2Unicode(ZHConverter.getInstance(ZHConverter.SIMPLIFIED).convert(strCht)) + "'";
+		return "'" + StringUtilC.str2Unicode(ZhConverterUtil.toSimple(strCht)) + "'";
+	}
 	/**
 	 * 简转繁体
 	 * 
@@ -152,8 +192,24 @@ public class StringUtilC {
 		if (isEmpty(strChs)) {
 			return "";
 		}
+
+//		return ZHConverter.getInstance(ZHConverter.TRADITIONAL).convert(strChs);更换简繁转换插件 为 opencc1.8 20240802 
+		// 如果字符串中包含简体 则进行转换
+		if (ZhConverterUtil.containsSimple(strChs)) {
+			return ZhConverterUtil.toTraditional(strChs);
+		}
+		return strChs;
+
+	}
+
+	public static String getCht2Rdf(String strChs) {
+		if (isEmpty(strChs)) {
+			return "";
+		}
+
+//		return "'" + StringUtilC.str2Unicode(ZHConverter.getInstance(ZHConverter.TRADITIONAL).convert(strChs)) + "'";
+		return "'" + StringUtilC.str2Unicode(ZhConverterUtil.toTraditional(strChs)) + "'";
 		
-		return ZHConverter.getInstance(ZHConverter.TRADITIONAL).convert(strChs);
 	}
 
 	/**
@@ -193,16 +249,14 @@ public class StringUtilC {
 		return null;
 	}
 
-	public static boolean hasIntersection(Object from1, Object to1,
-			Object from2, Object to2) {
+	public static boolean hasIntersection(Object from1, Object to1, Object from2, Object to2) {
 		String dblFrom1 = getString(from1);
 		String dblTo1 = getString(to1);
 		String dblFrom2 = getString(from2);
 		String dblTo2 = getString(to2);
 		if ((dblFrom1.compareTo(dblFrom2) >= 0 && dblFrom1.compareTo(dblTo2) <= 0)
 				|| (dblTo1.compareTo(dblFrom2) >= 0 && dblTo1.compareTo(dblTo2) <= 0)
-				|| (dblFrom1.compareTo(dblFrom2) < 0 && dblTo2
-						.compareTo(dblTo2) > 0)) {
+				|| (dblFrom1.compareTo(dblFrom2) < 0 && dblTo2.compareTo(dblTo2) > 0)) {
 			return true;
 		}
 		return false;
@@ -236,8 +290,7 @@ public class StringUtilC {
 		if (str.length() != 8 || str.length() != 14) {
 			return str;
 		}
-		return str.substring(0, 4) + "-" + str.substring(4, 6) + "-"
-				+ str.substring(6, 8);
+		return str.substring(0, 4) + "-" + str.substring(4, 6) + "-" + str.substring(6, 8);
 	}
 
 	public static String getDateTimeFormat(String str) {
@@ -247,9 +300,8 @@ public class StringUtilC {
 		if (str.length() != 14) {
 			return str;
 		}
-		return str.substring(0, 4) + "-" + str.substring(4, 6) + "-"
-				+ str.substring(6, 8) + " " + str.substring(8, 10) + ":"
-				+ str.substring(10, 12);
+		return str.substring(0, 4) + "-" + str.substring(4, 6) + "-" + str.substring(6, 8) + " " + str.substring(8, 10)
+				+ ":" + str.substring(10, 12);
 	}
 
 	public static String indexToStrNoOne(int i) {
@@ -345,12 +397,9 @@ public class StringUtilC {
 
 	/**
 	 * 
-	 * @param text
-	 *            ：传入数字字符串
-	 * @param scale
-	 *            ：保留的小数位数
-	 * @param round
-	 *            ：取小数精度的方式
+	 * @param text  ：传入数字字符串
+	 * @param scale ：保留的小数位数
+	 * @param round ：取小数精度的方式
 	 * @return
 	 */
 	public static BigDecimal getBigDecimal(String text, int scale, int round) {
@@ -376,8 +425,7 @@ public class StringUtilC {
 			return new BigDecimal("0");
 		} else {
 			try {
-				return new BigDecimal(text.trim()).setScale(2,
-						BigDecimal.ROUND_HALF_EVEN);
+				return new BigDecimal(text.trim()).setScale(2, BigDecimal.ROUND_HALF_EVEN);
 			} catch (Exception e) {
 				return new BigDecimal("0");
 			}
@@ -506,8 +554,7 @@ public class StringUtilC {
 	public static Object parasF(Object obj) {
 		if (!StringUtilC.isEmpty(obj)) {
 			if (obj.toString().contains("%")) {
-				return (Object) obj.toString().replace("%",
-						"012@345#6&789@0" + DateUtilC.getNowTime());
+				return (Object) obj.toString().replace("%", "012@345#6&789@0" + DateUtilC.getNowTime());
 			}
 			return obj;
 		}
@@ -560,8 +607,7 @@ public class StringUtilC {
 	/**
 	 * 获取金额逗号分隔
 	 * 
-	 * @param str
-	 *            金额
+	 * @param str 金额
 	 * @return
 	 */
 	public static String getAmount(String str) {
@@ -612,8 +658,7 @@ public class StringUtilC {
 	/**
 	 * 获取金额逗号分隔
 	 * 
-	 * @param str
-	 *            金额
+	 * @param str 金额
 	 * @return
 	 */
 	public static String getAmount(double dbStr) {
@@ -632,10 +677,8 @@ public class StringUtilC {
 	/**
 	 * 获取金额逗号分隔
 	 * 
-	 * @param str
-	 *            金额
-	 * @param fmt
-	 *            格式
+	 * @param str 金额
+	 * @param fmt 格式
 	 * @return
 	 */
 	public static String getAmount(String str, String fmt) {
@@ -656,8 +699,7 @@ public class StringUtilC {
 	 * 不足位前面加0
 	 * 
 	 * @param str
-	 * @param lenght
-	 *            长度
+	 * @param lenght 长度
 	 * @returns
 	 */
 	public static String padLeftZero(Object obj, int lenght) {
@@ -699,8 +741,7 @@ public class StringUtilC {
 		return m.replaceAll("").trim();
 	}
 
-	public static Object convertModel(Object bean)
-			throws IllegalArgumentException, IllegalAccessException {
+	public static Object convertModel(Object bean) throws IllegalArgumentException, IllegalAccessException {
 		/*
 		 * 得到类中的所有属性集合
 		 */
@@ -712,7 +753,7 @@ public class StringUtilC {
 				continue;
 			if (f.getType() == String.class) {
 				f.set(bean, StringUtilC.StringFilter(f.get(bean)));
-			}// 给属性设值
+			} // 给属性设值
 		}
 		return bean;
 	}
@@ -754,9 +795,8 @@ public class StringUtilC {
 		final int maxNum = 35;
 		int i; // 生成的随机数
 		int count = 0; // 生成的密码的长度
-		char[] str = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
-				'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
-				'x', 'y', 'z', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+		char[] str = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+				't', 'u', 'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
 		StringBuffer pwd = new StringBuffer("");
 		Random r = new Random();

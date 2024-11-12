@@ -11,6 +11,7 @@ import javax.servlet.http.HttpSession;
 //2、统计用户信息,通过ServletRequestListener完成     --定义List容器来存储所有用户信息（通过ServletContext设置，获取）
 
 import cn.sh.library.pedigree.fullContentLink.FullLink;
+import cn.sh.library.pedigree.utils.IPUtils;
 /**
  * 
  * @author chenss
@@ -41,7 +42,8 @@ public class OnlineCountInfo implements ServletRequestListener {
 		if (OnLineUtil.getByUserId(userList, sessionId) == null) {
 			OnLineUser user = new OnLineUser();
 			user.setSessionId(sessionId);
-			user.setIp(FullLink.getIpAddr(request));
+//			user.setIp(FullLink.getIpAddr(request)); 2024-01-08 chenss
+			user.setIp(IPUtils.getIpAddr(request));
 			// 设置时间
 			user.setFirstTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 					.format(new Date()));

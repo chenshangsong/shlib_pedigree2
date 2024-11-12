@@ -4,7 +4,7 @@
 	<div class="container">
 		<div class="row footer-bottom">
 			<ul class="list-inline text-center">
-				<li>Copyright © 上海图书馆 2016</li>
+				<li>Copyright © 上海图书馆 </li>
 				<li>非特别注明，本站遵循cc2.0协议（ 署名-非商业性使用-相同方式共享）</li>
 				<li><a href="${ctx}/page/about" target= _blank>About（关于本站）</a></li>
 				<li><a href="${ctx}/page/contact" target= _blank>Contact（联系我们）</a></li>

@@ -46,6 +46,9 @@ public abstract class BaseController extends AbstractController {
 	// 使用ModelAndView保存对象于下一页面
 	public static ModelAndView modelAndView = new ModelAndView();
 	public String stringResult;
+	
+	public Integer redis_maxVistCount = 30;//次
+	public Integer redis_timeOut = 1;//分钟
 	/**
 	 * 处理结果
 	 */

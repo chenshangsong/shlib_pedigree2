@@ -20,13 +20,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import cn.sh.library.pedigree.common.JSonUtils;
 import cn.sh.library.pedigree.controller.BaseController;
 import cn.sh.library.pedigree.dto.Pager;
 import cn.sh.library.pedigree.dto.Person;
 import cn.sh.library.pedigree.dto.Work;
+import cn.sh.library.pedigree.sysManager.mapper.FamilyNameMapper;
 import cn.sh.library.pedigree.sysManager.mapper.HomeMapper;
 import cn.sh.library.pedigree.sysManager.model.SurnameModel;
 import cn.sh.library.pedigree.utils.DateUtilC;
+import cn.sh.library.pedigree.utils.HttpsUtil;
 import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.webApi.services.ApiPersonService;
@@ -52,6 +55,10 @@ public class ApiHomeController extends BaseController {
 	private ApiWorkService apiworkService;
 	@Autowired
 	private RedisUtils redisUtil;
+
+	@Autowired
+	private FamilyNameMapper familyNameMapper;
+
 	/**
 	 * 姓氏的首字母
 	 */
@@ -66,6 +73,44 @@ public class ApiHomeController extends BaseController {
 	private static List<Person> personList;
 
 	/**
+	 * 统计 chenss 2023-12-14
+	 * 
+	 * @throws Exception
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/tjes", method = { RequestMethod.GET })
+	public String tjes() throws Exception {
+		try {
+			String apiResult = HttpsUtil.getJson("https://dhapi.library.sh.cn/es/jp/webapi/work/getWorkFacetList",
+					null);
+
+			JSONObject _fnameMap = JSONObject.fromObject(apiResult).getJSONArray("data").getJSONObject(6);
+			JSONArray listF = _fnameMap.getJSONArray("facets");
+			listF.stream().forEach(item -> {
+				String _workCount = StringUtilC.getString(JSONObject.fromObject(item).get("count"));
+				String fname = StringUtilC.getString(JSONObject.fromObject(item).get("fname"));
+				SurnameModel model = new SurnameModel();
+				model.setGenealogyCnt(_workCount);
+				model.setFamilyNameS(fname);
+				familyNameMapper.updateSurname(model);
+
+			});
+			// 删除redis缓存
+			char c;
+			for (c = 'A'; c <= 'Z'; ++c) {
+				String redisWorkKey = RedisUtils.key_family.concat(String.valueOf(c));
+				if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
+					redisUtil.remove(redisWorkKey);
+				}
+			}
+		} catch (Exception e) {
+			System.out.println("数据列表错误：" + e);
+		}
+		jsonResult.put(result, "0");
+		return JSonUtils.toJSon(jsonResult);
+	}
+
+	/**
 	 * 首页入口
 	 * 
 	 * @return
@@ -73,26 +118,28 @@ public class ApiHomeController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/homePageInit", method = RequestMethod.GET)
-	public String homePageInit(Model model, HttpServletRequest req)
-			throws Exception {
+	public String homePageInit(Model model, HttpServletRequest req) throws Exception {
 		Map<String, Object> data = new HashMap<>();
+		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+		if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+			jsonResult.put("result", "-1");// 数据来源索引标记
+			jsonResult.put("code", "43003");// 数据来源索引标记
+			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+			return JSONArray.fromObject(jsonResult).toString();
+		}
 		try {
-			String initial = String
-					.valueOf(chars.charAt((int) (Math.random() * 23)));
+			String initial = String.valueOf(chars.charAt((int) (Math.random() * 23)));
 			// 获取所有姓氏数据
 			List<SurnameModel> listSurname = homeMapper.getSurnameList(initial);
 			if (initial.equals("A")) {
-				listSurname.addAll(listSurname.size(),
-						homeMapper.getSurnameList("B"));
+				listSurname.addAll(listSurname.size(), homeMapper.getSurnameList("B"));
 			} else if (initial.equals("E")) {
-				listSurname.addAll(listSurname.size(),
-						homeMapper.getSurnameList("F"));
+				listSurname.addAll(listSurname.size(), homeMapper.getSurnameList("F"));
 			} else if (initial.equals("O")) {
-				listSurname.addAll(listSurname.size(),
-						homeMapper.getSurnameList("P"));
+				listSurname.addAll(listSurname.size(), homeMapper.getSurnameList("P"));
 			} else if (initial.equals("R")) {
-				listSurname.addAll(listSurname.size(),
-						homeMapper.getSurnameList("S"));
+				listSurname.addAll(listSurname.size(), homeMapper.getSurnameList("S"));
 			}
 			data.put("familyNameList", listSurname);
 			// 随机获取所有姓氏中1个
@@ -122,10 +169,9 @@ public class ApiHomeController extends BaseController {
 			}
 			data.put("currentWork", currentWork);
 		} catch (Exception e) {
-			logger.info("HomeController-index错误：" + DateUtilC.getNowDateTime()
-					+ "----" + e);
+			logger.info("HomeController-index错误：" + DateUtilC.getNowDateTime() + "----" + e);
 		}
-		jsonResult = new HashMap<>();
+
 		jsonResult.put("data", data);
 		return StringUtilC.getString(JSONArray.fromObject(jsonResult));
 	}
@@ -138,14 +184,19 @@ public class ApiHomeController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/getfamilynamelistByChart/{fchart}", method = RequestMethod.GET)
-	public String getfamilynamelistByChart(
-			@PathVariable("fchart") String fchart, HttpServletRequest req)
+	public String getfamilynamelistByChart(@PathVariable("fchart") String fchart, HttpServletRequest req)
 			throws Exception {
 		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+		if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+			jsonResult.put("result", "-1");// 数据来源索引标记
+			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+			return JSONArray.fromObject(jsonResult).toString();
+		}
 		try {
 			if (!StringUtilC.isEmpty(fchart)) {
 				// 获取所有姓氏数据
-				List<SurnameModel> listSurname =null;
+				List<SurnameModel> listSurname = null;
 				String redisWorkKey = RedisUtils.key_family.concat(fchart.toUpperCase());
 				if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
 					// 取
@@ -153,9 +204,8 @@ public class ApiHomeController extends BaseController {
 					listSurname = (List) obj;
 
 				} else {// 如果不存在，则先查询，再放入缓存。
-					listSurname = homeMapper
-							.getSurnameList(fchart.toUpperCase());
-					
+					listSurname = homeMapper.getSurnameList(fchart.toUpperCase());
+
 					if (listSurname != null && listSurname.size() > 0) {
 						// 存 字节
 						redisUtil.set(redisWorkKey, RedisUtils.serialize(listSurname));
@@ -180,17 +230,23 @@ public class ApiHomeController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/getfamilyNameInfoByFname/{fname}", method = RequestMethod.GET)
-	public String getfamilyNameInfoByFname(@PathVariable("fname") String fname)
-			throws Exception {
+	public String getfamilyNameInfoByFname(@PathVariable("fname") String fname) throws Exception {
 		try {
 			jsonResult = new HashMap<>();
+			// 1分钟30次访问限制
+			if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+				jsonResult.put("result", "-1");// 数据来源索引标记
+				jsonResult.put("code", "43003");// 数据来源索引标记
+				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+				return JSONArray.fromObject(jsonResult).toString();
+			}
 			// 获取单个姓氏数据
 			fnameInfo = homeMapper.getSurname(fname);
-			if(fnameInfo!=null && fnameInfo.getDescription()!=null) {//转为简体、半角转全角
+			if (fnameInfo != null && fnameInfo.getDescription() != null) {// 转为简体、半角转全角
 				String desChs = StringUtilC.getChs(fnameInfo.getDescription()).replaceAll(",", "，");
-				desChs=desChs.replaceAll("\"", "“");
-				desChs=desChs.replaceAll(";", "；");
-				desChs=desChs.replaceAll("\\.", "。");
+				desChs = desChs.replaceAll("\"", "“");
+				desChs = desChs.replaceAll(";", "；");
+				desChs = desChs.replaceAll("\\.", "。");
 				fnameInfo.setDescription(desChs);
 			}
 			jsonResult.put("data", fnameInfo);
@@ -209,10 +265,16 @@ public class ApiHomeController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/getPersonListByFname/{fname}", method = RequestMethod.GET)
-	public String getPersonListByFname(@PathVariable("fname") String fname)
-			throws Exception {
+	public String getPersonListByFname(@PathVariable("fname") String fname) throws Exception {
 		try {
 			jsonResult = new HashMap<>();
+			// 1分钟30次访问限制
+			if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+				jsonResult.put("result", "-1");// 数据来源索引标记
+				jsonResult.put("code", "43003");// 数据来源索引标记
+				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+				return JSONArray.fromObject(jsonResult).toString();
+			}
 			if (fnameInfo != null) {
 				// 获取单个姓氏数据
 				fnameInfo = homeMapper.getSurname(fname);
@@ -235,10 +297,16 @@ public class ApiHomeController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/getWorkListByPersonAndWorkUri", method = RequestMethod.GET)
-	public String getWorkListByPersonAndWorkUri(@Valid String puri,
-			@Valid String rWorkUri) throws Exception {
+	public String getWorkListByPersonAndWorkUri(@Valid String puri, @Valid String rWorkUri) throws Exception {
 		try {
 			jsonResult = new HashMap<>();
+			// 1分钟30次访问限制
+			if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+				jsonResult.put("result", "-1");// 数据来源索引标记
+				jsonResult.put("code", "43003");// 数据来源索引标记
+				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+				return JSONArray.fromObject(jsonResult).toString();
+			}
 			List<Work> listWork = this.gerWorks(rWorkUri, puri);
 			jsonResult.put("data", listWork);
 			return JSONObject.fromObject(jsonResult).toString();
@@ -257,10 +325,17 @@ public class ApiHomeController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/getPersonsByFname/{fname}", method = RequestMethod.GET)
-	public String getPersonsByFname(@PathVariable("fname") String fname)
-			throws Exception {
+	public String getPersonsByFname(@PathVariable("fname") String fname) throws Exception {
 		Map<String, Object> result = new HashMap<>();
 		try {
+			jsonResult = new HashMap<>();
+			// 1分钟30次访问限制
+			if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+				jsonResult.put("result", "-1");// 数据来源索引标记
+				jsonResult.put("code", "43003");// 数据来源索引标记
+				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+				return JSONArray.fromObject(jsonResult).toString();
+			}
 			// 获取单个姓氏数据
 			SurnameModel currentSurname = homeMapper.getSurname(fname);
 			result.put("currentSurname", currentSurname);
@@ -275,11 +350,10 @@ public class ApiHomeController extends BaseController {
 				}
 			}
 			result.put("currentPerson", currentPerson);
-			jsonResult = new HashMap<>();
+	
 			jsonResult.put("data", result);
 		} catch (Exception e) {
-			logger.info("HomeController-doSurname错误："
-					+ DateUtilC.getNowDateTime() + "----" + e);
+			logger.info("HomeController-doSurname错误：" + DateUtilC.getNowDateTime() + "----" + e);
 		}
 		return JSONArray.fromObject(jsonResult).toString();
 	}
@@ -293,23 +367,20 @@ public class ApiHomeController extends BaseController {
 	private List<Person> getPersons(SurnameModel surname) {
 		List<Person> listPerson = new ArrayList<Person>();
 		// 随机抽取5个名人
-		if (!StringUtilC.isEmpty(surname.getCelebrityCnt())
-				&& !"0".equals(surname.getCelebrityCnt())) {
+		if (!StringUtilC.isEmpty(surname.getCelebrityCnt()) && !"0".equals(surname.getCelebrityCnt())) {
 			Pager pager = new Pager();
 			pager.setPageSize(5);
 			pager.calcPageCount(Long.parseLong(surname.getCelebrityCnt()));
 			List<Integer> pageths = pager.getPageths();
 			int pageth = this.getRandomNumber(pageths.get(pageths.size() - 1));
 			pager.setPageth(pageth);
-			listPerson = this.ApipersonService2.getPersonsInHome(surname.getUri(),
-					pager);
+			listPerson = this.ApipersonService2.getPersonsInHome(surname.getUri(), pager);
 		}
 		// 混乱排序
 		Collections.shuffle(listPerson);
 		return listPerson;
 	}
-	
-	
+
 	/**
 	 * 获取名人家谱
 	 * 

@@ -371,7 +371,7 @@ public class ApiMergeSearchParts {
 		}
 		//最后拼接 只能查开放全文：chenss20221009 dc:accFlag 新增属性：1：不能阅览。空为正常。
 		clause = clause
-				+ " optional{?work dc:workAccFlag ?workAccFlag} .filter (?workAccFlag !='1') ";
+				+ " .filter not exists{?work shl:accessLevelUC ?workAccFlag}";
 		return clause;
 	}
 }

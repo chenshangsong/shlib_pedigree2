@@ -13,7 +13,7 @@
 <link href="${ctx}/res/css/map/knobKnob.css" rel="stylesheet" media="screen" />
 
 <%-- js--%>
-<script src="${ctx}/res/sysmanager/vendors/jquery-1.12.4.js"></script>
+<script src="${ctx}/res/sysmanager/vendors/jquery.js"></script>
 <script src="${ctx}/res/plugin/juicer-min.js"></script>
 <script src="${ctx}/res/bootstrap/js/bootstrap.min.js"></script>
 <script src="${ctx}/res/js/normal/common.js"></script>

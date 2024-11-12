@@ -17,7 +17,7 @@
 
 <%--chenss --%>
 
-<script src="${ctx}/res/sysmanager/vendors/jquery-1.12.4.js"></script>
+<script src="${ctx}/res/sysmanager/vendors/jquery.js"></script>
 <script src="${ctx}/res/commJS/json2.js"></script>
 <script src="${ctx}/res/commJS/common.js"></script>
 <script src="${ctx}/res/commJS/commonUtil.js"></script>

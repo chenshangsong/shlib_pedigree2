@@ -130,7 +130,8 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 			filter = " FILTER CONTAINS(str(?label), '" + q + "')";
 			//如果是精确匹配 chenss 2023 0728 解决家谱联合编目0727姓氏匹配问题
 			if(accurateFlag) {
-				filter = " FILTER (str(?label)= '" + q + "')";
+//				filter = " FILTER (str(?label)= '" + q + "')";2024 1009 改为简体查询 解决 于、於匹配错误问题。
+				filter = " FILTER (str(?chs)= '" + q + "')";
 			}
 
 		}

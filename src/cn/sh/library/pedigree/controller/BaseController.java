@@ -3,11 +3,13 @@ package cn.sh.library.pedigree.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.ModelAndView;
 
 import cn.sh.library.pedigree.framework.util.PreloadDoiList;
@@ -23,11 +25,10 @@ public class BaseController{
 	 */
 	private static Logger BaseControllerlogger = Logger.getLogger(BaseController.class);
 	public static HttpSession httpSession;
-	public static HttpResponse httpResponse;
-	public static HttpRequest httpRequest;
 	public static String FW_LoginUser="userSession";
 	public static  Map<String,Map> workMap = new HashMap<String, Map>();
 
+    
 	public Map<String, Object> jsonResult = new HashMap<>();
 	/**
 	 * 处理结果
@@ -38,24 +39,9 @@ public class BaseController{
 	public String stringResult;
 	public UserInfoModel loginUser;
 	public Map<String,UserInfoModel> loginUserMap = new HashMap<String,UserInfoModel>();
+	public Integer redis_maxVistCount = 30;//次
+	public Integer redis_timeOut = 1;//分钟
 
-
-
-	public HttpResponse getHttpResponse() {
-		return httpResponse;
-	}
-
-	public void setHttpResponse(HttpResponse httpResponse) {
-		this.httpResponse = httpResponse;
-	}
-
-	public HttpRequest getHttpRequest() {
-		return httpRequest;
-	}
-
-	public void setHttpRequest(HttpRequest httpRequest) {
-		this.httpRequest = httpRequest;
-	}
 
 	public Map<String, Object> getJsonResult() {
 		return jsonResult;

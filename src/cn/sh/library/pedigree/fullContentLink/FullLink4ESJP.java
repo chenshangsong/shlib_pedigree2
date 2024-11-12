@@ -1,19 +1,37 @@
 package cn.sh.library.pedigree.fullContentLink;
 
-import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import cn.sh.library.pedigree.base.Constant;
 import cn.sh.library.pedigree.bean.FullLink4ESJPSearchBean;
+import cn.sh.library.pedigree.common.CodeMsgUtil;
 import cn.sh.library.pedigree.common.onlineInfomation.RequestFilter;
-import cn.sh.library.pedigree.framework.util.HttpUtil;
+import cn.sh.library.pedigree.framework.util.StringUtil;
+import cn.sh.library.pedigree.utils.HttpsUtil;
+import cn.sh.library.pedigree.utils.IPUtils;
+import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
+import net.sf.json.JSONObject;
 
+@Component
 public class FullLink4ESJP {
+	@Autowired
+	private RedisUtils redisUtil;
+
+	private static FullLink4ESJP fullLink4ESJP;
+
+	@PostConstruct
+	public void init() {
+		fullLink4ESJP = this;
+		fullLink4ESJP.redisUtil = this.redisUtil;
+	}
 
 	/**
 	 * 获取全文链接图标链接(总方法)
@@ -100,8 +118,10 @@ public class FullLink4ESJP {
 	 */
 	public static String GetFullTextImg(String accessLevelFlg, String[] dois, String value, int i, String tempcallNo,
 			String hasimg) {
-		String ipaddress = StringUtilC
-				.getString(HttpUtil.getSessionValue(RequestFilter.threadLocalRequest.get(), "userIp"));
+//		String ipaddress = StringUtilC
+//		.getString(HttpUtil.getSessionValue(RequestFilter.threadLocalRequest.get(), "userIp"));
+//2034-01-08 chess 改为新方法
+		String ipaddress = IPUtils.getIpAddr(RequestFilter.threadLocalRequest.get());
 		String tempV = dois[i];
 		// 如果不是胶卷并且不为空
 		if (!"9".equals(accessLevelFlg) && !StringUtilC.isEmpty(accessLevelFlg)) {
@@ -128,8 +148,10 @@ public class FullLink4ESJP {
 	 * 获取全文链接图标链接1 chenss 20191205
 	 */
 	public static String GetFullTextImg4Detail(String accessLevel, String doi, String hasimg) {
-		String ipaddress = StringUtilC
-				.getString(HttpUtil.getSessionValue(RequestFilter.threadLocalRequest.get(), "userIp"));
+//		String ipaddress = StringUtilC
+//				.getString(HttpUtil.getSessionValue(RequestFilter.threadLocalRequest.get(), "userIp"));
+		// 2034-01-08 chess 改为新方法
+		String ipaddress = IPUtils.getIpAddr(RequestFilter.threadLocalRequest.get());
 		String link = "";
 		// 如果不是胶卷并且不为空
 		if (!"9".equals(accessLevel) && !StringUtilC.isEmpty(accessLevel)) {
@@ -168,8 +190,7 @@ public class FullLink4ESJP {
 	 * 获取内网DOI链接(临用)
 	 */
 	public static String GetOutFullLinkTemp(String link) {
-		String DOILink = "<a href='" + link + "' target=_blank ><img border='0' src='" + Constant.ProjectPath
-				+ "/res/images/pdf.png' width='20px' height='20px' title='点击查看IIIF全文'></a>";
+		String DOILink = "<a href='" + link + "' target=_blank ><img border='0' src='https://jpv1.library.sh.cn/jp/res/images/pdf.png' width='20px' height='20px' title='点击查看IIIF全文'></a>";
 		return DOILink;
 	}
 
@@ -180,10 +201,7 @@ public class FullLink4ESJP {
 	 */
 	public static String GetFulltext(String DOI, String ipAddress) {
 		String link = "";
-		ipAddress = StringUtilC.isEmpty(ipAddress)
-				? StringUtilC.getString(HttpUtil.getSessionValue(RequestFilter.threadLocalRequest.get(), "userIp"))
-				: ipAddress;
-		if (isInnerIP(ipAddress)) {// 是内网
+		if (IPUtils.isPrivateIP(true)) {// 是内网
 			link = "https://jpv1.library.sh.cn/jp/full-img/{0}/{1}/{2}";
 			// "1"代表内网标识
 			link = MessageFormat.format(link, "jiapu", DOI, "1");
@@ -201,130 +219,44 @@ public class FullLink4ESJP {
 //				+ "' target=_blank ><img border='0' src='" + Constant.ProjectPath
 //				+ "/res/images/pdf2.png' width='20px' height='20px' title='点击查看全文'></a>";
 
-		String DOILink = "<a href='https://dhapi.library.sh.cn/pdfview?innerflag=0&dbname=jp&doi=" + doi // chenss
-																											// 20230215
-																											// pdf浏览插件升级
-				+ "' target=_blank ><img border='0' src='" + Constant.ProjectPath
-				+ "/res/images/pdf2.png' width='20px' height='20px' title='点击查看PDF全文'></a>";
+		String DOILink = "<a href='javascript:;' name='aPdfLink'  data-val='https://dhapi.library.sh.cn/pdfview?innerflag=0&dbname=jp&doi="
+				+ doi // chenss 20230215
+				+ "'  ><img border='0' src='https://jpv1.library.sh.cn/jp/res/images/pdf2.png' width='20px' height='20px' title='点击查看PDF全文'></a>";
 
 		return DOILink;
 	}
 
-	// 参数说明：db="jp"，DOI为家谱文献的DOI，ipaddress=访问者IP 旧方法，读取上图数据库
-	public static String GetFulltext_PDF(String DOI, String ipaddress) {
-		try {
-		SQLDriver sqlManager = new SQLDriver();
-		ZyddSQLDriver zyddManager = new ZyddSQLDriver();
-		if(sqlManager.conActive == null || zyddManager.conActive == null) {
-			return "";
+	public static String GetFulltext_PDF(String doi, String ipAddress) {
+	
+		String result = "";
+		// 如果客户端不是内网IP，则不允许查看
+
+		if (!IPUtils.isPrivateIP(true)) {
+			result = "<a href=\"javascript:alert(&quot;请到上海图书馆家谱阅览室浏览电子全文&quot;)\"><img img border='0' width='20px' height='20px' src='https://jpv1.library.sh.cn/jp/res/images/pdf2.png' alt='请到上海图书馆家谱阅览室浏览电子全文'  ></a>";
+			return result;
 		}
-			// String ipaddress = CommonUtils.userIp; chenss 2018-05-30
-			// 改为从Session中获取。chenss 2018-05-30
-			ipaddress = StringUtilC.isEmpty(ipaddress)
-					? StringUtilC.getString(HttpUtil.getSessionValue(RequestFilter.threadLocalRequest.get(), "userIp"))
-					: ipaddress;
-
-			String[] result = new String[2];
-
-			String db = "jp";
-			sqlManager.OpenStatement();
-			sqlManager.ExecuteSQL("select fulltext_webroot from __db where name = '" + db + "'", 0);
-			result[0] = sqlManager.FieldByIndex(1) + "?dbname=" + db; // chenss 20230215 pdf浏览插件升级
-//				result[0] = "https://dhapi.library.sh.cn/pdfview?innerflag=1&dbname="+db; //chenss 20230215 pdf浏览插件升级
-			sqlManager.CloseStatement();
-
-			int cnt = 0;
-			String callno_modi = "";
-
-		
-			String items = "";
-
-			sqlManager.OpenStatement();
-			sqlManager.ExecuteSQL("select * from " + db + "_meta_item where meta_doi ='" + DOI + "'", 0);
-			while (sqlManager.bHasResult) {
-				callno_modi = sqlManager.FieldByName("callno_modi");
-
-				zyddManager.OpenStatement();
-				zyddManager.ExecuteSQL("select * from " + db + "_item where callno = '" + callno_modi + "'", 0);
-				while (zyddManager.bHasResult) {
-					cnt++;
-					items += ";" + zyddManager.FieldByName("item_id");
-					zyddManager.Next();
-				}
-				zyddManager.CloseStatement();
-
-				sqlManager.Next();
-			}
-			zyddManager.Disconnect();
-			if (cnt > 0) {
-				// 外网开放
-				if (!isInnerIP(ipaddress)) {
-					result[1] = "<a href=\"javascript:alert(&quot;请到上海图书馆家谱阅览室浏览电子全文&quot;)\"><img img border='0' width='20px' height='20px' src='"
-							+ Constant.ProjectPath + "/res/images/pdf2.png' alt='请到上海图书馆家谱阅览室浏览电子全文'  ></a>";
-
-				} else {
-					if (cnt > 1) {
-						result[0] += "&type=item&idvalue=" + URLEncoder.encode(items);
-					} else {
-						result[0] += "&type=item&idvalue=" + URLEncoder.encode(items.substring(1));
+		String redisWorkKey = RedisUtils.key_fulltextIn_pdf.concat(doi);
+		if (fullLink4ESJP.redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
+			Object obj = fullLink4ESJP.redisUtil.get(redisWorkKey);
+			result = String.valueOf(obj);
+			return result;
+		} else {
+			Map<String, Object> _parms = new HashMap<>();
+			_parms.put("doi", doi);
+			String apiResult = HttpsUtil.postJson(CodeMsgUtil.getConfig("fulltext_pdf_url"), null, _parms);
+			if (!StringUtil.isEmpty(apiResult)) {
+				String apiResult_data = StringUtilC.getString(JSONObject.fromObject(apiResult).get("data"));
+				if (!StringUtil.isEmpty(apiResult_data)) {
+					result = apiResult_data;
+					if (!fullLink4ESJP.redisUtil.exists(redisWorkKey)) {// 如果redis不存在
+						// V1直接向缓存中添加数据
+						fullLink4ESJP.redisUtil.set(redisWorkKey, result);
 					}
-					result[1] = "<a href='" + result[0] + "' target=_blank><img border='0' src='" + Constant.ProjectPath
-							+ "/res/images/pdf2.png' width='20px' height='20px' title='点击查看PDF全文'></a>";
 				}
-			} else {
-				result[1] = "&nbsp;请至上海图书馆家谱阅览室借阅";
 			}
-			sqlManager.CloseStatement();
-			sqlManager.Disconnect();
-			return result[1];
-		} catch (Exception e) {
-			
-			return "";
-		} 
+			return result;
+		}
 
-	}
-
-	/**
-	 * 获取客户端用户IP
-	 */
-	public static String getIpAddr(HttpServletRequest request) {
-		String ip = request.getHeader("x-forwarded-for");
-		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-			ip = request.getHeader("Proxy-Client-IP");
-		}
-		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-			ip = request.getHeader("WL-Proxy-Client-IP");
-		}
-		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-			ip = request.getRemoteAddr();
-		}
-		return ip;
-	}
-
-	private static boolean isInnerIP(String ip) {
-		boolean bInnerIP = false;
-		// 私有地址的范围:
-		// 1.A类地址中:10.0.0.0到10.255.255.255
-		// 2.B类地址中:172.16.0.0到172.31.255.255
-		// 3.C类地址中:192.168.0.0到192.168.255.255
-		// 4.本机地址: 127.0.0.1
-		utility ut = new utility();
-		String[] ips = ut.SharpString(ip, ".");
-		int[] ipaddress = new int[ips.length];
-		for (int i = 0; i < ipaddress.length; i++) {
-			ipaddress[i] = Integer.parseInt(ips[i]);
-		}
-		if (ipaddress[0] == 10)
-			bInnerIP = true;
-		if (ipaddress[0] == 172 && ipaddress[1] >= 16 && ipaddress[1] <= 31)
-			bInnerIP = true;
-		if (ipaddress[0] == 192 && ipaddress[1] == 168)
-			bInnerIP = true;
-		if (ip.equals("127.0.0.1"))
-			bInnerIP = true;
-		System.out.println(
-				"IP：" + ip + ";ipaddress[0]： " + ipaddress[0] + ";ipaddress[1]： " + ipaddress[1] + ";是否内网：" + bInnerIP);
-		return bInnerIP;
 	}
 
 }

@@ -9,7 +9,7 @@
 <link href="${ctx}/res/css/home/home.css" rel="stylesheet" media="screen">	
 <link href="${ctx}/res/css/home/jquery.mCustomScrollbar.css" rel="stylesheet" media="screen">	
 	
-<script src="${ctx}/res/sysmanager/vendors/jquery-1.12.4.js"></script>
+<script src="${ctx}/res/sysmanager/vendors/jquery.js"></script>
 <script src="${ctx}/res/sysmanager/bootstrap/js/bootstrap.min.js"></script>
 <script src="${ctx}/res/js/sysmanager/home/jquery.mCustomScrollbar.concat.min.js"></script>
 <script src="${ctx}/res/commJS/layer/layer.js"></script>

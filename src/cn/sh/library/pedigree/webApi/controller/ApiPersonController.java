@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,6 +24,7 @@ import cn.sh.library.pedigree.framework.util.PreloadApiPersonsFromFamilyRules;
 import cn.sh.library.pedigree.sysManager.model.RelationLinkModel;
 import cn.sh.library.pedigree.sysManager.model.RelationNodeModel;
 import cn.sh.library.pedigree.utils.DateUtilC;
+import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.webApi.services.ApiPersonService;
 import cn.sh.library.pedigree.webApi.services.ApiWorkService;
@@ -41,7 +43,8 @@ public class ApiPersonController extends BaseController {
 	private ApiPersonService apiPersonService;
 	@Resource
 	private ApiWorkService apiWorkService;
-
+	@Autowired
+	private RedisUtils redisUtil;
 	/**
 	 * 日志
 	 */
@@ -51,6 +54,13 @@ public class ApiPersonController extends BaseController {
 	@RequestMapping(value = "/getPersonList", method = RequestMethod.GET)
 	public String getPersonList(PersonSearchBean search, @Valid Pager pager) {
 		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+				if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+					jsonResult.put("result", "-1");// 数据来源索引标记
+					jsonResult.put("code", "43003");// 数据来源索引标记
+					jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+					return JSONArray.fromObject(jsonResult).toString();
+				}
 		Map<String, Object> result = new HashMap<>();
 		try {
 			result.put("persons",
@@ -76,6 +86,13 @@ public class ApiPersonController extends BaseController {
 	@RequestMapping(value = "/getInfoByUri", method = RequestMethod.GET)
 	public String getInfoByUri(@Valid String uri) {
 		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+				if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+					jsonResult.put("result", "-1");// 数据来源索引标记
+					jsonResult.put("code", "43003");// 数据来源索引标记
+					jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+					return JSONArray.fromObject(jsonResult).toString();
+				}
 		String[] uris = uri.split(";");
 		try {
 			Person person = this.apiPersonService.get(uris[0], null);
@@ -98,6 +115,12 @@ public class ApiPersonController extends BaseController {
 	@RequestMapping(value = "/getFamilyNameList", method = RequestMethod.GET)
 	public String getFamilyNameList(String fname,Boolean accurateFlag) {
 		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+		if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+			jsonResult.put("result", "-1");// 数据来源索引标记
+			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+			return JSONArray.fromObject(jsonResult).toString();
+		}
 		if(accurateFlag ==null) {
 			accurateFlag=false;
 		}
@@ -125,6 +148,13 @@ public class ApiPersonController extends BaseController {
 	public String getPedigreeList(String furi, @Valid String uri,
 			boolean ispageInit) {
 		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+				if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+					jsonResult.put("result", "-1");// 数据来源索引标记
+					jsonResult.put("code", "43003");// 数据来源索引标记
+					jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+					return JSONArray.fromObject(jsonResult).toString();
+				}
 		try {
 			String[] uris = StringUtilC.getString(uri).split(";");
 			uri = uris[0];
@@ -226,6 +256,13 @@ public class ApiPersonController extends BaseController {
 	@RequestMapping(value = "/getPersonsFromFamilyRules", method = RequestMethod.GET)
 	public String getPersonsFromFamilyRules() {
 		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+				if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+					jsonResult.put("result", "-1");// 数据来源索引标记
+					jsonResult.put("code", "43003");// 数据来源索引标记
+					jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+					return JSONArray.fromObject(jsonResult).toString();
+				}
 		try {
 			//预加载中获取persons	@author陈铭
 			List<Map<String, String>> persons = PreloadApiPersonsFromFamilyRules.getInstance().getPersons();
@@ -246,6 +283,13 @@ public class ApiPersonController extends BaseController {
 	@RequestMapping(value = "/getFamilyNamesFromFamilyRules", method = RequestMethod.GET)
 	public String getFamilyNamesFromFamilyRules() {
 		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+				if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+					jsonResult.put("result", "-1");// 数据来源索引标记
+					jsonResult.put("code", "43003");// 数据来源索引标记
+					jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+					return JSONArray.fromObject(jsonResult).toString();
+				}
 		try {
 			//预加载中获取familyNames	@author陈铭
 			List<Map<String, String>> familyNames = PreloadApiPersonsFromFamilyRules.getInstance().getFamilyNames();
@@ -266,6 +310,13 @@ public class ApiPersonController extends BaseController {
 	@RequestMapping(value = "/getProvsFromFamilyRules", method = RequestMethod.GET)
 	public String getProvsFromFamilyRules() {
 		jsonResult = new HashMap<>();
+		// 1分钟30次访问限制
+				if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+					jsonResult.put("result", "-1");// 数据来源索引标记
+					jsonResult.put("code", "43003");// 数据来源索引标记
+					jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+					return JSONArray.fromObject(jsonResult).toString();
+				}
 		try {
 			//预加载中获取Provs	@author陈铭
 			List<Map<String, String>> provsFromFamilyRules = PreloadApiPersonsFromFamilyRules.getInstance().getProvsFromFamilyRules();

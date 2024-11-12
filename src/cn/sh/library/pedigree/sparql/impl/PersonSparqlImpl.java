@@ -263,7 +263,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 	}
 
 	public ArrayList getFamRels4Work(String work_uri) {
-		String query = this.nsPrefix + "SELECT distinct ?uri ?name (GROUP_CONCAT(DISTINCT ?role; separator=';') AS ?roles)  (GROUP_CONCAT(DISTINCT ?time; separator=';') AS ?time) ?order\r\n"
+		String query = this.nsPrefix + "SELECT distinct ?uri ?name (GROUP_CONCAT(DISTINCT ?role; separator=';') AS ?roles)  (GROUP_CONCAT(DISTINCT ?time; separator=';') AS ?time) ?serialNo  ?order\r\n"
 				+ "from <http://gen.library.sh.cn/graph/person>\r\n"
 				+ "from <http://gen.library.sh.cn/graph/baseinfo>\r\n"
 				+ " WHERE {   \r\n"
@@ -273,11 +273,12 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 				+ "{?uri  shl:roleOfFamily ?rUri. {?rUri bf:label ?role .FILTER (lang(?role)='chs')} \r\n"
 				+ "}\r\n"
 				+ "OPTIONAL {?uri shl:temporalValue ?time  }\r\n"
+				+ "OPTIONAL {?uri shl:serialNo ?serialNo  }\r\n"
 				+ "OPTIONAL {?uri shl:orderOfSeniority ?order .}\r\n"
 				+ "\r\n"
-				+ "} order by ?order ?name limit 20";
+				+ "} order by  ?name  ?serialNo ?order desc(?time) limit 50";
 	
-		return SparqlExecution.vQuery(this.graph, query, new String[] { "uri", "name", "roles", "order", "time" });
+		return SparqlExecution.vQuery(this.graph, query, new String[] { "uri", "serialNo",  "name", "roles", "order", "time" });
 	}
 
 	private void getTriples(List fl, Model temp, String uri) {
