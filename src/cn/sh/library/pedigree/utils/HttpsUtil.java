@@ -253,7 +253,7 @@ public class HttpsUtil {
         //.setConnectionRequestTimeout(1000) // 从数据库连接池获取连接超时时间设置
         //.setSocketTimeout(1000)   // socket连接建立成功, 数据传输响应超时
         //.setConnectTimeout(5000) // 建立socket链接超时时间
-        RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(1000).setConnectTimeout(5000).setSocketTimeout(1000).build();
+        RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(5000).setConnectTimeout(5000).setSocketTimeout(5000).build();
         httpPost.setConfig(requestConfig);
         CloseableHttpResponse response = null;
         try {

@@ -6,7 +6,10 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
+import cn.sh.library.pedigree.utils.HttpsUtil;
+import cn.sh.library.pedigree.utils.IPUtils;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,8 +41,39 @@ public class FullLinkViewerController extends BaseController {
 	@RequestMapping(value = "/{org:.+}/{manifest:.+}", method = RequestMethod.GET)
 	public ModelAndView Plist(@PathVariable(value = "org") String org,
 			@PathVariable(value = "manifest") String manifest, 
-			String uri,HttpSession hs) {
+			String uri,HttpSession hs,String token) {
 		ModelAndView modelAndView = new ModelAndView();
+
+		// 外网未登录，不能查看。
+		Boolean privateIP = IPUtils.isPrivateIP(true);
+		if(!privateIP){
+			if(!StringUtils.hasLength(token)){
+				modelAndView.setViewName("error/NotLoginError");
+				return modelAndView;
+			}
+			String id_str = "";
+			try {
+				String userInfoUrl = CodeMsgUtil.getConfig("USER_INFO_URL");
+				String rs = HttpsUtil.postJson(userInfoUrl + token, null, null);
+				if (StringUtils.hasLength(rs)) {
+					JSONObject resData = JSONObject.fromObject(rs);
+					if ("0".equals(resData.getString("result"))) {
+						JSONObject userInfo = resData.getJSONObject("data");
+						id_str = userInfo.getString("id");
+						if(id_str == null){
+							id_str = "";
+						}
+					}
+				}
+			} catch (Exception e) {
+
+			}
+			if (id_str == "") {
+				modelAndView.setViewName("error/NotLoginError");
+				return modelAndView;
+			}
+		}
+
 		UserInfoModel user = this.getUser(hs);
 		String userId = "";
 		if (user != null) {

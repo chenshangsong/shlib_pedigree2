@@ -128,29 +128,29 @@ public class FullLink {
 					}
 					// 文本
 					map.put("fulltext", fulltext);
-					// 带图标的全文链接
-					String fulltextLink = "";
-					// 带图标的全文链接 PDF
-					String fulltextLinkPDF = "";
-					// 如果是胶卷则进行全文链接隐藏 
-					if (!StringUtil.isBlank(doi) && !StringUtil.isBlank(acc) && !"9".equals(acc)
-							&& "true".equals(hasFullImg)) {
-						fulltextLink = FullLink4ESJP.GetFullTextImg4Detail(acc, doi, hasFullImg);
-						fulltextLinkPDF = FullLink4ESJP.GetFullTextImg_PDF(acc, doi, hasFullImg,IPUtils.getIpAddr(RequestFilter.threadLocalRequest.get()));
-						// 将全文图标及全文链接放入该属性
-						map.put("fulltextLink", fulltextLink);
-						map.put("fulltextLinkPDF", fulltextLinkPDF);
-						// 将访问地址放入fulltextHref属性
-						if (!StringUtilC.isEmpty(fulltextLink)) {
-							String regEx = "href=\'(.+?)\'";
-							Pattern pattern = Pattern.compile(regEx);
-							Matcher matcher = pattern.matcher(fulltextLink);
-							if (matcher.find()) {
-								String fullImgPath = matcher.group(1);
-								map.put("fulltextHref", fullImgPath);
-							}
-						}
-					}
+//					// 带图标的全文链接
+//					String fulltextLink = "";
+//					// 带图标的全文链接 PDF
+//					String fulltextLinkPDF = "";
+//					// 如果是胶卷则进行全文链接隐藏
+//					if (!StringUtil.isBlank(doi) && !StringUtil.isBlank(acc) && !"9".equals(acc)
+//							&& "true".equals(hasFullImg)) {
+//						fulltextLink = FullLink4ESJP.GetFullTextImg4Detail(acc, doi, hasFullImg);
+//						fulltextLinkPDF = FullLink4ESJP.GetFullTextImg_PDF(acc, doi, hasFullImg,IPUtils.getIpAddr(RequestFilter.threadLocalRequest.get()));
+//						// 将全文图标及全文链接放入该属性
+//						map.put("fulltextLink", fulltextLink);
+//						map.put("fulltextLinkPDF", fulltextLinkPDF);
+//						// 将访问地址放入fulltextHref属性
+//						if (!StringUtilC.isEmpty(fulltextLink)) {
+//							String regEx = "href=\'(.+?)\'";
+//							Pattern pattern = Pattern.compile(regEx);
+//							Matcher matcher = pattern.matcher(fulltextLink);
+//							if (matcher.find()) {
+//								String fullImgPath = matcher.group(1);
+//								map.put("fulltextHref", fullImgPath);
+//							}
+//						}
+//					}
 				}
 			}
 
@@ -192,7 +192,7 @@ String DOILink = "<a href='https://dhapi.library.sh.cn/pdfview?innerflag=0&dbnam
 	/**
 	 * 获取内网DOI链接
 	 * 
-	 * @param doi
+	 * @param
 	 * @return
 	 */
 	public static String GetOutFullLinkTemp(String link) {
