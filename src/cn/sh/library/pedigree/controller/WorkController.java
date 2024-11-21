@@ -185,7 +185,7 @@ public class WorkController extends BaseController {
 			return _work;
 		}
 		try {
-//			_work = this.workService.getWork(uri, true); jpv1家谱详情API，无人使用， 屏蔽 chenss 20241120
+			_work = this.workService.getWork(uri, true);
 			return _work;
 		} catch (Exception e) {
 			logger.info("WorkController-get错误" + DateUtilC.getNowDateTime() + "----" + e);

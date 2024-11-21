@@ -292,7 +292,7 @@ public class WorkServiceImpl extends BaseServiceImpl implements WorkService {
 										}
 
 									}
-									value += "DOI为" + tempV + tempcallNo + link
+									value += "DOI为" + tempV + tempcallNo  // + link  //去掉全文查看链接 20241120
 											+ "<br>";
 								} else {
 									value += tempV + "<br>";
