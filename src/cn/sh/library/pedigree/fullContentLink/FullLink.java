@@ -51,14 +51,6 @@ public class FullLink {
 						link = MessageFormat.format(link, "jiapu", tempV.substring(0, 10));
 						link = FullLink.GetOutFullLinkTemp(link);
 					}
-					// 临用
-					/*
-					 * if (tempV.equals("STJP011280")) { link =
-					 * "https://jpv1.library.sh.cn/jp/full-img/{0}/{1}"; link =
-					 * MessageFormat.format(link, "brvqlrg8y55v1b5q", tempV); link=
-					 * FullLink.GetOutFullLinkTemp(link); } else{ link =
-					 * FullLink.GetOutFullLink(tempV.substring(0, 10)); }
-					 */
 				} else if (accessLevelFlg.equals("1")) {
 					if ("true".equals(hasimg)) {// 如果内网有全文标记
 						// 临用
@@ -128,29 +120,6 @@ public class FullLink {
 					}
 					// 文本
 					map.put("fulltext", fulltext);
-//					// 带图标的全文链接
-//					String fulltextLink = "";
-//					// 带图标的全文链接 PDF
-//					String fulltextLinkPDF = "";
-//					// 如果是胶卷则进行全文链接隐藏
-//					if (!StringUtil.isBlank(doi) && !StringUtil.isBlank(acc) && !"9".equals(acc)
-//							&& "true".equals(hasFullImg)) {
-//						fulltextLink = FullLink4ESJP.GetFullTextImg4Detail(acc, doi, hasFullImg);
-//						fulltextLinkPDF = FullLink4ESJP.GetFullTextImg_PDF(acc, doi, hasFullImg,IPUtils.getIpAddr(RequestFilter.threadLocalRequest.get()));
-//						// 将全文图标及全文链接放入该属性
-//						map.put("fulltextLink", fulltextLink);
-//						map.put("fulltextLinkPDF", fulltextLinkPDF);
-//						// 将访问地址放入fulltextHref属性
-//						if (!StringUtilC.isEmpty(fulltextLink)) {
-//							String regEx = "href=\'(.+?)\'";
-//							Pattern pattern = Pattern.compile(regEx);
-//							Matcher matcher = pattern.matcher(fulltextLink);
-//							if (matcher.find()) {
-//								String fullImgPath = matcher.group(1);
-//								map.put("fulltextHref", fullImgPath);
-//							}
-//						}
-//					}
 				}
 			}
 

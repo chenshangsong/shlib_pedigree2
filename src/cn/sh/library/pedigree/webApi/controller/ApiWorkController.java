@@ -498,6 +498,8 @@ public class ApiWorkController extends BaseController {
 				// 已查看数量
 				_mapTemp.put("viewCount", apiWorkViewsCountService.getInfoByWorkUri(uri).getViewCount());
 			}
+			//处理时光的相关数据
+            StringUtilC.ProcessShiGuangMap(_mapTemp);
 			jsonResult.put("data", _mapTemp);
 		} catch (Exception e) {
 			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
@@ -546,8 +548,6 @@ public class ApiWorkController extends BaseController {
 		try {
 			String redisWorkKey = RedisUtils.key_work.concat(uri);
 			String redisWorkKeyBm = RedisUtils.key_work_bm.concat(uri);
-			String redisWorkViewKey = RedisUtils.key_work_view.concat(uri);
-			String rediskeyWorkConvertImg = RedisUtils.key_work_convertImg.concat(uri);
 			jsonResult.put("uri", uri);
 			jsonResult.put("result", "0");
 			// 定义 Redis 键和对应的 JSON 消息键

@@ -32,8 +32,8 @@ import net.sf.json.JSONObject;
 public class StringUtilC {
 	public static void main(String[] args) {
 		String traditional = "本谱着录了湖北、湖南、广东、广西、海南、重庆、四川、贵州、云南、西藏、港澳等地蔚姓概况。参见《蔚姓广谱》甘肃、山东等卷（馆藏XP4961-4968）";
-        String simplified = getCht(traditional);
-        System.out.println(simplified); // 输出：繁体中文
+		String simplified = getCht(traditional);
+		System.out.println(simplified); // 输出：繁体中文
 
 	}
 
@@ -50,6 +50,48 @@ public class StringUtilC {
 			return "'" + StringUtilC.str2Unicode(str) + "'";
 		}
 		return null;
+
+	}
+
+	/**
+	 * 替换时光科技有限公司
+	 * 
+	 * @param dataMap
+	 */
+	public static void ProcessShiGuangMap(Map<String, Object> dataMap) {
+		String needReplaceStr="江苏时光信息科技有限公司";
+		String replaceStr="第三方社会团体";
+		// 检查map中是否存在itemList节点并且该节点不为空
+		if (dataMap.containsKey("itemList") && dataMap.get("itemList") instanceof List) {
+			List<Map<String, Object>> itemList = (List<Map<String, Object>>) dataMap.get("itemList");
+			if (!itemList.isEmpty()) {
+				// 遍历itemList中的每个item
+				for (Map<String, Object> item : itemList) {
+					// 检查orgShort和orgFull字段是否包含特定字符串
+					if (item.containsKey("orgShort") && item.get("orgShort") != null
+							&& item.get("orgShort").toString().contains(needReplaceStr)) {
+						item.put("orgShort", replaceStr);
+						// 将address字段替换为空字符串
+						if (item.containsKey("address")) {
+							item.put("address", "");
+						}
+					}
+					if (item.containsKey("orgFull") && item.get("orgFull") != null
+							&& item.get("orgFull").toString().contains(needReplaceStr)) {
+						item.put("orgFull", replaceStr);
+						// 将address字段替换为空字符串
+						if (item.containsKey("address")) {
+							item.put("address", "");
+						}
+					}
+
+				}
+			}
+		}
+
+		if (dataMap.containsKey("note") && dataMap.get("note").toString().contains(needReplaceStr)) {
+			dataMap.put("note", dataMap.get("note").toString().replaceAll(needReplaceStr, replaceStr));
+		}
 
 	}
 
@@ -175,6 +217,7 @@ public class StringUtilC {
 //		return "'" + StringUtilC.str2Unicode(ZHConverter.getInstance(ZHConverter.SIMPLIFIED).convert(strCht)) + "'";
 		return "'" + StringUtilC.str2Unicode(strCht) + "'";
 	}
+
 	public static String getChs2Rdf(String strCht) {
 		if (isEmpty(strCht)) {
 			return "";
@@ -182,6 +225,7 @@ public class StringUtilC {
 //		return "'" + StringUtilC.str2Unicode(ZHConverter.getInstance(ZHConverter.SIMPLIFIED).convert(strCht)) + "'";
 		return "'" + StringUtilC.str2Unicode(ZhConverterUtil.toSimple(strCht)) + "'";
 	}
+
 	/**
 	 * 简转繁体
 	 * 
@@ -209,7 +253,7 @@ public class StringUtilC {
 
 //		return "'" + StringUtilC.str2Unicode(ZHConverter.getInstance(ZHConverter.TRADITIONAL).convert(strChs)) + "'";
 		return "'" + StringUtilC.str2Unicode(ZhConverterUtil.toTraditional(strChs)) + "'";
-		
+
 	}
 
 	/**
