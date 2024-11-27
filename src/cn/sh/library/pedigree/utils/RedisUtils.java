@@ -44,7 +44,6 @@ public class RedisUtils {
 	public static String key_work_convertImg = "key_work_cimg_";
 //内网全文地址
 	public static String key_fulltextIn_pdf = "key_fulltextIn_pdf_";
-	public static String key_work_fav = "key_work_fav_";
 	public static String key_work_view = "key_work_view_";
 	public static String key_family = "key_family_";// 姓氏
 	@Resource

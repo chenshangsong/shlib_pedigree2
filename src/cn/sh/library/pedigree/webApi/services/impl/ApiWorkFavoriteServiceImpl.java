@@ -42,16 +42,7 @@ public class ApiWorkFavoriteServiceImpl extends BaseServiceImpl implements ApiWo
 	@Override
 	public ApiWorkFavoriteDto getApiWorkFavoriteByWorkUri(Integer userId, String workUri) {
 		ApiWorkFavoriteDto dto = new ApiWorkFavoriteDto();
-		String redisFavoriteKey = RedisUtils.key_work_fav.concat(String.valueOf(userId)).concat("_").concat(workUri);
-		if (redisUtil.exists(redisFavoriteKey)) {
-			//取
-	        Object obj = RedisUtils.unserizlize( (byte[]) redisUtil.get(redisFavoriteKey));
-	        dto = (ApiWorkFavoriteDto) obj;
-		} else {
-			dto = apiWorkFavoriterMapper.getApiWorkFavoriteByWorkUri(userId, workUri);
-			//存 字节
-	        redisUtil.set(redisFavoriteKey, RedisUtils.serialize(dto));
-		}
+		dto = apiWorkFavoriterMapper.getApiWorkFavoriteByWorkUri(userId, workUri);
 		return dto;
 	}
 
@@ -63,12 +54,9 @@ public class ApiWorkFavoriteServiceImpl extends BaseServiceImpl implements ApiWo
 
 	@Override
 	public Integer insertApiWorkFavorite(ApiWorkFavoriteDto model) {
-		 String redisFavoriteKey = RedisUtils.key_work_fav.concat(String.valueOf(model.getUserId())).concat("_").concat(model.getWorkUri());
+
 		 apiWorkFavoriterMapper.insertApiWorkFavorite(model);
-			if (!redisUtil.exists(redisFavoriteKey)) {
-		//存 字节  redis chenss20230322
-	    redisUtil.set(redisFavoriteKey, RedisUtils.serialize(model));
-			}
+			
 		 return model.getId();
 	}
 
@@ -79,10 +67,6 @@ public class ApiWorkFavoriteServiceImpl extends BaseServiceImpl implements ApiWo
 
 	@Override
 	public Integer deleteApiWorkFavoriteByWorkUri(Integer userId, String workUri) {
-		String redisFavoriteKey = "favorite_" + userId + workUri;
-		if (redisUtil.exists(redisFavoriteKey)) {
-		  redisUtil.remove(redisFavoriteKey);//取消收藏 redis chenss20230322
-		}
 		return apiWorkFavoriterMapper.deleteApiWorkFavoriteByWorkUri(userId, workUri);
 	}
 

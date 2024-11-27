@@ -461,7 +461,7 @@ public class ApiWorkController extends BaseController {
 			if(uid == null){
 				uid = UserUtil.getUserId(request);
 			}
-			CommonUtils.loginUser = PreloadUserList.getUserById(StringUtilC.getString(uid));
+//			CommonUtils.loginUser = PreloadUserList.getUserById(StringUtilC.getString(uid));
 
 					String redisWorkKey = RedisUtils.key_work.concat(uri);
 			Map _mapTemp = null;

@@ -10,11 +10,7 @@ import org.springframework.web.servlet.ModelAndView;
 import cn.sh.library.pedigree.base.Constant;
 import cn.sh.library.pedigree.common.CommonUtils;
 import cn.sh.library.pedigree.common.RoleGroup;
-import cn.sh.library.pedigree.framework.util.HttpUtil;
-import cn.sh.library.pedigree.framework.util.PreloadUserList;
-import cn.sh.library.pedigree.fullContentLink.FullLink;
 import cn.sh.library.pedigree.sysManager.model.UserInfoModel;
-import cn.sh.library.pedigree.utils.IPUtils;
 
 public class LoginInterceptor implements HandlerInterceptor {
 
