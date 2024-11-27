@@ -115,14 +115,16 @@ public class ApiPersonController extends BaseController {
 	@RequestMapping(value = "/getFamilyNameList", method = RequestMethod.GET)
 	public String getFamilyNameList(String fname,Boolean accurateFlag) {
 		jsonResult = new HashMap<>();
-		// 1分钟30次访问限制
-		if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
-			jsonResult.put("result", "-1");// 数据来源索引标记
-			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
-			return JSONArray.fromObject(jsonResult).toString();
-		}
 		if(accurateFlag ==null) {
 			accurateFlag=false;
+		}
+		// 1分钟30次访问限制
+		if(!accurateFlag) { //如果是编目系统过来时，则不走拦截限制。
+			if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+				jsonResult.put("result", "-1");// 数据来源索引标记
+				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
+				return JSONArray.fromObject(jsonResult).toString();
+			}
 		}
 		try {
 			List<Map<String, String>> familyNames = this.apiPersonService
