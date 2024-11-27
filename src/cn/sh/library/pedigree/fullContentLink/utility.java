@@ -1,4 +1,4 @@
-﻿package cn.sh.library.pedigree.fullContentLink;
+package cn.sh.library.pedigree.fullContentLink;
 
 import java.io.BufferedReader;
 import java.io.File;

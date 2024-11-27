@@ -1,4 +1,4 @@
-﻿package  cn.sh.library.pedigree.framework.util;
+package  cn.sh.library.pedigree.framework.util;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -12,10 +12,10 @@ import org.apache.log4j.Logger;
  * クラス名 : ShellUtil <br>
  * 機能概要 : </br> コピーライト: Copyright © 2011 NC Corporation, All Rights
  * Reserved.</br>
- * 
+ *
  * @author chenshangsong
  * @version 1.0
- * 
+ *
  */
 public class ShellUtil {
 	private static final Logger logger = Logger.getLogger(ShellUtil.class);
@@ -26,7 +26,7 @@ public class ShellUtil {
 	public static void createPDF(String templatePath,String dateFilePath,String pdfFilePath) throws Exception {
 		StringBuffer stringBuffer = new StringBuffer();
 		BufferedReader bufferedReader = null;
-		
+
 		// 格式化日期时间，记录日志时使用
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS ");
 		// 生成pdf文件
