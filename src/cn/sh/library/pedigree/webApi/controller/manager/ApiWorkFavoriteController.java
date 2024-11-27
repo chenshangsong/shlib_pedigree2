@@ -90,14 +90,15 @@ public class ApiWorkFavoriteController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
-	public String add(@Valid String workUri,@Valid Integer uid, HttpSession hs)throws Exception {
+	public String add(@Valid String workUri,HttpServletRequest httpRequest)throws Exception {
 		
 		try {
+			Integer uid = UserUtil.getUserId(httpRequest);
 			jsonResult = new HashMap<>();
-			
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())){
-				
-				/*if (ifExsitUser(hs)) {*/
+
+//			if (ifExsitUser(hs)) {
+//			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())){
+			if(uid != null){
 				ApiWorkFavoriteDto _dtoTemp = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, workUri);
 				// 已存在
 				if (_dtoTemp != null && !StringUtilC.isEmpty(_dtoTemp.getId())) {
@@ -153,9 +154,9 @@ public class ApiWorkFavoriteController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/delete", method = RequestMethod.POST)
-	public String delete(@Valid Integer id, HttpServletRequest request)throws Exception {
+	public String delete(@Valid Integer id, HttpServletRequest httpRequest)throws Exception {
 		try {
-			Integer uid = UserUtil.getUserId(request);
+			Integer uid = UserUtil.getUserId(httpRequest);
 
 			jsonResult = new HashMap<>();
 //			if (ifExsitUser(hs)) {

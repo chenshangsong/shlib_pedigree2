@@ -11,9 +11,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import cn.sh.library.pedigree.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +38,6 @@ import cn.sh.library.pedigree.framework.util.StringUtil;
 import cn.sh.library.pedigree.fullContentLink.FullLink;
 import cn.sh.library.pedigree.sysManager.model.ApiWorkFavoriteDto;
 import cn.sh.library.pedigree.sysManager.model.UserInfoModel;
-import cn.sh.library.pedigree.utils.DateUtilC;
-import cn.sh.library.pedigree.utils.RedisUtils;
-import cn.sh.library.pedigree.utils.StringUtilC;
-import cn.sh.library.pedigree.utils.WebApiUtils;
 import cn.sh.library.pedigree.webApi.dto.PlaceFacet;
 import cn.sh.library.pedigree.webApi.dto.searchBean.ApiWorkSearchBean;
 import cn.sh.library.pedigree.webApi.services.ApiWorkFavoriteService;
@@ -448,7 +446,7 @@ public class ApiWorkController extends BaseController {
 
 	@ResponseBody
 	@RequestMapping(value = "/getDetailByWorkUri", method = RequestMethod.GET)
-	public JSONObject getDetailByWorkUri_redis(@Valid String uri, Integer uid, HttpSession hs) throws Exception {
+	public JSONObject getDetailByWorkUri_redis(@Valid String uri, Integer uid, HttpServletRequest request) throws Exception {
 		jsonResult = new HashMap<>();
 		try {
 			// 1分钟30次访问限制
@@ -459,10 +457,13 @@ public class ApiWorkController extends BaseController {
 				return JSONObject.fromObject(jsonResult);
 			}
 			// 设置当前登录用户 chenss20191205
-			CommonUtils.loginUser = new UserInfoModel();
+//			CommonUtils.loginUser = new UserInfoModel();
+			if(uid == null){
+				uid = UserUtil.getUserId(request);
+			}
 			CommonUtils.loginUser = PreloadUserList.getUserById(StringUtilC.getString(uid));
 
-			String redisWorkKey = RedisUtils.key_work.concat(uri);
+					String redisWorkKey = RedisUtils.key_work.concat(uri);
 			Map _mapTemp = null;
 
 			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
