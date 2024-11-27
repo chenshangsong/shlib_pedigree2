@@ -489,7 +489,7 @@ public class ApiWorkController extends BaseController {
 			}
 
 			// 是否已收藏
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())) {
+			if (!StringUtilC.isEmpty(uid)) {
 				ApiWorkFavoriteDto fdto = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, uri);
 				if (fdto != null && !StringUtilC.isEmpty(fdto.getId())) {
 					_mapTemp.put("favoriteId", fdto.getId());
