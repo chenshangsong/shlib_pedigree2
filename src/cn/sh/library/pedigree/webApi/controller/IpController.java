@@ -52,7 +52,7 @@ public class IpController extends BaseController {
         try {
             Map<String,Object> _result = new HashMap<>();
             _result.put("client_ip", IPUtils.getIpAddr(RequestFilter.threadLocalRequest.get()));
-            _result.put("server_port", String.valueOf(RequestFilter.threadLocalRequest.get().getServerPort()));
+//            _result.put("server_port", String.valueOf(RequestFilter.threadLocalRequest.get().getServerPort()));
 //            _result.put("server_host", RequestFilter.threadLocalRequest.get().getLocalAddr());
             Boolean innerIpFlg = IPUtils.isPrivateIP(true);
             _result.put("isPrivateIp", innerIpFlg);
