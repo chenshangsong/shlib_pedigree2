@@ -45,7 +45,7 @@ public interface ApiWorkFavoriteService extends BaseService {
 	 * @param id
 	 * @return
 	 */
-	public Integer deleteApiWorkFavoriteById(@Param(value = "id") Integer id);
+	public Integer deleteApiWorkFavoriteById(@Param(value = "id") Integer id,@Param(value = "userId") Integer userId);
 	
 	/**
 	 * 根据用户ID ,workId 删除收藏信息

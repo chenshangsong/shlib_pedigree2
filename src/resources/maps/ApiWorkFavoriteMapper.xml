@@ -50,7 +50,7 @@
 	<!-- 根据ID 删除收藏信息 -->
 	<delete id="deleteApiWorkFavoriteById">
 		DELETE FROM t_jp_work_favorite
-		WHERE id = #{id}
+		WHERE id = #{id} AND userId = #{userId}
 	</delete>
 	<!-- 根据用户ID ,workId 删除收藏信息 -->
 	<delete id="deleteApiWorkFavoriteByWorkUri">

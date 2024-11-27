@@ -73,8 +73,8 @@ public class ApiWorkFavoriteServiceImpl extends BaseServiceImpl implements ApiWo
 	}
 
 	@Override
-	public Integer deleteApiWorkFavoriteById(Integer id) {
-		return apiWorkFavoriterMapper.deleteApiWorkFavoriteById(id);
+	public Integer deleteApiWorkFavoriteById(Integer id,Integer userId) {
+		return apiWorkFavoriterMapper.deleteApiWorkFavoriteById(id,userId);
 	}
 
 	@Override

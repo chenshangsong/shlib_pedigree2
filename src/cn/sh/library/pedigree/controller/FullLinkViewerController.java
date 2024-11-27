@@ -8,6 +8,7 @@ import javax.servlet.http.HttpSession;
 
 import cn.sh.library.pedigree.utils.HttpsUtil;
 import cn.sh.library.pedigree.utils.IPUtils;
+import cn.sh.library.pedigree.utils.UserUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,24 +52,13 @@ public class FullLinkViewerController extends BaseController {
 				modelAndView.setViewName("error/NotLoginError");
 				return modelAndView;
 			}
-			String id_str = "";
+			Integer uid = null;
 			try {
-				String userInfoUrl = CodeMsgUtil.getConfig("USER_INFO_URL");
-				String rs = HttpsUtil.postJson(userInfoUrl + token, null, null);
-				if (StringUtils.hasLength(rs)) {
-					JSONObject resData = JSONObject.fromObject(rs);
-					if ("0".equals(resData.getString("result"))) {
-						JSONObject userInfo = resData.getJSONObject("data");
-						id_str = userInfo.getString("id");
-						if(id_str == null){
-							id_str = "";
-						}
-					}
-				}
-			} catch (Exception e) {
-
+				uid = UserUtil.getUserId(token);
+			}catch (Exception e) {
+				e.printStackTrace();
 			}
-			if (id_str == "") {
+			if (uid == null) {
 				modelAndView.setViewName("error/NotLoginError");
 				return modelAndView;
 			}

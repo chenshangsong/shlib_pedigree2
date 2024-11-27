@@ -42,7 +42,7 @@ public interface ApiWorkFavoriterMapper {
 	 * @param id
 	 * @return
 	 */
-	Integer deleteApiWorkFavoriteById(@Param(value = "id") Integer id);
+	Integer deleteApiWorkFavoriteById(@Param(value = "id") Integer id,@Param(value = "userId") Integer userId);
 	
 	/**
 	 * 根据用户ID ,workId 删除收藏信息

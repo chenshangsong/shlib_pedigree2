@@ -4,9 +4,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import cn.sh.library.pedigree.utils.UserUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -151,15 +153,16 @@ public class ApiWorkFavoriteController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/delete", method = RequestMethod.POST)
-	public String delete(@Valid Integer id, @Valid Integer uid,HttpSession hs)throws Exception {
-		
+	public String delete(@Valid Integer id, HttpServletRequest request)throws Exception {
 		try {
+			Integer uid = UserUtil.getUserId(request);
+
 			jsonResult = new HashMap<>();
-			
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())){
-			/*if (ifExsitUser(hs)) {*/
+//			if (ifExsitUser(hs)) {
+//			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())){
+			if(uid != null){
 				// 执行更新
-				int ifSucess = apiWorkFavoriteService.deleteApiWorkFavoriteById(id);
+				int ifSucess = apiWorkFavoriteService.deleteApiWorkFavoriteById(id, uid);
 				// 如果成功
 				if (ifSucess>= 0) {
 					jsonResult.put(result, FWConstants.result_success);
