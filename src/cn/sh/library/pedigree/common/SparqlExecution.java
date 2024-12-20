@@ -36,284 +36,346 @@ import virtuoso.jena.driver.VirtuosoUpdateRequest;
  * Created by Administrator on 14-3-4.
  */
 public class SparqlExecution {
-	/**
-	 * 日志
-	 */
-	private static Logger logger = Logger.getLogger(SparqlExecution.class);
-    //Remote federated query
+    /**
+     * 日志
+     */
+    private static final Logger logger = Logger.getLogger(SparqlExecution.class);
+
+    // Remote federated query
     public static ArrayList vQuery(String endpoint, String query, String... objects) {
-        Query sparql = QueryFactory.create(query);
-        QueryExecution qe = QueryExecutionFactory.sparqlService(endpoint, sparql);
-
-        ResultSet rs = qe.execSelect();
-
-        return extract(rs, objects);
+        QueryExecution qe = null;
+        try {
+            Query sparql = QueryFactory.create(query);
+            qe = QueryExecutionFactory.sparqlService(endpoint, sparql);
+            ResultSet rs = qe.execSelect();
+            return extract(rs, objects);
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-vQuery: " + query, e);
+            return null;
+        } finally {
+            if (qe != null) {
+                qe.close();
+            }
+        }
     }
 
-    //Query sparql in Virtuoso linked database directly.
     public static ArrayList vQuery(VirtGraph set, String query, String... objects) {
-try {
-
-    VirtuosoQueryExecution vqe = VirtuosoQueryExecutionFactory.create(query, set);
-    ResultSet rs = vqe.execSelect();
-
-    return extract(rs, objects);
-} catch (Exception e) {
-	logger.info("错误SparqlExecution-jQuery:"+query+"---"+e);
-}
-return null;
+        VirtuosoQueryExecution vqe = null;
+        try {
+            vqe = VirtuosoQueryExecutionFactory.create(query, set);
+            ResultSet rs = vqe.execSelect();
+            return extract(rs, objects);
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-vQuery: " + query, e);
+            return null;
+        } finally {
+            if (vqe != null) {
+                vqe.close();
+            }
+        }
     }
 
-    //Service
+    // Service
     public static ArrayList jQuery(String service, String query, String... objects) {
-    	try {
-    		  Query sparql = QueryFactory.create(query);
-    	        ARQ.getContext().setTrue(ARQ.useSAX);
-    	        //Executing SPARQL Query and pointing to the DBpedia SPARQL Endpoint
-    	        QueryExecution qexec = QueryExecutionFactory.sparqlService(service, sparql);
-    	        //Retrieving the SPARQL Query results
-    	        ResultSet rs = qexec.execSelect();
-
-    	        return extract(rs, objects);
-		} catch (Exception e) {
-			logger.info("错误SparqlExecution-jQuery:"+query+"---"+e);
-		}
-      return null;
+        QueryExecution vqe = null;
+        try {
+            Query sparql = QueryFactory.create(query);
+            ARQ.getContext().setTrue(ARQ.useSAX);
+            vqe = QueryExecutionFactory.sparqlService(service, sparql);
+            ResultSet rs = vqe.execSelect();
+            return extract(rs, objects);
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-jQuery: " + query, e);
+            return null;
+        } finally {
+            if (vqe != null) {
+                vqe.close();
+            }
+        }
     }
 
-    //Construct
+    // Construct
     public static Model construct(Model set, String query) {
-        Query sparql = QueryFactory.create(query);
-        QueryExecution qe = QueryExecutionFactory.create(sparql, set);
-
-        return qe.execConstruct();
+        QueryExecution qe = null;
+        try {
+            Query sparql = QueryFactory.create(query);
+            qe = QueryExecutionFactory.create(sparql, set);
+            return qe.execConstruct();
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-construct: " + query, e);
+            return null;
+        } finally {
+            if (qe != null) {
+                qe.close();
+            }
+        }
     }
 
-    //Construct
     public static Model construct(VirtGraph set, String query) {
-    	try {
-    		  VirtuosoQueryExecution vqe = VirtuosoQueryExecutionFactory.create(query, set);
-    	        return vqe.execConstruct();
-		} catch (Exception e) {
-			System.out.println(e);
-		}
-      return null;
+        VirtuosoQueryExecution vqe = null;
+        try {
+            vqe = VirtuosoQueryExecutionFactory.create(query, set);
+            return vqe.execConstruct();
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-construct: " + query, e);
+            return null;
+        } finally {
+            if (vqe != null) {
+                vqe.close();
+            }
+        }
     }
 
-    //Ask
-//    public static boolean ask(VirtGraph set, String query) {
-//        Query sparql = QueryFactory.create(query);
-//        VirtuosoQueryExecution vqe = VirtuosoQueryExecutionFactory.create (sparql, set);
-//
-//        return vqe.execAsk();
-//    }
-
-    //Update
+    // Update
     public static void update(VirtGraph set, String query) {
-        VirtuosoUpdateRequest vur = VirtuosoUpdateFactory.create(query, set);
-        vur.exec();
+        VirtuosoUpdateRequest vur = null;
+        try {
+            vur = VirtuosoUpdateFactory.create(query, set);
+            vur.exec();
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-update: " + query, e);
+        }
     }
 
-    //Update
     public static void update(Model model, String query) {
-        UpdateRequest req = UpdateFactory.create(query);
-        UpdateAction.execute(req, model);
+        try {
+            UpdateRequest req = UpdateFactory.create(query);
+            UpdateAction.execute(req, model);
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-update: " + query, e);
+        }
     }
 
-    //Ask
+    // Ask
     public static boolean ask(Model set, String query) {
         ArrayList results = jQuery(set, query);
-
-        if (results.size() > 0) {
-            return true;
-        }
-
-        return false;
+        return results != null && !results.isEmpty();
     }
 
-    //Query all triples
+    // Query all triples
     public static ArrayList jQuery(VirtModel set, String query) {
-        Query sparql = QueryFactory.create(query);
-        QueryExecution qe = QueryExecutionFactory.create(sparql, set);
-        ResultSet rs = qe.execSelect();
-
-        return extract(rs, "s", "p", "o");
-    }
-
-    //Query sparql in Virtuoso linked database with Jena API.
-    public static ArrayList jQuery(VirtModel set, String query, String... objects) {
-        Query sparql = QueryFactory.create(query);
-        QueryExecution qe = QueryExecutionFactory.create(sparql, set);
-        ResultSet rs = qe.execSelect();
-
-        return extract(rs, objects);
-    }
-
-    //Query sparql in Virtuoso linked database with Jena API.
-    public static ArrayList jQuery(VirtModel set, String query, boolean flag, String... objects) {
-        Query sparql = QueryFactory.create(query);
-        QueryExecution qe = QueryExecutionFactory.create(sparql, set);
-        ResultSet rs = qe.execSelect();
-
-        if (true == flag) {
-            return extract2Short(set, rs, objects);
-        }
-        return extract(rs, objects);
-    }
-
-    //Query sparql in Virtuoso linked database with Jena API.
-    public static ArrayList jQuery(Model set, String query, String... objects) {
-        set.enterCriticalSection(Lock.READ);
-
+        QueryExecution qe = null;
         try {
             Query sparql = QueryFactory.create(query);
-            QueryExecution qe = QueryExecutionFactory.create(sparql, set);
+            qe = QueryExecutionFactory.create(sparql, set);
             ResultSet rs = qe.execSelect();
-
-            return extract(rs, objects);
+            return extract(rs, "s", "p", "o");
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-jQuery: " + query, e);
+            return null;
         } finally {
-            set.leaveCriticalSection();
+            if (qe != null) {
+                qe.close();
+            }
         }
     }
 
-    //Query sparql in Virtuoso linked database with Jena API.
-    public static ArrayList jQuery(Model set, String query, boolean flag, String... objects) {
-        set.enterCriticalSection(Lock.READ);
-
+    public static ArrayList jQuery(VirtModel set, String query, String... objects) {
+        QueryExecution qe = null;
         try {
             Query sparql = QueryFactory.create(query);
-            QueryExecution qe = QueryExecutionFactory.create(sparql, set);
+            qe = QueryExecutionFactory.create(sparql, set);
             ResultSet rs = qe.execSelect();
+            return extract(rs, objects);
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-jQuery: " + query, e);
+            return null;
+        } finally {
+            if (qe != null) {
+                qe.close();
+            }
+        }
+    }
 
-            if (true == flag) {
+    public static ArrayList jQuery(VirtModel set, String query, boolean flag, String... objects) {
+        QueryExecution qe = null;
+        try {
+            Query sparql = QueryFactory.create(query);
+            qe = QueryExecutionFactory.create(sparql, set);
+            ResultSet rs = qe.execSelect();
+            if (flag) {
                 return extract2Short(set, rs, objects);
             }
             return extract(rs, objects);
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-jQuery: " + query, e);
+            return null;
         } finally {
-            set.leaveCriticalSection();
+            if (qe != null) {
+                qe.close();
+            }
         }
     }
 
-    //Query sparql in Virtuoso linked database directly.
+    public static ArrayList jQuery(Model set, String query, String... objects) {
+        set.enterCriticalSection(Lock.READ);
+        QueryExecution qe = null;
+        try {
+            Query sparql = QueryFactory.create(query);
+            qe = QueryExecutionFactory.create(sparql, set);
+            ResultSet rs = qe.execSelect();
+            return extract(rs, objects);
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-jQuery: " + query, e);
+            return null;
+        } finally {
+            set.leaveCriticalSection();
+            if (qe != null) {
+                qe.close();
+            }
+        }
+    }
+
+    public static ArrayList jQuery(Model set, String query, boolean flag, String... objects) {
+        set.enterCriticalSection(Lock.READ);
+        QueryExecution qe = null;
+        try {
+            Query sparql = QueryFactory.create(query);
+            qe = QueryExecutionFactory.create(sparql, set);
+            ResultSet rs = qe.execSelect();
+            if (flag) {
+                return extract2Short(set, rs, objects);
+            }
+            return extract(rs, objects);
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-jQuery: " + query, e);
+            return null;
+        } finally {
+            set.leaveCriticalSection();
+            if (qe != null) {
+                qe.close();
+            }
+        }
+    }
+
     public static ArrayList vQuery(Model set, String query, String... objects) {
         set.enterCriticalSection(Lock.READ);
-
+        QueryExecution vqe = null;
         try {
-            QueryExecution vqe = VirtuosoQueryExecutionFactory.create(query, set);
+            vqe = VirtuosoQueryExecutionFactory.create(query, set);
             ResultSet rs = vqe.execSelect();
-
             return extract(rs, objects);
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-vQuery: " + query, e);
+            return null;
         } finally {
             set.leaveCriticalSection();
+            if (vqe != null) {
+                vqe.close();
+            }
         }
     }
 
-    //Query sparql in Virtuoso linked database with limited size in group.
     public static ArrayList vQuery(Model set, String query, int limit, String key, String... objects) {
         set.enterCriticalSection(Lock.READ);
-
+        QueryExecution vqe = null;
         try {
-            QueryExecution vqe = VirtuosoQueryExecutionFactory.create(query, set);
+            vqe = VirtuosoQueryExecutionFactory.create(query, set);
             ResultSet rs = vqe.execSelect();
-
             return extractLimited(rs, limit, key, objects);
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-vQuery: " + query, e);
+            return null;
         } finally {
             set.leaveCriticalSection();
+            if (vqe != null) {
+                vqe.close();
+            }
         }
     }
 
-    //Query sparql with Json format in Virtuoso linked database with Jena API.
     public static OutputStream jQueryJson(VirtModel set, String query) {
-        ByteArrayOutputStream bos;
-
-        Query sparql = QueryFactory.create(query);
-        QueryExecution qe = QueryExecutionFactory.create(sparql, set);
-        ResultSet rs = qe.execSelect();
-
-        bos = new ByteArrayOutputStream();
-        ResultSetFormatter.outputAsJSON(bos, rs);
-
-        return bos;
+        QueryExecution qe = null;
+        try {
+            Query sparql = QueryFactory.create(query);
+            qe = QueryExecutionFactory.create(sparql, set);
+            ResultSet rs = qe.execSelect();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ResultSetFormatter.outputAsJSON(bos, rs);
+            return bos;
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-jQueryJson: " + query, e);
+            return null;
+        } finally {
+            if (qe != null) {
+                qe.close();
+            }
+        }
     }
 
-    //Query sparql with Json format in Virtuoso linked database with Jena API.
     public static OutputStream jQueryRDF(VirtModel set, String query) {
-        QueryExecution qe = QueryExecutionFactory.create(query, set);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ResultSet results = qe.execSelect();
-        ResultSetFormatter.outputAsRDF(baos, "RDF/XML-ABBREV", results);
-
-        return baos;
+        QueryExecution qe = null;
+        try {
+            Query sparql = QueryFactory.create(query);
+            qe = QueryExecutionFactory.create(sparql, set);
+            ResultSet results = qe.execSelect();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ResultSetFormatter.outputAsRDF(baos, "RDF/XML-ABBREV", results);
+            return baos;
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-jQueryRDF: " + query, e);
+            return null;
+        } finally {
+            if (qe != null) {
+                qe.close();
+            }
+        }
     }
 
-    //Query sparql with Json format in Virtuoso linked database directly.
     public static OutputStream vQueryJson(VirtModel set, String query) {
-        ByteArrayOutputStream bos;
-
-        QueryExecution vqe = VirtuosoQueryExecutionFactory.create(query, set);
-        ResultSet rs = vqe.execSelect();
-
-        bos = new ByteArrayOutputStream();
-        ResultSetFormatter.outputAsJSON(bos, rs);
-
-        return bos;
+        QueryExecution vqe = null;
+        try {
+            Query sparql = QueryFactory.create(query);
+            vqe = VirtuosoQueryExecutionFactory.create(sparql, set);
+            ResultSet rs = vqe.execSelect();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ResultSetFormatter.outputAsJSON(bos, rs);
+            return bos;
+        } catch (Exception e) {
+            logger.error("错误SparqlExecution-vQueryJson: " + query, e);
+            return null;
+        } finally {
+            if (vqe != null) {
+                vqe.close();
+            }
+        }
     }
 
-    //Extract triples' information in ResultSet according to required objects.
     private static ArrayList extract(ResultSet resultSet, String... objects) {
-        ArrayList list = new ArrayList();
-
+        ArrayList list = new ArrayList<>();
         while (resultSet.hasNext()) {
-            HashMap rm = new HashMap();
+            HashMap<String, RDFNode> rm = new HashMap<>();
             QuerySolution row = resultSet.nextSolution();
-
-            if (null != objects) {
-                for (int i=0;i<objects.length;i++) {
-                    RDFNode node = row.get(objects[i]);
-                    rm.put(objects[i], node);
+            if (objects != null) {
+                for (String object : objects) {
+                    RDFNode node = row.get(object);
+                    rm.put(object, node);
                 }
             }
-
             list.add(rm);
         }
-
         return list;
     }
 
-    //Extract limited size results in every group.
-    private static ArrayList extractLimited(ResultSet resultSet, int limit, String key, String ... objects) {
-        ArrayList list = new ArrayList();
-        Map<Object, Integer> map = new HashMap<>();
-
-        int count = 0;
+    private static ArrayList extractLimited(ResultSet resultSet, int limit, String key, String... objects) {
+        ArrayList list = new ArrayList<>();
+        Map<String, Integer> map = new HashMap<>();
         while (resultSet.hasNext()) {
-            HashMap rm = new HashMap();
+            HashMap<String, RDFNode> rm = new HashMap<>();
             QuerySolution row = resultSet.nextSolution();
-
             String tag = row.get(key).toString();
-
-            if (!map.containsKey(tag)) {
-                count = 0;
-                map.put(tag, count);
-            }
-
+            map.putIfAbsent(tag, 0);
             if (map.get(tag) < limit) {
-                // TODO: map.remove(tag, map.get(row.get(key)));代码有误
-                map.put(tag, map.get(row.get(key)));
-
-                if (null != objects) {
-                    for (int i=0;i<objects.length;i++) {
-                        RDFNode node = row.get(objects[i]);
-                        rm.put(objects[i], node);
+                if (objects != null) {
+                    for (String object : objects) {
+                        RDFNode node = row.get(object);
+                        rm.put(object, node);
                     }
                 }
-
                 list.add(rm);
-                count++;
-                map.put(tag, count);
+                map.put(tag, map.get(tag) + 1);
             }
         }
-
         return list;
     }
 
