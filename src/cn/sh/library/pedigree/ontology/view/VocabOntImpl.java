@@ -146,7 +146,7 @@ return null;
 /*     */ 
 /* 169 */     String query = this.nsPrefix + "SELECT DISTINCT ?s " + "WHERE { " + "   ?s rdfs:label 'Model View' . " + "}";
 /*     */ 
-/* 175 */     ArrayList results = SparqlExecution.jQuery(getModel("http://gen.library.sh.cn/graph/baseinfo"), query, true, new String[] { "s" });
+/* 175 */     ArrayList results = SparqlExecution.vQuery(getModel("http://gen.library.sh.cn/graph/baseinfo"), query, new String[] { "s" });
 /*     */ 
 /* 177 */     for (int i = 0; i < results.size(); i++) {
 /* 178 */       list.add(((Map)results.get(i)).get("s"));
@@ -183,7 +183,7 @@ return null;
 /*     */ 
 /* 221 */     String query = this.nsPrefix + "SELECT DISTINCT ?s " + "WHERE { " + "   ?s a rdfs:Class; " + "      rdfs:subClassOf <" + uri + "> . " + "}";
 /*     */ 
-/* 228 */     ArrayList results = SparqlExecution.jQuery(this.model, query, true, new String[] { "s" });
+/* 228 */     ArrayList results = SparqlExecution.vQuery(this.model, query,  new String[] { "s" });
 /*     */ 
 /* 230 */     for (int i = 0; i < results.size(); i++) {
 /* 231 */       list.add(((Map)results.get(i)).get("s"));

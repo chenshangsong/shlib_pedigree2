@@ -29,7 +29,6 @@ import cn.sh.library.pedigree.common.RoleGroup;
 import cn.sh.library.pedigree.common.dataImport.DataTypeMap;
 import cn.sh.library.pedigree.controller.BaseController;
 import cn.sh.library.pedigree.controller.RDFController;
-import cn.sh.library.pedigree.framework.util.PreloadUserList;
 import cn.sh.library.pedigree.sysManager.mapper.SystemMenuMapper;
 import cn.sh.library.pedigree.sysManager.mapper.SystemRoleMenuMapper;
 import cn.sh.library.pedigree.sysManager.mapper.UserInfoMapper;
@@ -271,7 +270,6 @@ public class ApiLoginController extends BaseController {
 					_searchInfo.setRoleId("1");// 默认角色1：普通用户
 					int _count = userInfoMapper.insertUser(_searchInfo);
 					if (_count > 0) {
-						PreloadUserList.getInstance().reloadInfo();
 						ifSuccess = true;
 					}
 				} else {
@@ -334,9 +332,7 @@ public class ApiLoginController extends BaseController {
 
 				userinfosearch.setRoleId("1");// 默认角色1：普通用户
 				int _count = userInfoMapper.insertUser(userinfosearch);
-				if (_count > 0) {
-					PreloadUserList.getInstance().reloadInfo();
-				}
+				
 			} else {
 				// 执行更新
 				userInfoMapper.updateUserById(temUser);

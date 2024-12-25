@@ -67,14 +67,7 @@ public class HomeController extends BaseController {
 	@RequestMapping(value = "/index", method = RequestMethod.GET)
 	public ModelAndView index(HttpServletRequest req) throws Exception {
 		try {
-			/*doi预加载获取	@author 陈铭
-			List<DoiSysModel> doiList = PreloadDoiList.getInstance().getDoiList();
-			if(doiList==null){
-				req.getSession().setAttribute("doiList", doiList);
-			}*/
-			
-			// logger.info("关系库请求开始："+req.getSession().getId()+"----"+DateUtilC.getNowDateTime());
-			// return data
+		
 			Map<String, Object> data = new HashMap<>();
 
 			String initial = String

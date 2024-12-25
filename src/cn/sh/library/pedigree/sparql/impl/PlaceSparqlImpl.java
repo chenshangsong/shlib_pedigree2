@@ -52,7 +52,8 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
 			   + " .filter(lang(?label) = 'cht') "
 			   + " } "
 			   + " ORDER BY ASC(?prov) ASC(?city) ASC(?county) ";
-	   ArrayList result = SparqlExecution.vQuery(CodeMsgUtil.getConfig("remoteEndpoint"), query, "uri", "prov", "city", "county", "label");
+//	   ArrayList result = SparqlExecution.vQuery(CodeMsgUtil.getConfig("remoteEndpoint"), query, "uri", "prov", "city", "county", "label");
+	   ArrayList result =  SparqlExecution.vQuery(this.graph, query, new String[] { "uri", "prov", "city", "county", "label" });
 	   return RDFUtils.transformListMap(result);
    }
  
@@ -226,20 +227,20 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
 	   }
      String query = this.nsPrefix + "SELECT DISTINCT ?uri ?prov ?city ?county " + "WHERE { " + "   ?uri a shl:Place ; " + "        shl:province ?prov . " + "OPTIONAL {" + "   ?uri shl:city ?city . " + "}" + "OPTIONAL {" + "   ?uri shl:county ?county . " + "}" + sqlwhere+"} ORDER BY ASC(?prov) ASC(?city) ASC(?county)";
  
-     return SparqlExecution.jQuery(this.model, query, new String[] { "uri", "prov", "city", "county" });
+     return SparqlExecution.vQuery(this.model, query, new String[] { "uri", "prov", "city", "county" });
    }
    
    public ArrayList getAllPlaces()
    {
      String query = this.nsPrefix + "SELECT DISTINCT ?uri ?prov ?city ?county " + "WHERE { " + "   ?uri a shl:Place ; " + "        shl:province ?prov . " + "OPTIONAL {" + "   ?uri shl:city ?city . " + "}" + "OPTIONAL {" + "   ?uri shl:county ?county . " + "}" + "} ORDER BY ASC(?prov) ASC(?city) ASC(?county)";
  
-     return SparqlExecution.jQuery(this.model, query, new String[] { "uri", "prov", "city", "county" });
+     return SparqlExecution.vQuery(this.model, query, new String[] { "uri", "prov", "city", "county" });
    }
    public ArrayList getAllPlacesInOrigin()
    {
      String query = this.nsPrefix + "SELECT DISTINCT ?prov ?uri ?label " + "WHERE { " + "   ?uri bf:label ?label . " + "OPTIONAL {" + "   ?uri shl:province ?prov . " + "}" + "FILTER (lang(?label) = 'chs')" + "} ORDER BY ASC(?prov)";
  
-     return SparqlExecution.jQuery(this.model, query, new String[] { "prov", "uri", "label" });
+     return SparqlExecution.vQuery(this.model, query, new String[] { "prov", "uri", "label" });
    }
  
    public ArrayList getRDF(String place_uri)

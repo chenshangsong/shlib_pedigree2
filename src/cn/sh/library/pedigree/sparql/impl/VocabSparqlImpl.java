@@ -67,7 +67,7 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 /*     */ 
 /*  89 */     String query = this.nsPrefix + "SELECT ?label " + "WHERE {" + "   <" + property + "> rdfs:label ?label ." + "}";
 /*     */ 
-/*  95 */     ArrayList results = SparqlExecution.jQuery(getModel(graph_vocab), query, new String[] { "label" });
+/*  95 */     ArrayList results = SparqlExecution.vQuery(getModel(graph_vocab), query, new String[] { "label" });
 /*     */ 
 /*  97 */     if (results.size() > 0) {
 /*  98 */       return ((Map)results.get(0)).get("label").toString();
@@ -83,7 +83,7 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 /*     */ 
 /* 109 */     String query = this.nsPrefix + "SELECT ?comment " + "WHERE {" + "   <" + property + "> rdfs:comment ?comment ." + "}";
 /*     */ 
-/* 115 */     ArrayList results = SparqlExecution.jQuery(getModel(graph_vocab), query, new String[] { "comment" });
+/* 115 */     ArrayList results = SparqlExecution.vQuery(getModel(graph_vocab), query, new String[] { "comment" });
 /*     */ 
 /* 117 */     if (results.size() > 0) {
 /* 118 */       return ((Map)results.get(0)).get("comment").toString();

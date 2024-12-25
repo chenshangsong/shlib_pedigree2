@@ -27,7 +27,7 @@ import cn.sh.library.pedigree.utils.StringUtilC;
 /*     */   {
 /*  26 */     String query = this.nsPrefix + "SELECT ?long ?lat " + "WHERE { " + "   ?s geo:long ?long ; " + "      geo:lat ?lat ;" + "      rdfs:label '" + city + "'. " + "}";
 /*     */ 
-/*  34 */     ArrayList results = SparqlExecution.jQuery(this.model, query, new String[] { "long", "lat" });
+/*  34 */     ArrayList results = SparqlExecution.vQuery(this.model, query, new String[] { "long", "lat" });
 /*     */ 
 /*  36 */     if (results.size() > 0) {
 /*  37 */       String _long = RDFUtils.getValue(((Map)results.get(0)).get("long").toString());
@@ -43,7 +43,7 @@ import cn.sh.library.pedigree.utils.StringUtilC;
 /*     */   {
 /*  48 */     String query = this.nsPrefix + "SELECT ?s " + "WHERE { " + "   ?s0 rdfs:label ?label ; " + "      gn:parentADM1 ?p1 . " + "   ?s rdfs:label ?label ; " + "      gn:parentADM2 ?p2 . " + "FILTER STRSTARTS(?label, '" + city + "')" + "}";
 /*     */ 
-/*  58 */     ArrayList results = SparqlExecution.jQuery(this.model, query, new String[] { "s" });
+/*  58 */     ArrayList results = SparqlExecution.vQuery(this.model, query, new String[] { "s" });
 /*     */ 
 /*  60 */     if (results.size() > 0) {
 /*  61 */       return ((Map)results.get(0)).get("s").toString();
@@ -64,7 +64,7 @@ import cn.sh.library.pedigree.utils.StringUtilC;
 /*  79 */       query = this.nsPrefix + "SELECT ?s " + "WHERE { " + "   ?s gn:parentADM2/gn:parentADM1 ?p ; rdfs:label ?l . " + "   ?p rdfs:label ?p_l . " + "FILTER STRSTARTS(?p_l, '" + prov + "')" + "FILTER STRSTARTS(?l, '" + locate + "')" + "}";
 /*     */     }
 /*     */ 
-/*  89 */     ArrayList results = SparqlExecution.jQuery(this.model, query, new String[] { "s" });
+/*  89 */     ArrayList results = SparqlExecution.vQuery(this.model, query, new String[] { "s" });
 /*     */ 
 /*  91 */     if (results.size() > 0) {
 /*  92 */       return ((Map)results.get(0)).get("s").toString();
@@ -77,7 +77,7 @@ import cn.sh.library.pedigree.utils.StringUtilC;
 /*     */   {
 /* 100 */     String query = this.nsPrefix + "SELECT ?s " + "WHERE { " + "   ?s gn:parentADM3 <" + county_uri + "> . " + "} ORDER BY DESC(?s) LIMIT 1";
 /*     */ 
-/* 106 */     ArrayList results = SparqlExecution.jQuery(this.model, query, new String[] { "s" });
+/* 106 */     ArrayList results = SparqlExecution.vQuery(this.model, query, new String[] { "s" });
 /*     */ 
 /* 108 */     if (results.size() > 0) {
 /* 109 */       String uri = ((Map)results.get(0)).get("s").toString();

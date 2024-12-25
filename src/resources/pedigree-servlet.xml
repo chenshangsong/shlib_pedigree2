@@ -241,21 +241,21 @@
       	<bean id="PreloadWorkJJUriList"
 		class="cn.sh.library.pedigree.framework.util.PreloadWorkJJUriList" />
    <!-- 预加载start -->
-<!--    <bean id="PreloadDoiList"
+<bean id="PreloadDoiList"
 	 class="cn.sh.library.pedigree.framework.util.PreloadDoiList" />
   <bean id="PreloadApiFuriPlaceList"
 		class="cn.sh.library.pedigree.framework.util.PreloadApiFuriPlaceList" />
     
 
 		
-	<bean id="PreloadUserList"
-	class="cn.sh.library.pedigree.framework.util.PreloadUserList" />
+<!-- 	<bean id="PreloadUserList"
+	class="cn.sh.library.pedigree.framework.util.PreloadUserList" /> -->
 	
 	<bean id="PreloadApiPersonsFromFamilyRules"
 	class="cn.sh.library.pedigree.framework.util.PreloadApiPersonsFromFamilyRules" />
 	
 	<bean id="PreloadChaodaiList"
-	class="cn.sh.library.pedigree.framework.util.PreloadChaodaiList" />  -->
+	class="cn.sh.library.pedigree.framework.util.PreloadChaodaiList" />
 	
 	
 	<!-- 预加载end -->

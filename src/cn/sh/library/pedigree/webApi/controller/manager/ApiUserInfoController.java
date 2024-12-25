@@ -18,7 +18,6 @@ import cn.sh.library.pedigree.common.JSonUtils;
 import cn.sh.library.pedigree.dto.Pager;
 import cn.sh.library.pedigree.framework.controller.BaseController;
 import cn.sh.library.pedigree.framework.model.DtoJsonPageData;
-import cn.sh.library.pedigree.framework.util.PreloadUserList;
 import cn.sh.library.pedigree.sysManager.mapper.UserInfoMapper;
 import cn.sh.library.pedigree.sysManager.model.UserInfoModel;
 import cn.sh.library.pedigree.sysManager.service.LoginNormalService;
@@ -52,8 +51,7 @@ public class ApiUserInfoController extends BaseController {
 		jsonResult = new HashMap<>();
 		try {
 			// 判断用户是否为空
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(
-					StringUtilC.getString(searchModel.getUid())).getId())) {
+			if ( userInfoMapper.getUserById(StringUtilC.getString(searchModel.getUid()))!=null){	
 				DtoJsonPageData grid = new DtoJsonPageData(this);
 				searchModel.setPage(pager.getPageth());// 当前yem
 				searchModel.setRows(pager.getPageSize());
@@ -90,8 +88,7 @@ public class ApiUserInfoController extends BaseController {
 		jsonResult = new HashMap<>();
 		try {
 			// 判断用户是否为空
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(
-					StringUtilC.getString(searchModel.getUid())).getId())) {
+			if ( userInfoMapper.getUserById(StringUtilC.getString(searchModel.getUid()))!=null){	
 				DtoJsonPageData grid = new DtoJsonPageData(this);
 				searchModel.setPage(pager.getPageth());// 当前yem
 				searchModel.setRows(pager.getPageSize());
@@ -138,8 +135,7 @@ public class ApiUserInfoController extends BaseController {
 	public String doUpdateUser(@Valid String uid, @Valid String id,
 			HttpSession hs) throws Exception {
 		try {
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(
-					StringUtilC.getString(uid)).getId())) {
+			if ( userInfoMapper.getUserById(StringUtilC.getString(uid))!=null){	
 
 				jsonResult = new HashMap<>();
 				UserInfoModel _userInfo = new UserInfoModel();
@@ -152,7 +148,6 @@ public class ApiUserInfoController extends BaseController {
 				System.out.println("是否成功：" + ifSucess);
 				// 如果成功
 				if (ifSucess > 0) {
-					PreloadUserList.getInstance().reloadInfo();
 					jsonResult.put(result, FWConstants.result_success);
 				}
 			} else {
@@ -178,13 +173,11 @@ public class ApiUserInfoController extends BaseController {
 			HttpSession hs) throws Exception {
 		jsonResult = new HashMap<>();
 		try {
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(
-					StringUtilC.getString(_userInfo.getUid())).getId())) {
+			if ( userInfoMapper.getUserById(StringUtilC.getString(_userInfo.getUid()))!=null){	
 				int ifSucess = userInfoMapper.updateUserRoleById(_userInfo);
 				System.out.println("是否成功：" + ifSucess);
 				// 如果成功
 				if (ifSucess > 0) {
-					PreloadUserList.getInstance().reloadInfo();
 					jsonResult.put(result, FWConstants.result_success);
 				}
 			} else {

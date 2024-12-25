@@ -61,8 +61,6 @@ public class PersonServiceImpl extends BaseServiceImpl implements PersonService 
 		inference = inference == null ? false : inference;
 		List list = null;
 		try {
-			// list = this.personSparql.getInfos4Person(uri,
-			// true);切换为新作接口。chenss20170821
 			Person person = new Person();
 			if (uri.contains("jp")) {
 				list = this.personSparql.getInfos4Person(uri);

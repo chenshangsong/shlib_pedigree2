@@ -17,7 +17,6 @@ import cn.sh.library.pedigree.common.FWConstants;
 import cn.sh.library.pedigree.common.JSonUtils;
 import cn.sh.library.pedigree.framework.controller.BaseController;
 import cn.sh.library.pedigree.framework.model.DtoJsonPageData;
-import cn.sh.library.pedigree.framework.util.PreloadUserList;
 import cn.sh.library.pedigree.sysManager.mapper.UserInfoMapper;
 import cn.sh.library.pedigree.sysManager.model.UserInfoModel;
 import cn.sh.library.pedigree.sysManager.service.LoginNormalService;
@@ -137,8 +136,6 @@ public class UserInfoController extends BaseController {
 			throws Exception {
 		try {
 			int ifSucess = userInfoMapper.updateUserRoleById(_userInfo);
-			PreloadUserList.getInstance().loadInfo();
-			System.out.println("是否成功：" + ifSucess);
 			// 如果成功
 			if (ifSucess > 0) {
 				jsonResult.put(result, FWConstants.result_success);

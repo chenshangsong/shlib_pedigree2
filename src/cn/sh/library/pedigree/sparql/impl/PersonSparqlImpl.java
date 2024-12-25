@@ -120,7 +120,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 				+ "      foaf:name ?name ; " + "      shl:temporal <" + time_uri + "> . "
 				+ "FILTER langMatches(lang(?name),'') " + "FILTER CONTAINS(STR(?s), '/Person/')" + "}";
 
-		ArrayList results = SparqlExecution.jQuery(this.model, query, new String[] { "count" });
+		ArrayList results = SparqlExecution.vQuery(this.model, query, new String[] { "count" });
 
 		if (results.size() > 0) {
 			return (String) ((Map.Entry) RDFUtils.transform((Map) results.get(0)).entrySet().iterator().next())
@@ -142,67 +142,6 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 				new String[] { "time", "dynasty", "begin", "name" });
 	}
 
-	public ArrayList getInfos4Person(String uri, boolean inference) {
-		try {
-			inference = false;
-			Model temp = ModelFactory.createDefaultModel();
-			List fl = new ArrayList();
-
-			if (0 == temp.getNsPrefixMap().size()) {
-				temp.setNsPrefixes(this.model.getNsPrefixMap());
-			}
-
-			if (inference) {
-				getTriples(fl, temp, uri);
-				if (this.appConfig.getPersonSameAs() != null) {
-					String str = "";
-					String str1 = "";
-
-					String query = this.nsPrefix + "SELECT DISTINCT ?s " + "WHERE {" + "   ?s a shl:Person . ";
-
-					int num = 0;
-					for (String ns : this.appConfig.getPersonSameAs()) {
-						num++;
-						str = str + "    ?s " + ns + " ?v" + num + " . ";
-						str1 = str1 + "    ?s1 " + ns + " ?v" + num + " . ";
-					}
-
-					query = query + str + "{SELECT";
-
-					for (int i = 1; i < num + 1; i++) {
-						query = query + " ?v" + i;
-					}
-
-					query = query + " WHERE {" + str1 + "FILTER (STR(?s1) = '" + uri + "')" + "}}"
-							+ "FILTER (STR(?s) != '" + uri + "')" + "}";
-
-					ArrayList results = SparqlExecution.vQuery(this.graph, query, new String[] { "s" });
-
-					if (results.size() > 0)
-						for (int i = 0; i < results.size(); i++) {
-							String s = ((Map) results.get(i)).get("s").toString();
-							if (!s.equals(uri)) {
-								temp.add(temp.createResource(uri), OWL.sameAs, temp.createResource(s));
-							}
-							getTriples(fl, temp, s);
-						}
-				} else {
-					this.logger.error("person same as setting is not configured");
-				}
-			} else {
-				getTriples(fl, temp, uri);
-			}
-
-			String query = this.nsPrefix + "SELECT DISTINCT ?s ?p ?o " + "WHERE {" + "   ?s ?p ?o . " + "}";
-
-			return SparqlExecution.jQuery(temp, query, true, new String[] { "s", "p", "o" });
-		} catch (Exception e) {
-			System.out.println("vt错误：" + e + "URI:" + uri);
-			return null;
-		}
-
-	}
-
 	/**
 	 * 新增，更近人的URI，获取人的详细信息 chenss 20170821
 	 * 
@@ -211,16 +150,11 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 	 */
 	public List<Map<String, String>> getInfos4Person(String uri) {
 		try {
-			Model temp = ModelFactory.createDefaultModel();
-			List fl = new ArrayList();
-			if (0 == temp.getNsPrefixMap().size()) {
-				temp.setNsPrefixes(this.model.getNsPrefixMap());
-			}
-			getTriples(fl, temp, uri);
+			
 			if (uri.contains("jp")) {
 				String query = this.nsPrefix
 						+ "SELECT DISTINCT ?s ?p ?o WHERE { ?s a shl:Person; ?p ?o.filter(STR(?s)='" + uri + "')}";
-				List<Map<String, String>> _Jplist = SparqlExecution.jQuery(temp, query, true,
+				List<Map<String, String>> _Jplist = SparqlExecution.vQuery(this.model, query, 
 						new String[] { "s", "p", "o" });
 				return _Jplist;
 			} else {
@@ -295,6 +229,10 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 				graph_name = "http://gen.library.sh.cn/graph/annotation";
 			else if (uri.contains("/place/"))
 				graph_name = "http://gen.library.sh.cn/graph/place";
+			else if (uri.contains("/place/"))
+				graph_name = "http://gen.library.sh.cn/graph/place";
+			else if (uri.contains("/ontology/"))
+				graph_name = "http://gen.library.sh.cn/graph/vocab";
 			else {
 				graph_name = "http://gen.library.sh.cn/graph/baseinfo";
 			}

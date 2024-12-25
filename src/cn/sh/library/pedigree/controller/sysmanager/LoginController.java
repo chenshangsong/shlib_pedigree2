@@ -3,7 +3,6 @@ package cn.sh.library.pedigree.controller.sysmanager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +24,9 @@ import org.springframework.web.servlet.ModelAndView;
 import cn.sh.library.pedigree.base.Constant;
 import cn.sh.library.pedigree.common.FWConstants;
 import cn.sh.library.pedigree.common.JSonUtils;
-import cn.sh.library.pedigree.common.RoleGroup;
 import cn.sh.library.pedigree.common.dataImport.DataTypeMap;
 import cn.sh.library.pedigree.controller.BaseController;
 import cn.sh.library.pedigree.controller.RDFController;
-import cn.sh.library.pedigree.framework.util.PreloadUserList;
 import cn.sh.library.pedigree.sysManager.mapper.SystemMenuMapper;
 import cn.sh.library.pedigree.sysManager.mapper.SystemRoleMenuMapper;
 import cn.sh.library.pedigree.sysManager.mapper.UserInfoMapper;
@@ -263,7 +260,6 @@ public class LoginController extends BaseController {
 				userinfosearch.setRoleId("1");// 默认角色1：普通用户
 				int _count = userInfoMapper.insertUser(userinfosearch);
 				if (_count > 0) {
-					PreloadUserList.getInstance().reloadInfo();
 					ifSuccess = true;
 				}
 			} else {

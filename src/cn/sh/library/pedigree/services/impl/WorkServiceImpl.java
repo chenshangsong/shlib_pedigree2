@@ -1,8 +1,5 @@
 package cn.sh.library.pedigree.services.impl;
 
-import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,15 +7,12 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Resource;
-import javax.sql.DataSource;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cn.sh.library.pedigree.base.Constant;
 import cn.sh.library.pedigree.bean.WorkSearchBean;
 import cn.sh.library.pedigree.common.CommonSparql;
-import cn.sh.library.pedigree.common.dataImport.DataShumuUtilC;
 import cn.sh.library.pedigree.controller.BaseController;
 import cn.sh.library.pedigree.controller.sysmanager.common.EditDtoCommon;
 import cn.sh.library.pedigree.dto.Item;

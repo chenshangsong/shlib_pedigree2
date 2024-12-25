@@ -19,15 +19,16 @@ import cn.sh.library.pedigree.common.dataImport.DataTypeMap;
 import cn.sh.library.pedigree.dto.Pager;
 import cn.sh.library.pedigree.framework.controller.BaseController;
 import cn.sh.library.pedigree.framework.model.DtoJsonPageData;
-import cn.sh.library.pedigree.framework.util.PreloadUserList;
 import cn.sh.library.pedigree.sysManager.mapper.DataChangeHistoryMapper;
+import cn.sh.library.pedigree.sysManager.mapper.UserInfoMapper;
 import cn.sh.library.pedigree.sysManager.model.DataChangeHistoryMainModel;
 import cn.sh.library.pedigree.utils.StringUtilC;
 
 @Controller
 @RequestMapping("/webapi/manager/todoList")
 public class ApiToDoListController extends BaseController {
-
+	@Autowired
+	private UserInfoMapper userInfoMapper;
 	@Autowired
 	private DataChangeHistoryMapper dataChangeHistoryMapper;
 	/**
@@ -71,7 +72,7 @@ public class ApiToDoListController extends BaseController {
 				String name = DataTypeMap.getDataTypeName(model.getDataType());
 				model.setDataTypeName(name);
 				if (!StringUtilC.isEmpty(model.getCreateUser())) {
-					model.setCreateUser(PreloadUserList.getUserById(
+					model.setCreateUser(userInfoMapper.getUserById(
 							model.getCreateUser()).getUserName());
 				}
 			}

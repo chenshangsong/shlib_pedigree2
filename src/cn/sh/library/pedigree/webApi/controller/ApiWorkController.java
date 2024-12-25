@@ -15,8 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
-import cn.sh.library.pedigree.utils.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,15 +27,17 @@ import cn.sh.library.pedigree.common.CommonUtils;
 import cn.sh.library.pedigree.common.FWConstants;
 import cn.sh.library.pedigree.controller.BaseController;
 import cn.sh.library.pedigree.dto.Pager;
-import cn.sh.library.pedigree.dto.Work;
 import cn.sh.library.pedigree.framework.util.JsonUtil;
 import cn.sh.library.pedigree.framework.util.PreloadApiFuriPlaceList;
-import cn.sh.library.pedigree.framework.util.PreloadUserList;
 import cn.sh.library.pedigree.framework.util.PreloadWorkJJUriList;
 import cn.sh.library.pedigree.framework.util.StringUtil;
 import cn.sh.library.pedigree.fullContentLink.FullLink;
 import cn.sh.library.pedigree.sysManager.model.ApiWorkFavoriteDto;
-import cn.sh.library.pedigree.sysManager.model.UserInfoModel;
+import cn.sh.library.pedigree.utils.DateUtilC;
+import cn.sh.library.pedigree.utils.RedisUtils;
+import cn.sh.library.pedigree.utils.StringUtilC;
+import cn.sh.library.pedigree.utils.UserUtil;
+import cn.sh.library.pedigree.utils.WebApiUtils;
 import cn.sh.library.pedigree.webApi.dto.PlaceFacet;
 import cn.sh.library.pedigree.webApi.dto.searchBean.ApiWorkSearchBean;
 import cn.sh.library.pedigree.webApi.services.ApiWorkFavoriteService;
@@ -322,39 +322,7 @@ public class ApiWorkController extends BaseController {
 		}
 	}
 
-	/**
-	 * 根据姓名查询家谱 ：废弃 改为：getDetailByWorkUri。
-	 * 
-	 * @param searchModel
-	 * @return
-	 * @throws Exception
-	 */
-//	@ResponseBody
-//	@RequestMapping(value = "/getInfoByUri", method = RequestMethod.GET)
-//	public String getInfoByUri(@Valid String uri, Integer uid, HttpSession hs) throws Exception {
-//		jsonResult = new HashMap<>();
-//		try {
-//			// 设置当前登录用户 chenss20191205
-//			CommonUtils.loginUser = new UserInfoModel();
-//			CommonUtils.loginUser = PreloadUserList.getUserById(StringUtilC.getString(uid));
-//			Work w = apiWorkService.getWork(uri, true);
-//			// 已查看数量
-//			w.setViewCount(apiWorkViewsCountService.getInfoByWorkUri(uri).getViewCount());
-//			// 是否已收藏
-//			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())) {
-//				/* if(this.ifExsitUser(hs)) { */
-//				ApiWorkFavoriteDto fdto = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, uri);
-//				if (fdto != null && !StringUtilC.isEmpty(fdto.getId())) {
-//					w.setFavoriteId(fdto.getId());
-//				}
-//			}
-//			jsonResult.put("data", w);
-//			return StringUtil.getString(JSONArray.fromObject(jsonResult));
-//		} catch (Exception e) {
-//			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
-//			return "error";
-//		}
-//	}
+	
 
 	/**
 	 * 根据家谱uri获取work-instance-item信息 编目系统专用：chens 2020-06-20。
@@ -393,57 +361,6 @@ public class ApiWorkController extends BaseController {
 		return JSONObject.fromObject(jsonResult);
 	}
 
-	/**
-	 * 根据家谱uri获取work-instance-item信息chenss20191205
-	 * 
-	 * @param searchModel
-	 * @return
-	 * @throws Exception
-	 */
-	@ResponseBody
-	@RequestMapping(value = "/getDetailByWorkUri_noRedis", method = RequestMethod.GET)
-	public JSONObject getDetailByWorkUri(@Valid String uri, Integer uid, HttpSession hs) throws Exception {
-		jsonResult = new HashMap<>();
-		// 1分钟30次访问限制
-		if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
-			jsonResult.put("result", "-1");// 数据来源索引标记
-			jsonResult.put("code", "43003");// 数据来源索引标记
-			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
-			return JSONObject.fromObject(jsonResult);
-		}
-		try {
-			if (uid != null) {
-				// 设置当前登录用户 chenss20191205
-				CommonUtils.loginUser = new UserInfoModel();
-				CommonUtils.loginUser = PreloadUserList.getUserById(StringUtilC.getString(uid));
-			}
-
-			Map _mapTemp = apiWorkService.getDetailByWorkUri(uri);
-			// 结果繁体转简体
-//			_mapTemp = convertMapTosChs(_mapTemp); 2024-04-07 chenss
-			if (_mapTemp != null && _mapTemp.size() > 0) {
-
-				// 已查看数量
-				_mapTemp.put("viewCount", apiWorkViewsCountService.getInfoByWorkUri(uri).getViewCount());
-				if (uid != null) {
-					// 是否已收藏
-					if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())) {
-						ApiWorkFavoriteDto fdto = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, uri);
-						if (fdto != null && !StringUtilC.isEmpty(fdto.getId())) {
-							_mapTemp.put("favoriteId", fdto.getId());
-						}
-					}
-				}
-
-			}
-			jsonResult.put("data", _mapTemp);
-		} catch (Exception e) {
-			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
-			jsonResult.put("msg", "error");
-		}
-		return JSONObject.fromObject(jsonResult);
-	}
-
 	@ResponseBody
 	@RequestMapping(value = "/getDetailByWorkUri", method = RequestMethod.GET)
 	public JSONObject getDetailByWorkUri_redis(@Valid String uri, Integer uid, HttpServletRequest request) throws Exception {
@@ -456,13 +373,9 @@ public class ApiWorkController extends BaseController {
 				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
 				return JSONObject.fromObject(jsonResult);
 			}
-			// 设置当前登录用户 chenss20191205
-//			CommonUtils.loginUser = new UserInfoModel();
 			if(uid == null){
 				uid = UserUtil.getUserId(request);
 			}
-//			CommonUtils.loginUser = PreloadUserList.getUserById(StringUtilC.getString(uid));
-
 					String redisWorkKey = RedisUtils.key_work.concat(uri);
 			Map _mapTemp = null;
 

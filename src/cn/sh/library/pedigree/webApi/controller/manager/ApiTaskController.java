@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,7 +20,7 @@ import cn.sh.library.pedigree.dto.Pager;
 import cn.sh.library.pedigree.dto.Work;
 import cn.sh.library.pedigree.framework.controller.BaseController;
 import cn.sh.library.pedigree.framework.model.DtoJsonPageData;
-import cn.sh.library.pedigree.framework.util.PreloadUserList;
+import cn.sh.library.pedigree.sysManager.mapper.UserInfoMapper;
 import cn.sh.library.pedigree.sysManager.model.ApiTaskDto;
 import cn.sh.library.pedigree.sysManager.model.ApiTeamUserDto;
 import cn.sh.library.pedigree.sysManager.model.SearchTaskAndTeamUserDto;
@@ -46,7 +47,8 @@ public class ApiTaskController extends BaseController {
 	private ApiTeamUserService apiTeamUserService;
 	@Resource
 	private ApiWorkService apiWorkService;
-
+	@Autowired
+	private UserInfoMapper userInfoMapper;
 	/**
 	 * 管理员-批量添加任务
 	 */
@@ -109,8 +111,7 @@ public class ApiTaskController extends BaseController {
 		try {
 			jsonResult = new HashMap<>();
 			// 获取登录用户(创建人用户-管理员)
-			UserInfoModel loginUser = PreloadUserList.getUserById(StringUtilC
-					.getString(uid));
+			UserInfoModel loginUser = userInfoMapper.getUserById(StringUtilC.getString(uid));
 			// 判断用户是否为空
 			if (!StringUtilC.isEmpty(loginUser.getId())) {
 
@@ -180,8 +181,8 @@ public class ApiTaskController extends BaseController {
 			jsonResult = new HashMap<>();
 
 			// 判断用户是否为空
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(
-					StringUtilC.getString(uid)).getId())) {
+
+			if ( userInfoMapper.getUserById(StringUtilC.getString(uid))!=null){
 				// 判断id是否为空
 				if (dto.getIds() != null && dto.getIds().length > 0) {
 					// 赋值
@@ -226,8 +227,8 @@ public class ApiTaskController extends BaseController {
 			jsonResult = new HashMap<>();
 
 			// 判断用户是否为空
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(
-					StringUtilC.getString(uid)).getId())) {
+
+			if ( userInfoMapper.getUserById(StringUtilC.getString(uid))!=null){	
 
 				// 判断id是否为空
 				if (dto.getIds() != null && dto.getIds().length > 0) {
@@ -274,8 +275,7 @@ public class ApiTaskController extends BaseController {
 			jsonResult = new HashMap<>();
 
 			// 获取登录用户(认领人用户)
-			UserInfoModel loginUser = PreloadUserList.getUserById(StringUtilC
-					.getString(uid));
+			UserInfoModel loginUser =userInfoMapper.getUserById(StringUtilC.getString(uid));
 			// 判断用户是否为空
 			if (!StringUtilC.isEmpty(loginUser.getId())) {
 				// 获取ids数组
@@ -350,11 +350,9 @@ public class ApiTaskController extends BaseController {
 			jsonResult = new HashMap<>();
 
 			// 获取登录用户(认领人用户)
-			UserInfoModel loginUser = PreloadUserList.getUserById(StringUtilC
-					.getString(uid));
+			UserInfoModel loginUser = userInfoMapper.getUserById(StringUtilC.getString(uid));
 			// 获取协同者用户
-			UserInfoModel coopUser = PreloadUserList.getUserById(StringUtilC
-					.getString(dto.getCoopId()));
+			UserInfoModel coopUser = userInfoMapper.getUserById(StringUtilC.getString(dto.getCoopId()));
 			// 新建searchTaskAndTeamUserDto对象
 			SearchTaskAndTeamUserDto searchTaskAndTeamUserDto = new SearchTaskAndTeamUserDto();
 			// 赋值
@@ -420,8 +418,8 @@ public class ApiTaskController extends BaseController {
 			jsonResult = new HashMap<>();
 
 			// 判断用户是否为空
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(
-					StringUtilC.getString(uid)).getId())) {
+			if ( userInfoMapper.getUserById(StringUtilC.getString(uid))!=null){	
+		
 				// 判断 taskId,coopId 是否为空
 				if (!StringUtilC.isEmpty(dto.getTaskId())
 						&& !StringUtilC.isEmpty(dto.getCoopId())) {
@@ -496,8 +494,7 @@ public class ApiTaskController extends BaseController {
 		jsonResult = new HashMap<>();
 
 		// 判断用户是否为空
-		if (!StringUtilC.isEmpty(PreloadUserList.getUserById(
-				StringUtilC.getString(uid)).getId())) {
+		if ( userInfoMapper.getUserById(StringUtilC.getString(uid))!=null){	
 
 			DtoJsonPageData grid = new DtoJsonPageData(this);
 			search.setPage(pager.getPageth());// 当前yem
@@ -531,8 +528,7 @@ public class ApiTaskController extends BaseController {
 
 		jsonResult = new HashMap<>();
 		// 获取登录用户
-		UserInfoModel user = PreloadUserList.getUserById(StringUtilC
-				.getString(uid));
+		UserInfoModel user =userInfoMapper.getUserById(StringUtilC.getString(uid));
 		// 判断登录用户是否为空
 		if (!StringUtilC.isEmpty(user.getId())) {
 			// 判断角色权限, 如果是"专家", 则查询：已开放未认领的任务 + 并且是我（专家）已认领的任务 数据并集
@@ -587,8 +583,7 @@ public class ApiTaskController extends BaseController {
 
 		jsonResult = new HashMap<>();
 		// 判断用户是否为空
-		if (!StringUtilC.isEmpty(PreloadUserList.getUserById(
-				StringUtilC.getString(uid)).getId())) {
+		if ( userInfoMapper.getUserById(StringUtilC.getString(uid))!=null){	
 			// 将uid赋值给coopId
 			search.setCoopId(uid);
 			search.setPage(pager.getPageth());// 当前yem
@@ -635,8 +630,7 @@ public class ApiTaskController extends BaseController {
 		try {
 			jsonResult = new HashMap<>();
 			// 获取登录用户(认领人用户)
-			UserInfoModel loginUser = PreloadUserList.getUserById(StringUtilC
-					.getString(uid));
+			UserInfoModel loginUser = userInfoMapper.getUserById(StringUtilC.getString(uid));
 			// 判断 uid(用户) 是否为空
 			if (!StringUtilC.isEmpty(loginUser.getId())) {
 				// 判断 taskId(任务id) 是否为空
@@ -702,8 +696,7 @@ public class ApiTaskController extends BaseController {
 			jsonResult = new HashMap<>();
 
 			// 判断用户是否为空
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(
-					StringUtilC.getString(uid)).getId())) {
+			if ( userInfoMapper.getUserById(StringUtilC.getString(uid))!=null){	
 				// 判断 taskId 是否为空
 				if (!StringUtilC.isEmpty(dto.getTaskId())) {
 					// 赋值coopId

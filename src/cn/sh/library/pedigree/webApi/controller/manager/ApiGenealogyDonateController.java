@@ -7,6 +7,7 @@ import java.util.HashMap;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -17,7 +18,7 @@ import cn.sh.library.pedigree.common.JSonUtils;
 import cn.sh.library.pedigree.dto.Pager;
 import cn.sh.library.pedigree.framework.controller.BaseController;
 import cn.sh.library.pedigree.framework.model.DtoJsonPageData;
-import cn.sh.library.pedigree.framework.util.PreloadUserList;
+import cn.sh.library.pedigree.sysManager.mapper.UserInfoMapper;
 import cn.sh.library.pedigree.sysManager.model.ApiGenealogyDonateDto;
 import cn.sh.library.pedigree.utils.DateUtilC;
 import cn.sh.library.pedigree.utils.StringUtilC;
@@ -32,7 +33,8 @@ public class ApiGenealogyDonateController extends BaseController {
 	
 	@Resource
 	private ApiGenealogyDonateService apiGenealogyDonateService;
-	
+	@Autowired
+	private UserInfoMapper userInfoMapper;
 	/**
 	 * 根据 用户id(uid)与 查询条件 , 获取捐赠信息-列表
 	 */
@@ -43,7 +45,7 @@ public class ApiGenealogyDonateController extends BaseController {
 		jsonResult = new HashMap<>();
 		
 		//判断用户是否为空
-		if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(search.getUid())).getId())){
+		if ( userInfoMapper.getUserById(StringUtilC.getString(search.getUid()))!=null){
 		
 			DtoJsonPageData grid = new DtoJsonPageData(this);
 			
@@ -75,8 +77,7 @@ public class ApiGenealogyDonateController extends BaseController {
 		jsonResult = new HashMap<>();
 		
 		//判断用户是否为空
-		if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())){
-			
+			if ( userInfoMapper.getUserById(StringUtilC.getString(uid))!=null){	
 			//判断id是否为空
 			if(!StringUtilC.isEmpty(id)){
 		
@@ -111,7 +112,7 @@ public class ApiGenealogyDonateController extends BaseController {
 			jsonResult = new HashMap<>();
 			
 			//判断用户是否为空
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(dto.getUid())).getId())){
+			if ( userInfoMapper.getUserById(StringUtilC.getString(dto.getUid()))!=null){	
 					
 				dto.setCreatedUser(dto.getUid());
 				
@@ -152,7 +153,7 @@ public class ApiGenealogyDonateController extends BaseController {
 			jsonResult = new HashMap<>();
 			
 			//判断用户是否为空
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(dto.getUid())).getId())){
+			if ( userInfoMapper.getUserById(StringUtilC.getString(dto.getUid()))!=null){	
 				
 				//判断id是否为空
 				if(!StringUtilC.isEmpty(dto.getId())){
@@ -200,7 +201,7 @@ public class ApiGenealogyDonateController extends BaseController {
 			jsonResult = new HashMap<>();
 			
 			//判断用户是否为空
-			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())){
+			if ( userInfoMapper.getUserById(StringUtilC.getString(uid))!=null){	
 				
 				//判断id是否为空
 				if(!StringUtilC.isEmpty(id)){

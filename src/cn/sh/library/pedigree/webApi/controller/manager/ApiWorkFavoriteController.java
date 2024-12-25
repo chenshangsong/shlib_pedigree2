@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
-import cn.sh.library.pedigree.utils.UserUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,10 +20,11 @@ import cn.sh.library.pedigree.dto.Pager;
 import cn.sh.library.pedigree.dto.Work;
 import cn.sh.library.pedigree.framework.controller.BaseController;
 import cn.sh.library.pedigree.framework.model.DtoJsonPageData;
-import cn.sh.library.pedigree.framework.util.PreloadUserList;
+import cn.sh.library.pedigree.sysManager.mapper.UserInfoMapper;
 import cn.sh.library.pedigree.sysManager.model.ApiWorkFavoriteDto;
 import cn.sh.library.pedigree.utils.DateUtilC;
 import cn.sh.library.pedigree.utils.StringUtilC;
+import cn.sh.library.pedigree.utils.UserUtil;
 import cn.sh.library.pedigree.webApi.services.ApiWorkFavoriteService;
 import cn.sh.library.pedigree.webApi.services.ApiWorkService;
 
@@ -41,6 +42,8 @@ public class ApiWorkFavoriteController extends BaseController {
 	@Resource
 	private ApiWorkService apiWorkService;
 	
+	@Autowired
+	private UserInfoMapper userInfoMapper;
 	/**
 	 * 用户收藏列表页面
 	 * 
@@ -54,7 +57,7 @@ public class ApiWorkFavoriteController extends BaseController {
 		
 		jsonResult = new HashMap<>();
 		
-		if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(search.getUid())).getId())){
+		if ( userInfoMapper.getUserById(StringUtilC.getString(search.getUid()))!=null){	
 		/*if (ifExsitUser(hs)) {*/
 		DtoJsonPageData grid = new DtoJsonPageData(this);
 		// 查询条件
@@ -96,8 +99,6 @@ public class ApiWorkFavoriteController extends BaseController {
 			Integer uid = UserUtil.getUserId(httpRequest);
 			jsonResult = new HashMap<>();
 
-//			if (ifExsitUser(hs)) {
-//			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())){
 			if(uid != null){
 				ApiWorkFavoriteDto _dtoTemp = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, workUri);
 				// 已存在
@@ -159,8 +160,6 @@ public class ApiWorkFavoriteController extends BaseController {
 			Integer uid = UserUtil.getUserId(httpRequest);
 
 			jsonResult = new HashMap<>();
-//			if (ifExsitUser(hs)) {
-//			if (!StringUtilC.isEmpty(PreloadUserList.getUserById(StringUtilC.getString(uid)).getId())){
 			if(uid != null){
 				// 执行更新
 				int ifSucess = apiWorkFavoriteService.deleteApiWorkFavoriteById(id, uid);

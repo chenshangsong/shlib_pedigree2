@@ -23,9 +23,6 @@ public abstract interface PersonSparql extends BaseDao {
 
 	public abstract ArrayList getPersonsInDynasty(int paramInt);
 
-	public abstract List<Map<String, String>> getInfos4Person(
-			String paramString, boolean paramBoolean);
-
 	/**
 	 * 根據人的URI获取人的详细信息，chenss20170821
 	 * 

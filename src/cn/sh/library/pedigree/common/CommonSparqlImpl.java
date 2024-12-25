@@ -205,7 +205,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
 
      String query = this.nsPrefix + "SELECT ?p ?o " + "WHERE {" + "   <" + s + "> ?p ?o ." + "}";
 
-     return SparqlExecution.jQuery(getModel(g), query, new String[] { "p", "o" });
+     return SparqlExecution.vQuery(getModel(g), query, new String[] { "p", "o" });
   }
 
   public ArrayList getPropertyValue(String g, String s, String p)
@@ -389,7 +389,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
 
      query = this.nsPrefix + "SELECT DISTINCT ?o " + "WHERE { " + "   ?s ?p ?o ." + "FILTER (STR(?s)='" + uri + "')" + "FILTER isIRI(?o) " + "}";
 
-     ArrayList results = SparqlExecution.jQuery(getModel(graph_name), query, new String[] { "o" });
+     ArrayList results = SparqlExecution.vQuery(getModel(graph_name), query, new String[] { "o" });
 
      if (results.size() > 0) {
        for (int i = 0; i < results.size(); i++) {
