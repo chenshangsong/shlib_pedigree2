@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.sql.ConnectionPoolDataSource;
+
 import org.apache.log4j.Logger;
 
 import com.hp.hpl.jena.query.ARQ;
@@ -25,6 +27,7 @@ import com.hp.hpl.jena.update.UpdateFactory;
 import com.hp.hpl.jena.update.UpdateRequest;
 
 import cn.sh.library.pedigree.utils.RDFUtils;
+import virtuoso.jdbc4.VirtuosoConnectionPoolDataSource;
 import virtuoso.jena.driver.VirtGraph;
 import virtuoso.jena.driver.VirtModel;
 import virtuoso.jena.driver.VirtuosoQueryExecution;
@@ -40,6 +43,45 @@ public class SparqlExecution {
      * 日志
      */
     private static final Logger logger = Logger.getLogger(SparqlExecution.class);
+    private static ConnectionPoolDataSource dataSource;
+
+	public static void init() {
+		try {
+			VirtuosoConnectionPoolDataSource vtDataSource = new VirtuosoConnectionPoolDataSource();
+			vtDataSource.setServerName("10.1.31.194");//名人
+			vtDataSource.setPortNumber(1111);
+			vtDataSource.setUser("dba");
+			vtDataSource.setPassword("Shlibrary123");
+			vtDataSource.setCharset("UTF-8");
+			vtDataSource.setInitialPoolSize(20);
+			dataSource = vtDataSource;
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
+
+	public static void init(String ip, int port, String user, String pwd) {
+		try {
+			VirtuosoConnectionPoolDataSource vtDataSource = new VirtuosoConnectionPoolDataSource();
+			vtDataSource.setServerName(ip);
+			vtDataSource.setPortNumber(port);
+			vtDataSource.setUser(user);
+			vtDataSource.setPassword(pwd);
+			vtDataSource.setCharset("UTF-8");
+			vtDataSource.setInitialPoolSize(20);
+			dataSource = vtDataSource;
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
+
+	public static VirtGraph getGraph(String graphName) {
+		return new VirtGraph(graphName, dataSource);
+	}
+
+	public static VirtGraph getGraph() {
+		return new VirtGraph(dataSource);
+	}
 
     // Remote federated query
     public static ArrayList vQuery(String endpoint, String query, String... objects) {
@@ -128,6 +170,10 @@ public class SparqlExecution {
 
     // Update
     public static void update(VirtGraph set, String query) {
+    	 if (set == null || query == null || query.isEmpty()) {
+             logger.error("Invalid input: VirtGraph or query is null/empty.");
+             return;
+         }
         VirtuosoUpdateRequest vur = null;
         try {
             vur = VirtuosoUpdateFactory.create(query, set);
@@ -138,14 +184,18 @@ public class SparqlExecution {
     }
 
     public static void update(Model model, String query) {
+        if (model == null || query == null || query.isEmpty()) {
+            logger.error("Invalid input: Model or query is null/empty.");
+            return;
+        }
+
         try {
             UpdateRequest req = UpdateFactory.create(query);
             UpdateAction.execute(req, model);
         } catch (Exception e) {
-            logger.error("错误SparqlExecution-update: " + query, e);
+            logger.error("Error executing SPARQL update on Model: " + query, e);
         }
     }
-
     // Ask
     public static boolean ask(Model set, String query) {
         ArrayList results = jQuery(set, query);

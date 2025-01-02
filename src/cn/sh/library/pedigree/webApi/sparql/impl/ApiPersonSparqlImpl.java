@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import cn.sh.library.pedigree.annoation.GraphDefine;
 import cn.sh.library.pedigree.common.SparqlExecution;
 import cn.sh.library.pedigree.dao.impl.BaseDaoImpl;
-import cn.sh.library.pedigree.sparql.RDFUtils;
+import cn.sh.library.pedigree.utils.RDFUtils;
 import cn.sh.library.pedigree.webApi.sparql.ApiPersonSparql;
 
 @Repository

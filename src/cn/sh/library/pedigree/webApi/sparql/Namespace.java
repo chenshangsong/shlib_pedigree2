@@ -1,4 +1,4 @@
-package cn.sh.library.pedigree.sysManager.sysMnagerSparql;
+package cn.sh.library.pedigree.webApi.sparql;
 
 import java.util.HashMap;
 import java.util.Map;

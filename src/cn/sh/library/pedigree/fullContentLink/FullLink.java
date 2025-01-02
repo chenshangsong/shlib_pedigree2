@@ -22,9 +22,6 @@ import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.utils.WebApiUtils;
 
 public class FullLink {
-	public static void main(String[] args) throws SQLException, ClassNotFoundException {
-		// new FullLink().isInnerIP("58.1.188.89");
-	}
 
 	/**
 	 * 获取全文链接图标链接
@@ -93,14 +90,15 @@ public class FullLink {
 			for (int i = _itemTempList.size() - 1; i >= 0; i--) {
 				Map map = _itemTempList.get(i);
 				String acc = StringUtilC.getString(map.get("accessLevel"));
+				String itemUri = StringUtilC.getString(map.get("item"));
 				String doi = StringUtilC.getString(map.get("doi"));
 				String shelfMark = StringUtilC.getString(map.get("shelfMark"));
 				String hasFullImg = StringUtilC.getString(map.get("hasFullImg"));
 				String description = StringUtilC.getString(map.get("description"));
 				String copyDescription = StringUtilC.getString(map.get("copyDescription")); //副本说明 20240708 chenss
 				description+= " " +copyDescription;//副本说明 20240708 chenss
-				// 如果是胶卷，并且用户不是管理员,则移除该item
-				if ("9".equals(acc) && !RoleGroup.admin.getGroup().equals(CommonUtils.loginUser.getRoleId())) {
+				// 如果是胶卷，并且是上图馆藏，并且 用户不是管理员,则移除该item
+				if ("9".equals(acc) && itemUri.equals("http://data.library.sh.cn/entity/organization/brvqlrg8y55v1b5q") && !RoleGroup.admin.getGroup().equals(CommonUtils.loginUser.getRoleId())) {
 					_itemTempList.remove(i);
 				} else {
 					String fulltext = "";

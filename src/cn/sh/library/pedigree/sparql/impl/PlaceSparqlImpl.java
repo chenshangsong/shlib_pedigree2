@@ -4,7 +4,6 @@
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -15,14 +14,12 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import cn.sh.library.pedigree.annoation.GraphDefine;
-import cn.sh.library.pedigree.common.CodeMsgUtil;
 import cn.sh.library.pedigree.common.SparqlExecution;
 import cn.sh.library.pedigree.dao.impl.BaseDaoImpl;
 import cn.sh.library.pedigree.dto.QueryResult;
 import cn.sh.library.pedigree.framework.util.StringUtil;
 import cn.sh.library.pedigree.sparql.BaseinfoSparql;
 import cn.sh.library.pedigree.sparql.PlaceSparql;
-import cn.sh.library.pedigree.sparql.WorkSparql;
 import cn.sh.library.pedigree.utils.RDFUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;

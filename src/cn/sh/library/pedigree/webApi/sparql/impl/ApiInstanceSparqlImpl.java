@@ -14,7 +14,7 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 import cn.sh.library.pedigree.common.SparqlExecution;
 import cn.sh.library.pedigree.dao.impl.BaseDaoImpl;
 import cn.sh.library.pedigree.dto.QueryResult;
-import cn.sh.library.pedigree.sparql.RDFUtils;
+import cn.sh.library.pedigree.utils.RDFUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.webApi.sparql.ApiInstanceSparql;
 

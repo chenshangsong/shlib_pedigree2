@@ -23,8 +23,8 @@ import cn.sh.library.pedigree.dao.impl.BaseDaoImpl;
 import cn.sh.library.pedigree.dto.AppConfig;
 import cn.sh.library.pedigree.dto.QueryResult;
 import cn.sh.library.pedigree.sparql.MergeSearchParts;
-import cn.sh.library.pedigree.sparql.Namespace;
 import cn.sh.library.pedigree.sparql.PersonSparql;
+import cn.sh.library.pedigree.sysManager.sysMnagerSparql.Namespace;
 import cn.sh.library.pedigree.utils.RDFUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 

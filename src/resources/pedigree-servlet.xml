@@ -237,7 +237,6 @@
 		
 		<task:annotation-driven /> <!-- 定时器开关-->  
   
-    <bean id="MyTasks" class="cn.sh.library.pedigree.framework.IpWarning.Tasks"></bean>  
       	<bean id="PreloadWorkJJUriList"
 		class="cn.sh.library.pedigree.framework.util.PreloadWorkJJUriList" />
    <!-- 预加载start -->
@@ -246,29 +245,11 @@
   <bean id="PreloadApiFuriPlaceList"
 		class="cn.sh.library.pedigree.framework.util.PreloadApiFuriPlaceList" />
     
-
-		
-<!-- 	<bean id="PreloadUserList"
-	class="cn.sh.library.pedigree.framework.util.PreloadUserList" /> -->
-	
 	<bean id="PreloadApiPersonsFromFamilyRules"
 	class="cn.sh.library.pedigree.framework.util.PreloadApiPersonsFromFamilyRules" />
 	
 	<bean id="PreloadChaodaiList"
 	class="cn.sh.library.pedigree.framework.util.PreloadChaodaiList" />
 	
-	
-	<!-- 预加载end -->
-		
-    <task:scheduled-tasks>  
-        <!--  
-            这里表示的是每隔30秒执行一次  
-        -->  
-           <task:scheduled ref="MyTasks" method="run" cron="0 0/5 * * * ?" />
-       
-    </task:scheduled-tasks>  
-      
-    <!-- 自动扫描的包名 -->    
-    <context:component-scan base-package="cn.sh.library.pedigree.framework.IpWarning" />  
 	
 </beans>

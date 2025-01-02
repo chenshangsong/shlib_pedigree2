@@ -124,14 +124,16 @@
 	</bean>
 <!-- vto数据源 20241220 chenss-->
 <bean id="dataSource" class="virtuoso.jdbc4.VirtuosoConnectionPoolDataSource"
-		destroy-method="close">
-		<property name="serverName" value="${db.host}" />
-		<property name="portNumber" value="${db.port}" />
-		<property name="user" value="${db.user}" />
-		<property name="password" value="${db.password}" />
-		<property name="charset" value="${db.charset}" />
-		<property name="initialPoolSize" value="${db.poolSize}" />
-	</bean>
+      destroy-method="close">
+    <property name="serverName" value="${db.host}" />
+    <property name="portNumber" value="${db.port}" />
+    <property name="user" value="${db.user}" />
+    <property name="password" value="${db.password}" />
+    <property name="charset" value="${db.charset}" />
+    <property name="initialPoolSize" value="${db.poolSize}" />
+  
+    
+</bean>
 <!-- <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
     <property name="driverClassName" value="${db.driverClassName}" />
     <property name="jdbcUrl" value="${db.url}" />

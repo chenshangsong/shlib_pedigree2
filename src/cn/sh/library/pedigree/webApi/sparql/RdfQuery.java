@@ -1,6 +1,5 @@
 package cn.sh.library.pedigree.webApi.sparql;
 
-import cn.sh.library.pedigree.sparql.Namespace;
 
 public enum RdfQuery {
 

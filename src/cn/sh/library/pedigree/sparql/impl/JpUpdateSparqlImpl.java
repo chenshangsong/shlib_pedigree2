@@ -23,7 +23,7 @@ import cn.sh.library.pedigree.base.Constant;
 import cn.sh.library.pedigree.common.SparqlExecution;
 import cn.sh.library.pedigree.dao.impl.BaseDaoImpl;
 import cn.sh.library.pedigree.sparql.JpUpdateSparql;
-import cn.sh.library.pedigree.sparql.Namespace;
+import cn.sh.library.pedigree.sysManager.sysMnagerSparql.Namespace;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

@@ -38,6 +38,7 @@ import cn.sh.library.pedigree.utils.WebApiUtils;
 import cn.sh.library.pedigree.webApi.dto.searchBean.ApiWorkSearchBean;
 import cn.sh.library.pedigree.webApi.services.ApiWorkService;
 import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
+import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparqlNew;
 /**
  * @author liuyi
  * @date 2015/1/5 0005
