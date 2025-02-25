@@ -106,6 +106,18 @@ public class ApiCommonController extends BaseController {
 			return "error";
 		}
 	}
+	@ResponseBody
+	@RequestMapping(value = "/restartService", method = RequestMethod.GET)
+	public String resetService() {
+		jsonResult = new HashMap<>();
+		try {
+			 jsonResult.put("datas", StringUtilC.restartService());
+			 jsonResult.put("code", 200);
+			return JSONArray.fromObject(jsonResult).toString();
+		} catch (Exception e) {
+			return "error";
+		}
+	}
 
 	/**
 	 * 获取Graph列表

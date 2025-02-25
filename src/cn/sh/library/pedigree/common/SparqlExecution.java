@@ -2,6 +2,7 @@ package cn.sh.library.pedigree.common;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,12 +22,15 @@ import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.shared.JenaException;
 import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.update.UpdateAction;
 import com.hp.hpl.jena.update.UpdateFactory;
 import com.hp.hpl.jena.update.UpdateRequest;
 
+import cn.sh.library.pedigree.base.Constant;
 import cn.sh.library.pedigree.utils.RDFUtils;
+import cn.sh.library.pedigree.utils.StringUtilC;
 import virtuoso.jdbc4.VirtuosoConnectionPoolDataSource;
 import virtuoso.jena.driver.VirtGraph;
 import virtuoso.jena.driver.VirtModel;
@@ -47,13 +51,17 @@ public class SparqlExecution {
 
 	public static void init() {
 		try {
+//			String virtuosoIp = "127.0.0.1";
+			String virtuosoIp = "10.1.31.194";
 			VirtuosoConnectionPoolDataSource vtDataSource = new VirtuosoConnectionPoolDataSource();
-			vtDataSource.setServerName("10.1.31.194");//名人
+			vtDataSource.setServerName(virtuosoIp);
 			vtDataSource.setPortNumber(1111);
 			vtDataSource.setUser("dba");
 			vtDataSource.setPassword("Shlibrary123");
 			vtDataSource.setCharset("UTF-8");
 			vtDataSource.setInitialPoolSize(20);
+			vtDataSource.setMaxPoolSize(50);
+			vtDataSource.setMinPoolSize(10);
 			dataSource = vtDataSource;
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -80,6 +88,7 @@ public class SparqlExecution {
 	}
 
 	public static VirtGraph getGraph() {
+		init();
 		return new VirtGraph(dataSource);
 	}
 
@@ -108,7 +117,13 @@ public class SparqlExecution {
             ResultSet rs = vqe.execSelect();
             return extract(rs, objects);
         } catch (Exception e) {
-            logger.error("错误SparqlExecution-vQuery: " + query, e);
+            logger.error("错误SparqlExecution-vQuery111111111111111: " + query, e);
+            // 判断是否是连接中断的异常 20250113
+            if (isConnectionError(e)) {
+            	 logger.error("连接失败，进行了重连....");
+            	 Constant.virtuosoRetryConn=true;
+            	 return vQuery(getGraph() ,  query, objects);
+            }
             return null;
         } finally {
             if (vqe != null) {
@@ -116,7 +131,11 @@ public class SparqlExecution {
             }
         }
     }
-
+    private static boolean isConnectionError(Exception e) {
+        // 根据具体的异常类型进行判断
+        // 这里假设是 SQLException，但根据你的具体情况可能需要调整
+        return e instanceof JenaException && e.getMessage().toLowerCase().contains("connection");
+    }
     // Service
     public static ArrayList jQuery(String service, String query, String... objects) {
         QueryExecution vqe = null;

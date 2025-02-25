@@ -1,6 +1,9 @@
 package cn.sh.library.pedigree.utils;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -20,6 +23,7 @@ import java.util.regex.PatternSyntaxException;
 
 import com.github.houbb.opencc4j.util.ZhConverterUtil;
 
+import cn.sh.library.pedigree.common.CodeMsgUtil;
 import cn.sh.library.pedigree.framework.util.StringUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -31,9 +35,10 @@ import net.sf.json.JSONObject;
  */
 public class StringUtilC {
 	public static void main(String[] args) {
-		String traditional = "本谱着录了湖北、湖南、广东、广西、海南、重庆、四川、贵州、云南、西藏、港澳等地蔚姓概况。参见《蔚姓广谱》甘肃、山东等卷（馆藏XP4961-4968）";
-		String simplified = getCht(traditional);
-		System.out.println(simplified); // 输出：繁体中文
+//		String traditional = "本谱着录了湖北、湖南、广东、广西、海南、重庆、四川、贵州、云南、西藏、港澳等地蔚姓概况。参见《蔚姓广谱》甘肃、山东等卷（馆藏XP4961-4968）";
+//		String simplified = getCht(traditional);
+//		System.out.println(simplified); // 输出：繁体中文
+		restartService();
 
 	}
 
@@ -52,7 +57,25 @@ public class StringUtilC {
 		return null;
 
 	}
-
+	public  static String restartService()  {
+        String command = CodeMsgUtil.getConfig("conf_restart_Service");
+        if (!StringUtilC.isEmpty(command)){
+        	 ProcessBuilder processBuilder = new ProcessBuilder(command);
+             
+             try {
+                 // 启动进程并将其设置为后台执行
+                 processBuilder.inheritIO(); // 继承IO，输出到控制台
+                 processBuilder.start();
+                 
+                 // 不等待进程结束，直接返回
+                 return "Service restart initiated successfully.";
+             } catch (IOException e) {
+                 e.printStackTrace();
+                 return "An error occurred: " + e.getMessage();
+             }
+        }
+        return "未配置执行脚本。";
+    }
 	/**
 	 * 替换时光科技有限公司
 	 * 
@@ -62,7 +85,7 @@ public class StringUtilC {
 		String needReplaceStr="江苏时光信息科技有限公司";
 		String replaceStr="第三方社会团体";
 		// 检查map中是否存在itemList节点并且该节点不为空
-		if (dataMap.containsKey("itemList") && dataMap.get("itemList") instanceof List) {
+		if (dataMap != null && dataMap.containsKey("itemList") && dataMap.get("itemList") instanceof List) {
 			List<Map<String, Object>> itemList = (List<Map<String, Object>>) dataMap.get("itemList");
 			if (!itemList.isEmpty()) {
 				// 遍历itemList中的每个item
@@ -89,7 +112,7 @@ public class StringUtilC {
 			}
 		}
 
-		if (dataMap.containsKey("note") && dataMap.get("note").toString().contains(needReplaceStr)) {
+		if (dataMap != null && dataMap.containsKey("note") && dataMap.get("note").toString().contains(needReplaceStr)) {
 			dataMap.put("note", dataMap.get("note").toString().replaceAll(needReplaceStr, replaceStr));
 		}
 

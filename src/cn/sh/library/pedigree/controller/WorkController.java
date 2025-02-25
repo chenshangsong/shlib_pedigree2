@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import cn.sh.library.pedigree.base.Constant;
 import cn.sh.library.pedigree.bean.WorkSearchBean;
 import cn.sh.library.pedigree.dto.Pager;
 import cn.sh.library.pedigree.dto.Work;
@@ -152,7 +153,6 @@ public class WorkController extends BaseController {
 	@RequestMapping(method = RequestMethod.POST)
 	public Map<String, Object> list(String keyword, Pager pager) {
 		Map<String, Object> result = new HashMap<>();
-
 		// 1分钟30次访问限制
 		if (!redisUtil.ifLimitVisit(30, 1)) {
 			result.put("result", "-1");// 数据来源索引标记
@@ -174,6 +174,7 @@ public class WorkController extends BaseController {
 	@RequestMapping(value = "/get", method = RequestMethod.GET)
 	public Work getWork(String uri) {
 		Work _work = new Work();
+		Constant.virtuosoRetryConn=false;
 		// 1分钟30次访问限制
 		if (!redisUtil.ifLimitVisit(30, 1)) {
 			jsonResult = new HashMap<>();
@@ -186,6 +187,10 @@ public class WorkController extends BaseController {
 		}
 		try {
 			_work = this.workService.getWork(uri, true);
+			//如果系统进行了重连，则进行服务重启,再次请求负载均衡到其他机器 chensss 20240113
+			if( Constant.virtuosoRetryConn) {
+				StringUtilC.restartService();
+			}
 			return _work;
 		} catch (Exception e) {
 			logger.info("WorkController-get错误" + DateUtilC.getNowDateTime() + "----" + e);

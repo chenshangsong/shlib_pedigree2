@@ -11,6 +11,7 @@ import cn.sh.library.pedigree.common.CodeMsgUtil;
 public class Constant {
 	public static String ProjectPath = "";
 	public static String ProjectRealPath = "";
+	public static Boolean virtuosoRetryConn = false;
 	private static final String HOST = "http://gen.library.sh.cn/";
 	private static final String HOST_SD = "http://sd.library.sh.cn/";
 	// private static final String DATA_HOST = "http://data.library.sh.cn/";

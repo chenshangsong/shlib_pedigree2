@@ -58,7 +58,6 @@ public abstract class BaseDaoImpl implements BaseDao {
 				getModel("http://sd.library.sh.cn/graph/person"));
 		graph = new VirtGraph(graphDefine.name(), dataSource);
 
-		initialization();
 	}
 
 	protected Model getModel(String name) {
@@ -75,9 +74,6 @@ public abstract class BaseDaoImpl implements BaseDao {
 
 	protected Model createModel(String name) {
 		return null;
-	}
-
-	protected void initialization() {
 	}
 
 }
