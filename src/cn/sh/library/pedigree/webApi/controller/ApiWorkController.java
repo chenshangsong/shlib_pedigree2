@@ -443,7 +443,8 @@ public class ApiWorkController extends BaseController {
 		if( Constant.virtuosoRetryConn) {
 			jsonResult.put("serverCtrl",StringUtilC.restartService() );
 		}
-		jsonResult.put("server", RequestFilter.threadLocalRequest.get().getLocalAddr());
+		String ip = RequestFilter.threadLocalRequest.get().getLocalAddr();
+		jsonResult.put("checkinfo", ip.substring(ip.lastIndexOf(".")+1));
 		return JSONObject.fromObject(jsonResult);
 	}
 
@@ -496,7 +497,8 @@ public class ApiWorkController extends BaseController {
 		if( Constant.virtuosoRetryConn) {
 			jsonResult.put("serverCtrl",StringUtilC.restartService() );
 		}
-		jsonResult.put("server", RequestFilter.threadLocalRequest.get().getLocalAddr());
+		String ip = RequestFilter.threadLocalRequest.get().getLocalAddr();
+		jsonResult.put("checkinfo", ip.substring(ip.lastIndexOf(".")+1));
 		return JSONObject.fromObject(jsonResult);
 	}
 	/**

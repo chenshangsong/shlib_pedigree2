@@ -15,7 +15,7 @@
 </head>
 <body>
 	<input type="hidden" id="org" value="${org}"/>
-	<input type="hidden" id="user" value="${userId}"/>
+	<%-- <input type="hidden" id="user" value="${userId}"/> --%>
 	<input type="hidden" id="manifest" value="${manifest}"/>
 	<input type="hidden" id="isInnerIP" value="${isInnerIP}"/>
     <div id="viewer"></div>
