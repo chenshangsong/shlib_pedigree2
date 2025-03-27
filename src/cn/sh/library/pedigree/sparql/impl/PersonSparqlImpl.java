@@ -33,8 +33,8 @@ import cn.sh.library.pedigree.utils.StringUtilC;
 public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 	private List rules;
 
-	@Resource
-	private StringBuffer nsPrefix;
+//	@Resource
+//	private StringBuffer nsPrefix;
 
 	@Resource
 	private AppConfig appConfig;
@@ -42,11 +42,11 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 	public QueryResult<Map<String, Object>> getPersons(PersonSearchBean bean, int start, int size) {
 		String clause = MergeSearchParts.personSearchClause(bean);
 
-		String countQuery = this.nsPrefix + "SELECT (COUNT(DISTINCT ?name) AS ?count) " + "WHERE {"
+		String countQuery = Namespace.getNsPrefixString() + "SELECT (COUNT(DISTINCT ?name) AS ?count) " + "WHERE {"
 				+ "   ?s a shl:Person ; " + "      bf:label ?name ; " + "      shl:relatedWork ?work ; "
 				+ "      foaf:familyName ?f . " + "   FILTER (lang(?name)='cht')" + clause + "}";
 
-		String query = this.nsPrefix
+		String query = Namespace.getNsPrefixString()
 				+ "SELECT DISTINCT ?name (GROUP_CONCAT(DISTINCT ?s;separator=';') AS ?uri) (GROUP_CONCAT(DISTINCT ?w;separator=';') AS ?work) "
 				+ "WHERE {" + "   ?s a shl:Person ; " + "      bf:label ?name ; " + "      shl:relatedWork ?w ; "
 				+ "      foaf:familyName ?f . " + "FILTER (lang(?name) = 'cht')" + clause
@@ -71,7 +71,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 			uri = " FILTER (?s = <" + bean.getUri() + ">)";
 		}
 
-		String query = this.nsPrefix + "CONSTRUCT {?s ?p ?o ; rel:parentOf ?child.} " + "WHERE {" + "   ?s ?p ?o ."
+		String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o ; rel:parentOf ?child.} " + "WHERE {" + "   ?s ?p ?o ."
 				+ "   OPTIONAL {?child rel:childOf ?s .} " + "   {SELECT DISTINCT ?s " + "   WHERE {"
 				+ "       ?s a shl:Person ; " + "          foaf:familyName ?f . " + clause + uri + "   } LIMIT 100}"
 				+ "}";
@@ -87,7 +87,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 
 	public QueryResult<Map<String, Object>> getPersonsInHome(String familyName_uri, int start, int size) {
 		QueryResult result = new QueryResult();
-		String countQuery = this.nsPrefix + "SELECT (COUNT(DISTINCT ?name) AS ?count) " + "WHERE {"
+		String countQuery = Namespace.getNsPrefixString() + "SELECT (COUNT(DISTINCT ?name) AS ?count) " + "WHERE {"
 				+ "   ?uri a shl:Person; bf:label ?name ; " + "        shl:roleOfFamily ?r ; "
 				+ "        foaf:familyName <" + familyName_uri + "> ; " + "        shl:relatedWork ?work . "
 				+ "   FILTER (lang(?name) = 'cht')" + "}";
@@ -104,7 +104,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 			} else {
 				result.setTotalrecord(count);
 			}
-			String str = this.nsPrefix
+			String str = Namespace.getNsPrefixString()
 					+ "SELECT DISTINCT ?name (GROUP_CONCAT(?s; separator=',') AS ?uri) (GROUP_CONCAT(?w; separator=',') AS ?work) "
 					+ "WHERE {" + "   ?s a shl:Person; bf:label ?name ; " + "        shl:roleOfFamily ?r ; "
 					+ "        foaf:familyName <" + familyName_uri + "> ; " + "        shl:relatedWork ?w . "
@@ -116,7 +116,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 	}
 
 	public String countPersons(String time_uri) {
-		String query = this.nsPrefix + "SELECT (COUNT(DISTINCT ?s) AS ?count) " + "WHERE {" + "   ?s a shl:Person ; "
+		String query = Namespace.getNsPrefixString() + "SELECT (COUNT(DISTINCT ?s) AS ?count) " + "WHERE {" + "   ?s a shl:Person ; "
 				+ "      foaf:name ?name ; " + "      shl:temporal <" + time_uri + "> . "
 				+ "FILTER langMatches(lang(?name),'') " + "FILTER CONTAINS(STR(?s), '/Person/')" + "}";
 
@@ -131,7 +131,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 	}
 
 	public ArrayList getPersonsInDynasty(int limit) {
-		String query = this.nsPrefix + "SELECT ?time ?dynasty ?begin ?name " + "WHERE {"
+		String query = Namespace.getNsPrefixString() + "SELECT ?time ?dynasty ?begin ?name " + "WHERE {"
 				+ "   ?s a shl:Person;foaf:name ?name ; " + "      foaf:name ?py ; " + "      shl:temporal ?time . "
 				+ "{SELECT ?time ?dynasty ?begin FROM <" + "http://gen.library.sh.cn/graph/baseinfo" + "> WHERE {"
 				+ "   ?time shl:beginYear ?begin ; " + "         shl:dynasty ?dynasty . " + "}}"
@@ -152,7 +152,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 		try {
 			
 			if (uri.contains("jp")) {
-				String query = this.nsPrefix
+				String query = Namespace.getNsPrefixString()
 						+ "SELECT DISTINCT ?s ?p ?o WHERE { ?s a shl:Person; ?p ?o.filter(STR(?s)='" + uri + "')}";
 				List<Map<String, String>> _Jplist = SparqlExecution.vQuery(this.model, query, 
 						new String[] { "s", "p", "o" });
@@ -186,7 +186,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 	}
 
 	public ArrayList getPersons4Work(String work_uri) {
-		String query = this.nsPrefix + "SELECT ?uri ?name ?dynasty " + "WHERE {" + "   ?uri a shl:Person ; "
+		String query = Namespace.getNsPrefixString() + "SELECT ?uri ?name ?dynasty " + "WHERE {" + "   ?uri a shl:Person ; "
 				+ "        foaf:name ?name ; " + "        bf:relatedTo <" + work_uri + "> ." + "OPTIONAL {"
 				+ "   ?uri shl:temporal ?time . " + "   {SELECT ?time ?dynasty ?begin FROM <"
 				+ "http://gen.library.sh.cn/graph/baseinfo" + "> WHERE {" + "       ?time shl:dynasty ?dynasty ;"
@@ -197,7 +197,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 	}
 
 	public ArrayList getFamRels4Work(String work_uri) {
-		String query = this.nsPrefix + "SELECT distinct ?uri ?name (GROUP_CONCAT(DISTINCT ?role; separator=';') AS ?roles)  (GROUP_CONCAT(DISTINCT ?time; separator=';') AS ?time) ?serialNo  ?order\r\n"
+		String query = Namespace.getNsPrefixString() + "SELECT distinct ?uri ?name (GROUP_CONCAT(DISTINCT ?role; separator=';') AS ?roles)  (GROUP_CONCAT(DISTINCT ?time; separator=';') AS ?time) ?serialNo  ?order\r\n"
 				+ "from <http://gen.library.sh.cn/graph/person>\r\n"
 				+ "from <http://gen.library.sh.cn/graph/baseinfo>\r\n"
 				+ " WHERE {   \r\n"
@@ -238,14 +238,14 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 			}
 
 			if (!fl.contains(uri)) {
-				String query = this.nsPrefix + "CONSTRUCT {<" + uri + "> ?p ?o} " + "FROM <" + graph_name + "> "
+				String query = Namespace.getNsPrefixString() + "CONSTRUCT {<" + uri + "> ?p ?o} " + "FROM <" + graph_name + "> "
 						+ "WHERE {" + "   <" + uri
 						+ "> ?p ?o . FILTER (?p != <http://www.library.sh.cn/ontology/description>)}";
 
 				temp.add(SparqlExecution.construct(this.graph, query));
 				fl.add(uri);
 
-				query = this.nsPrefix + "SELECT DISTINCT ?p ?o " + "FROM <" + graph_name + "> " + "WHERE { "
+				query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?p ?o " + "FROM <" + graph_name + "> " + "WHERE { "
 						+ "   ?s ?p ?o ." + "FILTER (STR(?s)='" + uri + "') "
 						+ "FILTER ((?p != rel:spouseOf) && (?p != rel:childOf))" + "FILTER isIRI(?o) " + "}";
 
@@ -280,13 +280,13 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 			filter = "FILTER (lang(?label) = 'cht')";
 		}
 
-		String countQuery = this.nsPrefix + "SELECT count(DISTINCT ?uri) as ?count " + "WHERE {"
+		String countQuery = Namespace.getNsPrefixString() + "SELECT count(DISTINCT ?uri) as ?count " + "WHERE {"
 				+ "{?uri a shl:Person ; " + "      bf:label ?label . " + "} UNION {" + "   ?uri a shl:Person ; "
 				+ "        foaf:familyName ?f . " + "   {SELECT ?f ?label FROM <"
 				+ "http://gen.library.sh.cn/graph/baseinfo" + "> WHERE {" + "       ?f bf:label ?label . " + "   }}"
 				+ "}" + filter + "}";
 
-		String query = this.nsPrefix
+		String query = Namespace.getNsPrefixString()
 				+ "SELECT DISTINCT ?uri ?chs ?fn_chs (if (STRLEN(?cat) > 0, STR(?cat), 'Compiler') AS ?role) WHERE { "
 				+ "   ?uri a shl:Person ; bf:label ?chs ; foaf:familyName ?f. " + filter + "OPTIONAL { "
 				+ "   ?uri shl:roleOfFamily ?r . " + "   {SELECT ?r ?cat FROM <"
@@ -318,7 +318,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 		String query = "";
 
 		if (0 == tag) {
-			countQuery = this.nsPrefix + "SELECT COUNT(DISTINCT ?uri) AS ?count " + "WHERE {"
+			countQuery = Namespace.getNsPrefixString() + "SELECT COUNT(DISTINCT ?uri) AS ?count " + "WHERE {"
 					+ "   ?uri a shl:Person ; " + "        shl:roleOfFamily ?r ; " + "        foaf:familyName ?f ; "
 					+ "        shl:relatedWork ?work ; " + "        bf:label ?name ; " + "        bf:label ?chs . "
 					+ "   FILTER (?r != <http://data.library.sh.cn/jp/vocab/ancestor/ming-ren>)"
@@ -328,7 +328,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 					+ "   FILTER (lang(?fn_en) = 'en') " + MergeSearchParts.baseClause(search) + "   }}"
 					+ MergeSearchParts.personClause(search) + "}";
 
-			query = this.nsPrefix + "SELECT DISTINCT ?uri ?chs ?cat_label ?fn_en " + "WHERE {"
+			query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri ?chs ?cat_label ?fn_en " + "WHERE {"
 					+ "   ?uri a shl:Person ; " + "        shl:roleOfFamily ?r ; " + "        foaf:familyName ?f ; "
 					+ "        shl:relatedWork ?work ; " + "        bf:label ?name ; " + "        bf:label ?chs . "
 					+ "   FILTER (lang(?chs) = 'cht')"
@@ -340,7 +340,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 					+ MergeSearchParts.baseClause(search) + "   }}" + MergeSearchParts.personClause(search)
 					+ "} ORDER BY ?fn_en ?chs " + "OFFSET " + start + " LIMIT " + size;
 		} else if (1 == tag) {
-			countQuery = this.nsPrefix + "SELECT COUNT(DISTINCT ?uri) AS ?count " + "WHERE {"
+			countQuery = Namespace.getNsPrefixString() + "SELECT COUNT(DISTINCT ?uri) AS ?count " + "WHERE {"
 					+ "   ?uri a shl:Person ; " + "        shl:roleOfFamily ?r ; " + "        foaf:familyName ?f ; "
 					+ "        shl:relatedWork ?work ; " + "        bf:label ?name ; " + "        bf:label ?chs . "
 					+ "   FILTER (?r = <http://data.library.sh.cn/jp/vocab/ancestor/ming-ren>)"
@@ -350,7 +350,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 					+ "   FILTER (lang(?fn_en) = 'en') " + MergeSearchParts.baseClause(search) + "   }}"
 					+ MergeSearchParts.personClause(search) + "}";
 
-			query = this.nsPrefix + "SELECT DISTINCT ?uri ?chs ?cat_label ?fn_en " + "WHERE {"
+			query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri ?chs ?cat_label ?fn_en " + "WHERE {"
 					+ "   ?uri a shl:Person ; " + "        shl:roleOfFamily ?r ; " + "        foaf:familyName ?f ; "
 					+ "        shl:relatedWork ?work ; " + "        bf:label ?name ; " + "        bf:label ?chs . "
 					+ "   FILTER (lang(?chs) = 'cht')"
@@ -362,7 +362,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 					+ MergeSearchParts.baseClause(search) + "   }}" + MergeSearchParts.personClause(search)
 					+ "} ORDER BY ?fn_en ?chs " + "OFFSET " + start + " LIMIT " + size;
 		} else if (2 == tag) {
-			countQuery = this.nsPrefix + "SELECT COUNT(DISTINCT ?uri) AS ?count " + "WHERE {"
+			countQuery = Namespace.getNsPrefixString() + "SELECT COUNT(DISTINCT ?uri) AS ?count " + "WHERE {"
 					+ "   ?uri a shl:Person ; " + "        foaf:familyName ?f ; " + "        bf:label ?name ; "
 					+ "        bf:role ?r ; " + "        bf:label ?chs . " + "   {SELECT ?r ?cat_label FROM <"
 					+ "http://gen.library.sh.cn/graph/baseinfo" + "> WHERE {"
@@ -373,7 +373,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 					+ "          bf:label ?fn_en . " + "       FILTER (lang(?fn_en) = 'en') "
 					+ MergeSearchParts.baseClause(search) + "   }}" + MergeSearchParts.personClause(search) + "}";
 
-			query = this.nsPrefix + "SELECT DISTINCT ?uri ?chs ?cat_label ?fn_en " + "WHERE {"
+			query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri ?chs ?cat_label ?fn_en " + "WHERE {"
 					+ "   ?uri a shl:Person ; " + "        foaf:familyName ?f ; " + "        bf:label ?name ; "
 					+ "        bf:role ?r ; " + "        bf:label ?chs . " + "   FILTER (lang(?chs) = 'cht')"
 					+ "   {SELECT ?r ?cat_label FROM <" + "http://gen.library.sh.cn/graph/baseinfo" + "> WHERE {"
@@ -403,7 +403,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 			String str = "";
 
 			if (StringUtils.isNotBlank(fn)) {
-				str = this.nsPrefix
+				str = Namespace.getNsPrefixString()
 						+ "SELECT ?label ?uri ?pc ?wc ?my ?mb (if (STRLEN(STR(?my)) > 0, ?my, ?mb) AS ?year) "
 						+ "WHERE {"
 						+ "   SELECT ?uri (COUNT(DISTINCT ?label) AS ?pc) (COUNT(DISTINCT ?work) AS ?wc) (min(?y) AS ?my) (min(?begin) AS ?mb) WHERE {"
@@ -413,7 +413,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 						+ "           ?uri a shl:FamilyName; bf:label ?label . FILTER REGEX(STR(?label), '^" + fn
 						+ "$') " + "       }}" + "   }" + "}";
 			} else {
-				str = this.nsPrefix
+				str = Namespace.getNsPrefixString()
 						+ "SELECT ?label ?uri ?pc ?wc ?my ?mb (if (STRLEN(STR(?my)) > 0, ?my, ?mb) AS ?year) "
 						+ "WHERE {"
 						+ "   SELECT ?label ?uri ?py (COUNT(DISTINCT ?label) AS ?pc) (COUNT(DISTINCT ?work) AS ?wc) (min(?y) AS ?my) (min(?begin) AS ?mb) WHERE {"
@@ -430,7 +430,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 		String str = "";
 
 		if (StringUtils.isNotBlank(fn)) {
-			str = this.nsPrefix + "SELECT ?label ?uri ?pc ?wc ?my ?mb (if (STRLEN(STR(?my)) > 0, ?my, ?mb) AS ?year) "
+			str = Namespace.getNsPrefixString() + "SELECT ?label ?uri ?pc ?wc ?my ?mb (if (STRLEN(STR(?my)) > 0, ?my, ?mb) AS ?year) "
 					+ "WHERE {"
 					+ "   SELECT ?uri (COUNT(DISTINCT ?s) AS ?pc) (COUNT(DISTINCT ?work) AS ?wc) (min(?y) AS ?my) (min(?begin) AS ?mb) "
 					+ "   FROM <" + "http://gen.library.sh.cn/graph/work" + "> WHERE {"
@@ -445,7 +445,7 @@ public class PersonSparqlImpl extends BaseDaoImpl implements PersonSparql {
 					+ "> WHERE {" + "           ?uri a shl:FamilyName; bf:label ?label . FILTER REGEX(STR(?label), '^"
 					+ fn + "$') " + "       }}" + "   }" + "}";
 		} else {
-			str = this.nsPrefix + "SELECT ?label ?uri ?pc ?wc ?my ?mb (if (STRLEN(STR(?my)) > 0, ?my, ?mb) AS ?year) "
+			str = Namespace.getNsPrefixString() + "SELECT ?label ?uri ?pc ?wc ?my ?mb (if (STRLEN(STR(?my)) > 0, ?my, ?mb) AS ?year) "
 					+ "WHERE {"
 					+ "   SELECT ?uri (COUNT(DISTINCT ?s) AS ?pc) (COUNT(DISTINCT ?work) AS ?wc) (min(?y) AS ?my) (min(?begin) AS ?mb) "
 					+ "   FROM <" + "http://gen.library.sh.cn/graph/work" + "> WHERE {"

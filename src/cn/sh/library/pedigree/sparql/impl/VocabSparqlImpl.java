@@ -12,6 +12,7 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 /*     */ import cn.sh.library.pedigree.dao.impl.BaseDaoImpl;
 /*     */ import cn.sh.library.pedigree.sparql.VocabSparql;
 /*     */ import cn.sh.library.pedigree.utils.RDFUtils;
+import cn.sh.library.pedigree.webApi.sparql.Namespace;
 /*     */ 
 /*     */ @Repository
 /*     */ @GraphDefine(name="http://gen.library.sh.cn/graph/vocab")
@@ -19,12 +20,10 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 /*     */   implements VocabSparql
 /*     */ {
 /*     */ 
-/*     */   @Resource
-/*     */   private StringBuffer nsPrefix;
 /*     */ 
 /*     */   public ArrayList getAllClasses()
 /*     */   {
-/*  25 */     String query = this.nsPrefix + "SELECT DISTINCT ?s " + "WHERE {" + "   ?s a rdfs:Class . " + "}";
+/*  25 */     String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?s " + "WHERE {" + "   ?s a rdfs:Class . " + "}";
 /*     */ 
 /*  31 */     return SparqlExecution.jQuery(this.model, query, true, new String[] { "s" });
 /*     */   }
@@ -35,7 +34,7 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 /*  37 */       class_uri = RDFUtils.getLink(this.model, class_uri);
 /*     */     }
 /*     */ 
-/*  40 */     String query = this.nsPrefix + "SELECT DISTINCT ?p ?label ?comment ?range " + "WHERE {" + "   ?p a rdf:Property ; rdfs:label ?label ; rdfs:range ?range . " + "   OPTIONAL {?p rdfs:comment ?comment .}" + "   {SELECT DISTINCT ?p WHERE {" + "       {" + "           ?p rdfs:domain <" + class_uri + "> ." + "       } UNION { " + "           <" + class_uri + "> rdfs:subClassOf* ?super . ?p rdfs:domain ?super. " + "       } UNION { " + "           <" + class_uri + "> rdfs:subClassOf* ?super . ?s owl:equivalentClass ?super . ?p rdfs:domain ?s. " + "       }" + "   }}" + "}";
+/*  40 */     String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?p ?label ?comment ?range " + "WHERE {" + "   ?p a rdf:Property ; rdfs:label ?label ; rdfs:range ?range . " + "   OPTIONAL {?p rdfs:comment ?comment .}" + "   {SELECT DISTINCT ?p WHERE {" + "       {" + "           ?p rdfs:domain <" + class_uri + "> ." + "       } UNION { " + "           <" + class_uri + "> rdfs:subClassOf* ?super . ?p rdfs:domain ?super. " + "       } UNION { " + "           <" + class_uri + "> rdfs:subClassOf* ?super . ?s owl:equivalentClass ?super . ?p rdfs:domain ?s. " + "       }" + "   }}" + "}";
 /*     */ 
 /*  56 */     return SparqlExecution.jQuery(this.model, query, true, new String[] { "p", "label", "comment", "range" });
 /*     */   }
@@ -46,7 +45,7 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 /*  62 */       prop_uri = RDFUtils.getLink(this.model, prop_uri);
 /*     */     }
 /*     */ 
-/*  65 */     String query = this.nsPrefix + "SELECT ?r " + "WHERE {" + "   <" + prop_uri + "> rdfs:range ?r ." + "}";
+/*  65 */     String query = Namespace.getNsPrefixString() + "SELECT ?r " + "WHERE {" + "   <" + prop_uri + "> rdfs:range ?r ." + "}";
 /*     */ 
 /*  71 */     ArrayList results = SparqlExecution.vQuery(this.graph, query, new String[] { "r" });
 /*     */ 
@@ -65,7 +64,7 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 /*  86 */     property = RDFUtils.getLink(this.model, property);
 /*  87 */     String graph_vocab = "http://gen.library.sh.cn/graph/vocab";
 /*     */ 
-/*  89 */     String query = this.nsPrefix + "SELECT ?label " + "WHERE {" + "   <" + property + "> rdfs:label ?label ." + "}";
+/*  89 */     String query = Namespace.getNsPrefixString() + "SELECT ?label " + "WHERE {" + "   <" + property + "> rdfs:label ?label ." + "}";
 /*     */ 
 /*  95 */     ArrayList results = SparqlExecution.vQuery(getModel(graph_vocab), query, new String[] { "label" });
 /*     */ 
@@ -81,7 +80,7 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 /* 106 */     property = RDFUtils.getLink(this.model, property);
 /* 107 */     String graph_vocab = "http://gen.library.sh.cn/graph/vocab";
 /*     */ 
-/* 109 */     String query = this.nsPrefix + "SELECT ?comment " + "WHERE {" + "   <" + property + "> rdfs:comment ?comment ." + "}";
+/* 109 */     String query = Namespace.getNsPrefixString() + "SELECT ?comment " + "WHERE {" + "   <" + property + "> rdfs:comment ?comment ." + "}";
 /*     */ 
 /* 115 */     ArrayList results = SparqlExecution.vQuery(getModel(graph_vocab), query, new String[] { "comment" });
 /*     */ 

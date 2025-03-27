@@ -17,14 +17,15 @@ import cn.sh.library.pedigree.dto.QueryResult;
 import cn.sh.library.pedigree.utils.RDFUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.webApi.sparql.ApiInstanceSparql;
+import cn.sh.library.pedigree.webApi.sparql.Namespace;
 
 @Repository
 @GraphDefine(name = "http://gen.library.sh.cn/graph/instance")
 public class ApiInstanceSparqlImpl extends BaseDaoImpl implements
 		ApiInstanceSparql {
 
-	@Resource
-	private StringBuffer nsPrefix;
+//	@Resource
+//	private StringBuffer nsPrefix;
 
 	@Override
 	public QueryResult<Map<String, Object>> getFamilyRules(String keyword,
@@ -52,7 +53,7 @@ public class ApiInstanceSparqlImpl extends BaseDaoImpl implements
 				+ " .optional{?work bf:subject ?sub. ?sub a shl:FamilyName;bf:label ?familyName .filter(lang(?familyName)='cht')} "
 				+ " .optional{?person a shl:Person; bf:label ?labelP; shl:relatedWork ?work ;shl:roleOfFamily ?role .values ?role {<http://data.library.sh.cn/jp/vocab/ancestor/shi-zu><http://data.library.sh.cn/jp/vocab/ancestor/shi-qian-zu><http://data.library.sh.cn/jp/vocab/ancestor/ming-ren>}. filter (lang(?labelP) = 'cht')}";
 
-		String queryClause = this.nsPrefix
+		String queryClause = Namespace.getNsPrefixString()
 				+ " select %1$s "
 				+ " from <http://gen.library.sh.cn/graph/baseinfo> "
 				+ " from <http://gen.library.sh.cn/graph/work> "
@@ -101,7 +102,7 @@ public class ApiInstanceSparqlImpl extends BaseDaoImpl implements
 		Map<String, Object> resMap = new HashMap<String, Object>();
 
 		resMap.put("uri", uri);
-		String RDF_QUERY_PO4S_LITERAL = this.nsPrefix + "SELECT ?p ?o "
+		String RDF_QUERY_PO4S_LITERAL = Namespace.getNsPrefixString() + "SELECT ?p ?o "
 				+ "WHERE {" + "   <%1$s> ?p ?o . " + "   FILTER isLiteral(?o)"
 				+ "  FILTER (lang(?o) = '' || lang(?o) = 'cht') }";
 		ArrayList list = SparqlExecution.vQuery(this.graph,
@@ -109,7 +110,7 @@ public class ApiInstanceSparqlImpl extends BaseDaoImpl implements
 				new String[] { "p", "o" });
 		resMap.putAll(getMap(list, null, new String[] { "content" }));
 
-		String RDF_QUERY_PO4S_IRI = this.nsPrefix + "SELECT ?p ?o " + "WHERE {"
+		String RDF_QUERY_PO4S_IRI = Namespace.getNsPrefixString() + "SELECT ?p ?o " + "WHERE {"
 				+ "   <%1$s> ?p ?o . " + "   FILTER isIRI(?o) "
 				+ "   FILTER (?p != rdf:type)" + "}";
 		Map map = RDFUtils.getMap(SparqlExecution.vQuery(this.graph,
@@ -131,7 +132,7 @@ public class ApiInstanceSparqlImpl extends BaseDaoImpl implements
 
 	public Map<String, Object> getFamilyRuleFromLabel(String uri) {
 		Map<String, Object> resMap = new HashMap<String, Object>();
-		String RDF_QUERY_FAMILYRULE_FROM = this.nsPrefix
+		String RDF_QUERY_FAMILYRULE_FROM = Namespace.getNsPrefixString()
 				+ " SELECT ?workUri  (concat(?dcTitle, ' ' , ?label) as ?label)"
 				+ " from <http://gen.library.sh.cn/graph/baseinfo> "
 				+ " from <http://gen.library.sh.cn/graph/work> "
@@ -153,11 +154,11 @@ public class ApiInstanceSparqlImpl extends BaseDaoImpl implements
 			boolean isWithSub) {
 
 		List<Map<String, String>> subList = new ArrayList<Map<String, String>>();
-		String RDF_QUERY_FAMILYRULE_FROM = this.nsPrefix
+		String RDF_QUERY_FAMILYRULE_FROM = Namespace.getNsPrefixString()
 				+ " select ?s "
 				+ " where{?s a shl:FamilyRule; dct:isPartOf <%1$s>; shl:code ?code} order by ?code ";
 		if (StringUtilC.isEmpty(uri)) {
-			RDF_QUERY_FAMILYRULE_FROM = this.nsPrefix + " select ?s "
+			RDF_QUERY_FAMILYRULE_FROM = Namespace.getNsPrefixString() + " select ?s "
 					+ " where {" + "?s a shl:FamilyRule "
 					+ ".filter not exists{?s dct:isPartOf ?isp} "
 					+ "} limit 20";
@@ -188,7 +189,7 @@ public class ApiInstanceSparqlImpl extends BaseDaoImpl implements
 			}
 			worksFilter += "<" + workUris[i] + ">";
 		}
-		String RDF_COUNT_FAMILYRULE_BYWORKS = this.nsPrefix
+		String RDF_COUNT_FAMILYRULE_BYWORKS = Namespace.getNsPrefixString()
 				+ "select count(distinct ?uri) as ?count  "
 				+ "where{?uri a shl:FamilyRule; shl:code ?code .?uri bf:familyRuleFrom ?instance "
 				+ ".filter not exists{?uri dct:isPartOf ?isPartOf} .?instance bf:instanceOf ?work"
@@ -206,7 +207,7 @@ public class ApiInstanceSparqlImpl extends BaseDaoImpl implements
 			String limit = "offset " + start + " limit "
 					+ pagesize;
 			
-			String RDF_QUERY_FAMILYRULE_BYWORKS = this.nsPrefix
+			String RDF_QUERY_FAMILYRULE_BYWORKS = Namespace.getNsPrefixString()
 					+ "select distinct ?uri  "
 					+ "where{?uri a shl:FamilyRule; shl:code ?code .?uri bf:familyRuleFrom ?instance "
 					+ ".filter not exists{?uri dct:isPartOf ?isPartOf} .?instance bf:instanceOf ?work"

@@ -19,6 +19,7 @@ import cn.sh.library.pedigree.dao.impl.BaseDaoImpl;
 import cn.sh.library.pedigree.dto.QueryResult;
 import cn.sh.library.pedigree.sparql.VocabSparql;
 import cn.sh.library.pedigree.utils.RDFUtils;
+import cn.sh.library.pedigree.webApi.sparql.Namespace;
 
 
 
@@ -28,8 +29,6 @@ public class CommonSparqlImpl extends BaseDaoImpl
   implements CommonSparql
 {
 
-  @javax.annotation.Resource
-  private StringBuffer nsPrefix;
 
   @javax.annotation.Resource
   private VocabSparql vs;
@@ -47,17 +46,17 @@ public class CommonSparqlImpl extends BaseDaoImpl
            old_o = "'" + old_o + "'";
         }
 
-         query = this.nsPrefix + "WITH <" + g + "> " + "DELETE { <" + s + "> <" + p + "> ?o . } " + "INSERT { <" + s + "> <" + p + "> " + o + " . } " + "WHERE { <" + s + "> <" + p + "> ?o . FILTER REGEX(STR(?o), " + old_o + ")" + "}";
+         query = Namespace.getNsPrefixString() + "WITH <" + g + "> " + "DELETE { <" + s + "> <" + p + "> ?o . } " + "INSERT { <" + s + "> <" + p + "> " + o + " . } " + "WHERE { <" + s + "> <" + p + "> ?o . FILTER REGEX(STR(?o), " + old_o + ")" + "}";
       }
       else
       {
-         query = this.nsPrefix + "INSERT DATA {" + "GRAPH <" + g + "> {" + "   <" + s + "> <" + p + "> " + o + " ." + "}" + "}";
+         query = Namespace.getNsPrefixString() + "INSERT DATA {" + "GRAPH <" + g + "> {" + "   <" + s + "> <" + p + "> " + o + " ." + "}" + "}";
       }
 
     }
      else if (old_o.contains("\"@"))
     {
-       query = this.nsPrefix + "WITH <" + g + "> " + "DELETE { " + "   <" + s + "> <" + p + "> ?o . " + "} WHERE {" + "   <" + s + "> <" + p + "> ?o . " + "FILTER regex(?o, " + old_o
+       query = Namespace.getNsPrefixString() + "WITH <" + g + "> " + "DELETE { " + "   <" + s + "> <" + p + "> ?o . " + "} WHERE {" + "   <" + s + "> <" + p + "> ?o . " + "FILTER regex(?o, " + old_o
          .split("@")[
          0] + ") " + "FILTER (lang(?o) = '" + old_o
          .split("@")[
@@ -65,12 +64,12 @@ public class CommonSparqlImpl extends BaseDaoImpl
     }
      else if (old_o.contains("\"^^"))
     {
-       query = this.nsPrefix + "WITH <" + g + "> " + "DELETE DATA { " + "   <" + s + "> <" + p + "> " + old_o
+       query = Namespace.getNsPrefixString() + "WITH <" + g + "> " + "DELETE DATA { " + "   <" + s + "> <" + p + "> " + old_o
          .split("^^")[
          0] + " . " + "}";
     }
     else {
-       query = this.nsPrefix + "WITH <" + g + "> " + "DELETE DATA { " + "   <" + s + "> <" + p + "> " + old_o + " . " + "}";
+       query = Namespace.getNsPrefixString() + "WITH <" + g + "> " + "DELETE DATA { " + "   <" + s + "> <" + p + "> " + old_o + " . " + "}";
     }
 
      SparqlExecution.update(this.graph, query);
@@ -82,7 +81,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
   {
      Model m = ModelFactory.createDefaultModel();
 
-     String query = this.nsPrefix + "SELECT ?c " + "WHERE {" + "   <" + s + "> a ?c . " + "}";
+     String query = Namespace.getNsPrefixString() + "SELECT ?c " + "WHERE {" + "   <" + s + "> a ?c . " + "}";
 
      ArrayList results = SparqlExecution.vQuery(getModel(g), query, new String[] { "c" });
      com.hp.hpl.jena.rdf.model.Resource res = m.createResource(s);
@@ -93,7 +92,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
        ArrayList props = this.vs.getSubjectProperties(c);
        for (int i = 0; i < props.size(); i++) {
          String p = ((Map)props.get(i)).get("p").toString();
-         query = this.nsPrefix + "SELECT ?v (isURI(?v) AS ?t) " + "WHERE {" + "   <" + s + "> " + p + " ?v ." + "}";
+         query = Namespace.getNsPrefixString() + "SELECT ?v (isURI(?v) AS ?t) " + "WHERE {" + "   <" + s + "> " + p + " ?v ." + "}";
 
          ArrayList values = SparqlExecution.vQuery(getModel(g), query, new String[] { "v", "t" });
          if (values.size() > 0) {
@@ -126,11 +125,11 @@ public class CommonSparqlImpl extends BaseDaoImpl
      if (g.equals("http://gen.library.sh.cn/graph/work")) {
        Model temp_m = ModelFactory.createDefaultModel();
 
-       String str = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "WHERE {" + "   ?s ?p ?o . " + "   FILTER (?p != dc:title)" + "}";
+       String str = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "WHERE {" + "   ?s ?p ?o . " + "   FILTER (?p != dc:title)" + "}";
 
        temp_m.add(SparqlExecution.construct(m, str));
 
-       str = this.nsPrefix + "CONSTRUCT {?s dc:titleFullName ?o} " + "WHERE {" + "   ?s dc:title ?o ." + "}";
+       str = Namespace.getNsPrefixString() + "CONSTRUCT {?s dc:titleFullName ?o} " + "WHERE {" + "   ?s dc:title ?o ." + "}";
 
        temp_m.add(SparqlExecution.construct(m, str));
 
@@ -138,7 +137,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
      } else if (g.equals("http://gen.library.sh.cn/graph/baseinfo")) {
        Model temp_m = ModelFactory.createDefaultModel();
 
-       String str = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "WHERE {" + "   ?s ?p ?o . " + "   FILTER (?p != schema:address)" + "}";
+       String str = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "WHERE {" + "   ?s ?p ?o . " + "   FILTER (?p != schema:address)" + "}";
 
        temp_m.add(SparqlExecution.construct(m, str));
 
@@ -154,7 +153,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
   {
      String _class = "";
 
-     String query = this.nsPrefix + "SELECT ?c " + "WHERE {" + "   <" + s + "> a ?c . " + "}";
+     String query = Namespace.getNsPrefixString() + "SELECT ?c " + "WHERE {" + "   <" + s + "> a ?c . " + "}";
 
      ArrayList results = SparqlExecution.vQuery(getModel(g), query, new String[] { "c" });
 
@@ -173,7 +172,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
 
   public boolean deleteResource(String g, String s)
   {
-     String sql = this.nsPrefix + "DELETE {<" + s + "> ?p ?o .} " + "WHERE {<" + s + "> ?p ?o .}";
+     String sql = Namespace.getNsPrefixString() + "DELETE {<" + s + "> ?p ?o .} " + "WHERE {<" + s + "> ?p ?o .}";
 
               SparqlExecution.update(getModel(g), sql);
 
@@ -184,9 +183,9 @@ public class CommonSparqlImpl extends BaseDaoImpl
   {
      c = RDFUtils.getLink(this.model, c);
 
-     String query = this.nsPrefix + "SELECT DISTINCT ?uri " + "WHERE { " + "   ?uri a <" + c + "> . " + "}" + "OFFSET " + start + " LIMIT " + size;
+     String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri " + "WHERE { " + "   ?uri a <" + c + "> . " + "}" + "OFFSET " + start + " LIMIT " + size;
 
-     String countQuery = this.nsPrefix + "SELECT count(DISTINCT ?uri) as ?count " + "WHERE {" + "   ?uri a <" + c + "> . " + "}";
+     String countQuery = Namespace.getNsPrefixString() + "SELECT count(DISTINCT ?uri) as ?count " + "WHERE {" + "   ?uri a <" + c + "> . " + "}";
 
      Map countMap = (Map)SparqlExecution.vQuery(getModel(g), countQuery, new String[] { "count" }).get(0);
      Long count = Long.valueOf(Long.parseLong(RDFUtils.toString(countMap.get("count"))));
@@ -203,7 +202,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
   {
      s = RDFUtils.getLink(this.model, s);
 
-     String query = this.nsPrefix + "SELECT ?p ?o " + "WHERE {" + "   <" + s + "> ?p ?o ." + "}";
+     String query = Namespace.getNsPrefixString() + "SELECT ?p ?o " + "WHERE {" + "   <" + s + "> ?p ?o ." + "}";
 
      return SparqlExecution.vQuery(getModel(g), query, new String[] { "p", "o" });
   }
@@ -213,7 +212,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
      s = RDFUtils.getLink(this.model, s);
      p = RDFUtils.getLink(this.model, p);
 
-     String query = this.nsPrefix + "SELECT (sql:BEST_LANGMATCH(?l, 'chs;q=0.8, cht;q=0.7, ;q=0.6, en;q=0.5, *;q=0.1', 'chs')) as ?o " + "WHERE {" + "   <" + s + "> <" + p + "> ?l . " + "}";
+     String query = Namespace.getNsPrefixString() + "SELECT (sql:BEST_LANGMATCH(?l, 'chs;q=0.8, cht;q=0.7, ;q=0.6, en;q=0.5, *;q=0.1', 'chs')) as ?o " + "WHERE {" + "   <" + s + "> <" + p + "> ?l . " + "}";
 
      return SparqlExecution.vQuery(getModel(g), query, new String[] { "o" });
   }
@@ -223,7 +222,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
      c = RDFUtils.getLink(this.model, c);
      p = RDFUtils.getLink(this.model, p);
 
-     String query = this.nsPrefix + "SELECT ?s (sql:BEST_LANGMATCH(?l, 'chs;q=0.8, cht;q=0.7, ;q=0.6, en;q=0.5, *;q=0.1', 'chs')) as ?o " + "WHERE {" + "   ?s a <" + c + "> ; " + "      ?p '" + spec + "' ; " + "      <" + p + "> ?l . " + "}";
+     String query = Namespace.getNsPrefixString() + "SELECT ?s (sql:BEST_LANGMATCH(?l, 'chs;q=0.8, cht;q=0.7, ;q=0.6, en;q=0.5, *;q=0.1', 'chs')) as ?o " + "WHERE {" + "   ?s a <" + c + "> ; " + "      ?p '" + spec + "' ; " + "      <" + p + "> ?l . " + "}";
 
      return SparqlExecution.vQuery(getModel(g), query, new String[] { "s", "o" });
   }
@@ -241,7 +240,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
        clause = s + " " + p + " " + o + ". ";
     }
 
-     String query = this.nsPrefix + "SELECT * " + "FROM <" + graph + ">" + "WHERE {" + clause + "}";
+     String query = Namespace.getNsPrefixString() + "SELECT * " + "FROM <" + graph + ">" + "WHERE {" + clause + "}";
 
      return SparqlExecution.ask(this.model, query);
   }
@@ -249,7 +248,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
   public OutputStream getTriples(String graph_name, boolean transmit, String uri)
   {
      if (!transmit) {
-       String query = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "FROM <" + graph_name + ">" + "WHERE {" + "   ?s ?p ?o . " + "FILTER (STR(?s)='" + uri + "')" + "}";
+       String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <" + graph_name + ">" + "WHERE {" + "   ?s ?p ?o . " + "FILTER (STR(?s)='" + uri + "')" + "}";
 
        Model temp_m = ModelFactory.createDefaultModel();
        temp_m.add(SparqlExecution.construct(this.graph, query));
@@ -265,7 +264,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
 
   public OutputStream getTriples(String graph_name, String uri, String format)
   {
-     String query = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "FROM <" + graph_name + ">" + "WHERE {" + "   ?s ?p ?o . " + "FILTER (STR(?s)='" + uri + "')" + "}";
+     String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <" + graph_name + ">" + "WHERE {" + "   ?s ?p ?o . " + "FILTER (STR(?s)='" + uri + "')" + "}";
 
      Model temp_m = ModelFactory.createDefaultModel();
      temp_m.add(SparqlExecution.construct(this.graph, query));
@@ -280,7 +279,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
   {
      List triples = new LinkedList();
 
-     String query = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "FROM <" + graph_name + ">" + "WHERE {" + "   ?s ?p ?o . " + "FILTER (STR(?s)='" + uri + "')" + "}";
+     String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <" + graph_name + ">" + "WHERE {" + "   ?s ?p ?o . " + "FILTER (STR(?s)='" + uri + "')" + "}";
 
      Model temp_m = ModelFactory.createDefaultModel();
      temp_m.add(SparqlExecution.construct(this.graph, query));
@@ -293,7 +292,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
      Model model_from = getModel(graph_from);
      Model model_to = getModel(graph_to);
 
-     String query = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "FROM <" + graph_from + "> " + "WHERE {" + "   ?s a " + category + " ; ?p ?o ." + "}";
+     String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <" + graph_from + "> " + "WHERE {" + "   ?s a " + category + " ; ?p ?o ." + "}";
 
      Model temp_m = ModelFactory.createDefaultModel();
      temp_m.add(SparqlExecution.construct(model_from, query));
@@ -316,7 +315,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
   {
      Model model_to = getModel(graph_to);
 
-     String query = this.nsPrefix + "CONSTRUCT {<" + source + "> ?p ?o} " + "FROM <" + graph_from + "> " + "WHERE {" + "   <" + source + "> ?p ?o. " + "}";
+     String query = Namespace.getNsPrefixString() + "CONSTRUCT {<" + source + "> ?p ?o} " + "FROM <" + graph_from + "> " + "WHERE {" + "   <" + source + "> ?p ?o. " + "}";
 
      Model temp_m = ModelFactory.createDefaultModel();
      temp_m.add(SparqlExecution.construct(this.graph, query));
@@ -335,7 +334,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
   {
      Model model_to = getModel(graph_to);
 
-     String query = this.nsPrefix + "CONSTRUCT {<" + new_source + "> <" + predicate + "> ?o} " + "FROM <" + graph_from + "> " + "WHERE {" + "   <" + old_source + "> <" + predicate + "> ?o. " + "}";
+     String query = Namespace.getNsPrefixString() + "CONSTRUCT {<" + new_source + "> <" + predicate + "> ?o} " + "FROM <" + graph_from + "> " + "WHERE {" + "   <" + old_source + "> <" + predicate + "> ?o. " + "}";
 
      Model temp_m = ModelFactory.createDefaultModel();
      temp_m.add(SparqlExecution.construct(this.graph, query));
@@ -352,7 +351,7 @@ public class CommonSparqlImpl extends BaseDaoImpl
 
   public boolean insertTriples(String str)
   {
-     String sql = this.nsPrefix + "INSERT DATA { " + "GRAPH <" + this.graph
+     String sql = Namespace.getNsPrefixString() + "INSERT DATA { " + "GRAPH <" + this.graph
        .getGraphName() + "> { " + str + "}" + "} ";
 
      SparqlExecution.update(this.graph, sql);
@@ -383,11 +382,11 @@ public class CommonSparqlImpl extends BaseDaoImpl
        graph_name = "http://gen.library.sh.cn/graph/baseinfo";
     }
 
-     String query = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "FROM <" + graph_name + ">" + "WHERE {" + "   ?s ?p ?o . " + "FILTER (STR(?s)='" + uri + "')" + "}";
+     String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <" + graph_name + ">" + "WHERE {" + "   ?s ?p ?o . " + "FILTER (STR(?s)='" + uri + "')" + "}";
 
      temp.add(SparqlExecution.construct(getModel(graph_name), query));
 
-     query = this.nsPrefix + "SELECT DISTINCT ?o " + "WHERE { " + "   ?s ?p ?o ." + "FILTER (STR(?s)='" + uri + "')" + "FILTER isIRI(?o) " + "}";
+     query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?o " + "WHERE { " + "   ?s ?p ?o ." + "FILTER (STR(?s)='" + uri + "')" + "FILTER isIRI(?o) " + "}";
 
      ArrayList results = SparqlExecution.vQuery(getModel(graph_name), query, new String[] { "o" });
 

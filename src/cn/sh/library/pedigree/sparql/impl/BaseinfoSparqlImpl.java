@@ -17,16 +17,17 @@ import cn.sh.library.pedigree.sparql.BaseinfoSparql;
 import cn.sh.library.pedigree.sparql.MergeSearchParts;
 import cn.sh.library.pedigree.utils.PinyinUtil;
 import cn.sh.library.pedigree.utils.RDFUtils;
+import cn.sh.library.pedigree.webApi.sparql.Namespace;
 
 @Repository
 @GraphDefine(name = "http://gen.library.sh.cn/graph/baseinfo")
 public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 
-	@Resource
-	private StringBuffer nsPrefix;
+//	@Resource
+//	private StringBuffer nsPrefix;
 
 	public ArrayList getTemporal() {
-		/* 30 */ String query = this.nsPrefix + "SELECT ?uri ?name ?begin ?end " + "WHERE { "
+		/* 30 */ String query = Namespace.getNsPrefixString() + "SELECT ?uri ?name ?begin ?end " + "WHERE { "
 				+ "   ?uri a shl:Temporal ; " + "        shl:dynasty ?name ; " + "        shl:beginYear ?begin ; "
 				+ "        shl:endYear ?end . " + "} ORDER BY ASC(?begin)";
 
@@ -34,14 +35,14 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 	}
 
 	public Map getTime4Dyansty(String uri) {
-		/* 44 */ String query = this.nsPrefix + "SELECT ?begin ?end " + "WHERE { " + "   <" + uri
+		/* 44 */ String query = Namespace.getNsPrefixString() + "SELECT ?begin ?end " + "WHERE { " + "   <" + uri
 				+ "> a shl:Temporal ; " + "        shl:beginYear ?begin ; " + "        shl:endYear ?end . " + "}";
 
 		/* 52 */ return (Map) SparqlExecution.vQuery(this.graph, query, new String[] { "begin", "end" }).get(0);
 	}
 
 	public ArrayList getTemporals4TL() {
-		/* 57 */ String query = this.nsPrefix + "SELECT ?uri ?name " + "WHERE {" + "   ?uri a shl:Temporal ; "
+		/* 57 */ String query = Namespace.getNsPrefixString() + "SELECT ?uri ?name " + "WHERE {" + "   ?uri a shl:Temporal ; "
 				+ "        shl:dynasty ?name ; " + "        rdfs:label 'timeline' ; "
 				+ "        shl:beginYear ?begin . " + "} ORDER BY DESC(?begin)";
 
@@ -49,11 +50,11 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 	}
 
 	public QueryResult<Map<String, Object>> getPersons(String temporal_uri, int start, int size) {
-		/* 71 */ String countQuery = this.nsPrefix + "SELECT (COUNT(DISTINCT ?person) AS ?count) FROM <"
+		/* 71 */ String countQuery = Namespace.getNsPrefixString() + "SELECT (COUNT(DISTINCT ?person) AS ?count) FROM <"
 				+ "http://gen.library.sh.cn/graph/person" + "> " + "WHERE {" + "       ?person a shl:Person ; "
 				+ "            shl:temporal <" + temporal_uri + "> . " + "}";
 
-		/* 78 */ String query = this.nsPrefix + "SELECT DISTINCT ?person ?name FROM <"
+		/* 78 */ String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?person ?name FROM <"
 				+ "http://gen.library.sh.cn/graph/person" + "> " + "WHERE {" + "       ?person a shl:Person ; "
 				+ "            foaf:name ?name ; " + "            foaf:name ?py ; " + "            shl:temporal <"
 				+ temporal_uri + "> . " + "   FILTER (lang(?name) = '')" + "   FILTER (lang(?py) = 'en')"
@@ -71,7 +72,7 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 	}
 
 	public QueryResult<Map<String, Object>> getWorks(String temporal_uri, int start, int size) {
-		String countQuery = this.nsPrefix + "SELECT (COUNT(DISTINCT ?work) AS ?count) FROM <"
+		String countQuery = Namespace.getNsPrefixString() + "SELECT (COUNT(DISTINCT ?work) AS ?count) FROM <"
 				+ "http://gen.library.sh.cn/graph/work" + "> " + "WHERE {" + "   ?work bf:hasInstance ?instance ; "
 				+ "         dc:title ?title . " + "   {SELECT ?instance ?begin FROM <"
 				+ "http://gen.library.sh.cn/graph/instance" + "> WHERE {"
@@ -80,7 +81,7 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 				+ "           <" + temporal_uri + "> shl:beginYear ?begin ; " + "              shl:endYear ?end . "
 				+ "       }}" + "       FILTER ((?b >= ?begin) && (?b <= ?end))" + "   }}" + "}";
 
-		String query = this.nsPrefix + "SELECT DISTINCT ?work ?title FROM <" + "http://gen.library.sh.cn/graph/work"
+		String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?work ?title FROM <" + "http://gen.library.sh.cn/graph/work"
 				+ "> " + "WHERE {" + "   ?work bf:hasInstance ?instance ; " + "         dc:title ?title . "
 				+ "   {SELECT ?instance ?begin FROM <" + "http://gen.library.sh.cn/graph/instance" + "> WHERE {"
 				+ "       ?instance bf:publishedOn/shl:beginYear ?b ; "
@@ -101,7 +102,7 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 	}
 
 	public String getCHT4CHS(String predicate, String chs_str) {
-		String query = this.nsPrefix + "SELECT ?cht " + "WHERE { " + "   ?s " + predicate + " '" + chs_str + "'@chs ;"
+		String query = Namespace.getNsPrefixString() + "SELECT ?cht " + "WHERE { " + "   ?s " + predicate + " '" + chs_str + "'@chs ;"
 				+ predicate + " ?cht . " + "FILTER langMatches(lang(?cht), 'cht') " + "}";
 
 		ArrayList results = SparqlExecution.jQuery(this.model, query, new String[] { "cht" });
@@ -114,7 +115,7 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 	}
 
 	public ArrayList getAllFamilyNames() {
-		String query = this.nsPrefix + "SELECT (UCASE(?cha) AS ?char) ?uri ?chs ?cht ?en " + "WHERE { "
+		String query = Namespace.getNsPrefixString() + "SELECT (UCASE(?cha) AS ?char) ?uri ?chs ?cht ?en " + "WHERE { "
 				+ "   ?uri a shl:FamilyName ; " + "      bf:label ?chs ; " + "      bf:label ?cht ; "
 				+ "      bf:label ?en . " + "FILTER langMatches(lang(?chs),'chs') "
 				+ "FILTER langMatches(lang(?cht),'cht') " + "FILTER langMatches(lang(?en),'en') "
@@ -136,7 +137,7 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 
 		}
 
-		String query = this.nsPrefix + "SELECT DISTINCT ?uri (UCASE(?cha) AS ?char) ?chs ?cht ?en " + "WHERE { "
+		String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri (UCASE(?cha) AS ?char) ?chs ?cht ?en " + "WHERE { "
 				+ "   ?uri a shl:FamilyName ; " + "      bf:label ?chs ; " + "      bf:label ?cht ; "
 				+ "      bf:label ?label ; " + "      bf:label ?en . " + filter + "FILTER (lang(?chs) = 'chs') "
 				+ "FILTER (lang(?cht) = 'cht') " + "FILTER (lang(?en) = 'en') " + "BIND (SUBSTR(?en, 1, 1) AS ?cha) ";
@@ -147,7 +148,7 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 	}
 
 	public ArrayList getPersonFamilyNames() {
-		String query = this.nsPrefix + "SELECT DISTINCT ?uri " + "WHERE {" + "   ?uri a shl:FamilyName . " + "{"
+		String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri " + "WHERE {" + "   ?uri a shl:FamilyName . " + "{"
 				+ "   SELECT ?uri FROM <" + "http://gen.library.sh.cn/graph/person" + ">" + "   WHERE {"
 				+ "       ?s a shl:Person ; " + "          foaf:familyName ?uri ." + "   }" + "}" + "}";
 
@@ -157,13 +158,13 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 	public QueryResult<Map<String, Object>> getAncestralTemple(AncTempSearchBean search, int start, int size) {
 		String filter = MergeSearchParts.ancTempSearchClause(search);
 
-		String countQuery = this.nsPrefix + "SELECT (COUNT(DISTINCT ?uri) AS ?count) " + "WHERE {"
+		String countQuery = Namespace.getNsPrefixString() + "SELECT (COUNT(DISTINCT ?uri) AS ?count) " + "WHERE {"
 				+ "   ?uri a shl:TitleOfAncestralTemple ; " + "        bf:label ?label ; " + "        bf:label ?chs ; "
 				+ "        shl:familyName ?fn . " + "   ?fn a shl:FamilyName ; " + "       bf:label ?fn_en ; "
 				+ "       bf:label ?fn_chs . " + "FILTER (lang(?chs) = 'chs') " + "FILTER (lang(?fn_chs) = 'chs') "
 				+ "FILTER (lang(?fn_en) = 'en') " + filter + "}";
 
-		String query = this.nsPrefix + "SELECT DISTINCT ?uri ?chs ?fn_chs ?fn_en " + "WHERE {"
+		String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri ?chs ?fn_chs ?fn_en " + "WHERE {"
 				+ "   ?uri a shl:TitleOfAncestralTemple ; " + "        bf:label ?label ; " + "        bf:label ?chs ; "
 				+ "        shl:familyName ?fn . " + "   ?fn a shl:FamilyName ; " + "       bf:label ?fn_en ; "
 				+ "       bf:label ?fn_chs . " + "FILTER (lang(?chs) = 'chs') " + "FILTER (lang(?fn_chs) = 'chs') "
@@ -185,13 +186,13 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 	public QueryResult<Map<String, Object>> getAncestralTempleForShiGuang(AncTempSearchBean search, int start, int size) {
 		String filter = MergeSearchParts.ancTempSearchClause(search);
 
-		String countQuery = this.nsPrefix + "SELECT (COUNT(DISTINCT ?chs) AS ?count) " + " WHERE {"
+		String countQuery = Namespace.getNsPrefixString() + "SELECT (COUNT(DISTINCT ?chs) AS ?count) " + " WHERE {"
 				+ "   ?uri a shl:TitleOfAncestralTemple ; " + "        bf:label ?label ; " + "        bf:label ?chs ; "
 				+ "        shl:familyName ?fn . " + "   ?fn a shl:FamilyName ; " + "       bf:label ?fn_en ; "
 				+ "       bf:label ?fn_chs . " + "FILTER (lang(?chs) = 'chs') " + "FILTER (lang(?fn_chs) = 'chs') "
 				+ "FILTER (lang(?fn_en) = 'en') " + filter + "}";
 
-		String query = this.nsPrefix + "SELECT DISTINCT ?chs" + " WHERE {"
+		String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?chs" + " WHERE {"
 				+ "   ?uri a shl:TitleOfAncestralTemple ; " + "        bf:label ?label ; " + "        bf:label ?chs ; "
 				+ "        shl:familyName ?fn . " + "   ?fn a shl:FamilyName ; " + "       bf:label ?fn_en ; "
 				+ "       bf:label ?fn_chs . " + "FILTER (lang(?chs) = 'chs') " + "FILTER (lang(?fn_chs) = 'chs') "
@@ -216,10 +217,10 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 			filter = "FILTER CONTAINS(str(?label), '" + q + "')";
 		}
 
-		String countQuery = this.nsPrefix + "SELECT (COUNT(DISTINCT ?uri) AS ?count) " + "WHERE {"
+		String countQuery = Namespace.getNsPrefixString() + "SELECT (COUNT(DISTINCT ?uri) AS ?count) " + "WHERE {"
 				+ "   ?uri a shl:Organization ; " + "        bf:label|shl:abbreviateName ?label . " + filter + "}";
 
-		String query = this.nsPrefix + "SELECT DISTINCT ?uri ?chs ?ab_chs ?place " + "WHERE {"
+		String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri ?chs ?ab_chs ?place " + "WHERE {"
 				+ "   ?uri a shl:Organization " + "{?uri  bf:label ?chs } "
 				+ " OPTIONAL {?uri shl:abbreviateName ?ab_chs } " + "{?uri bf:label|shl:abbreviateName ?label }"
 				+ "  OPTIONAL {?uri shl:region ?p . " + filter + "{SELECT ?p ?place FROM <"
@@ -247,7 +248,7 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 			filter = ".?label <bif:contains> '\"" + q + "\"'";
 		}
 
-		String countQuery = this.nsPrefix + "select (count (distinct ?uri ) as ?count)  from <http://gen.library.sh.cn/graph/baseinfo> where {?uri a shl:Organization"+
+		String countQuery = Namespace.getNsPrefixString() + "select (count (distinct ?uri ) as ?count)  from <http://gen.library.sh.cn/graph/baseinfo> where {?uri a shl:Organization"+
 		"{"+
 			 "{?uri bf:label ?label "+filter+"}"+
 			 " union "+
@@ -255,7 +256,7 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 			"}"+
 			 "} ";
 
-		String query =  this.nsPrefix + "select distinct ?uri ?chs   from <http://gen.library.sh.cn/graph/baseinfo> where {?uri a shl:Organization;bf:label ?chs"+
+		String query =  Namespace.getNsPrefixString() + "select distinct ?uri ?chs   from <http://gen.library.sh.cn/graph/baseinfo> where {?uri a shl:Organization;bf:label ?chs"+
 				"{"+
 				 "{?uri bf:label ?label "+filter+"}"+
 				 " union "+
@@ -275,7 +276,7 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 	}
 
 	public Map<String, String> getXings(String xing) {
-		String query = this.nsPrefix + "SELECT DISTINCT ?uri ?chs ?cht " + "WHERE { " + "   ?uri a shl:FamilyName ; "
+		String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri ?chs ?cht " + "WHERE { " + "   ?uri a shl:FamilyName ; "
 				+ "      bf:label ?chs ; " + "      bf:label ?cht ; " + "      bf:label ?label . "
 				+ "FILTER langMatches(lang(?chs),'chs') " + "FILTER langMatches(lang(?cht),'cht') "
 				+ "FILTER (STR(?label) = '" + xing + "') " + "}";
@@ -290,7 +291,7 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 	}
 
 	public String getPersonFamilyName(String uri) {
-		String query = this.nsPrefix + "SELECT ?chs " + "WHERE {" + "   ?s bf:label ?chs . " + "{SELECT ?s FROM <"
+		String query = Namespace.getNsPrefixString() + "SELECT ?chs " + "WHERE {" + "   ?s bf:label ?chs . " + "{SELECT ?s FROM <"
 				+ "http://gen.library.sh.cn/graph/migration" + "> WHERE {" + "   <" + uri + "> foaf:familyName ?s . "
 				+ "}}" + "FILTER (lang(?chs) = 'chs') " + "}";
 
@@ -304,7 +305,7 @@ public class BaseinfoSparqlImpl extends BaseDaoImpl implements BaseinfoSparql {
 	}
 
 	public void generatePinYin() {
-		String query = this.nsPrefix + "SELECT ?uri ?chs " + "WHERE { " + "   ?uri a shl:FamilyName ; "
+		String query = Namespace.getNsPrefixString() + "SELECT ?uri ?chs " + "WHERE { " + "   ?uri a shl:FamilyName ; "
 				+ "        bf:label ?chs . " + "FILTER NOT EXISTS { " + "   ?uri bf:label ?py . "
 				+ "   FILTER langMatches(lang(?py),'en') " + "} " + "FILTER langMatches(lang(?chs),'chs') " + "}";
 

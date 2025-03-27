@@ -13,19 +13,20 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 /*     */ import cn.sh.library.pedigree.sparql.GeoSparql;
 /*     */ import cn.sh.library.pedigree.utils.RDFUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
+import cn.sh.library.pedigree.webApi.sparql.Namespace;
 /*     */ 
 /*     */ @Repository
 /*     */ @GraphDefine(name="http://www.cba.ac.cn/graph/geography")
 /*     */ public class GeoSparqlImpl extends BaseDaoImpl
 /*     */   implements GeoSparql
 /*     */ {
-/*     */ 
-/*     */   @Resource
-/*     */   private StringBuffer nsPrefix;
+///*     */ 
+///*     */   @Resource
+///*     */   private StringBuffer nsPrefix;
 /*     */ 
 /*     */   public String getLongLat(String city)
 /*     */   {
-/*  26 */     String query = this.nsPrefix + "SELECT ?long ?lat " + "WHERE { " + "   ?s geo:long ?long ; " + "      geo:lat ?lat ;" + "      rdfs:label '" + city + "'. " + "}";
+/*  26 */     String query = Namespace.getNsPrefixString() + "SELECT ?long ?lat " + "WHERE { " + "   ?s geo:long ?long ; " + "      geo:lat ?lat ;" + "      rdfs:label '" + city + "'. " + "}";
 /*     */ 
 /*  34 */     ArrayList results = SparqlExecution.vQuery(this.model, query, new String[] { "long", "lat" });
 /*     */ 
@@ -41,7 +42,7 @@ import cn.sh.library.pedigree.utils.StringUtilC;
 /*     */ 
 /*     */   public String getCitySubject(String city)
 /*     */   {
-/*  48 */     String query = this.nsPrefix + "SELECT ?s " + "WHERE { " + "   ?s0 rdfs:label ?label ; " + "      gn:parentADM1 ?p1 . " + "   ?s rdfs:label ?label ; " + "      gn:parentADM2 ?p2 . " + "FILTER STRSTARTS(?label, '" + city + "')" + "}";
+/*  48 */     String query = Namespace.getNsPrefixString() + "SELECT ?s " + "WHERE { " + "   ?s0 rdfs:label ?label ; " + "      gn:parentADM1 ?p1 . " + "   ?s rdfs:label ?label ; " + "      gn:parentADM2 ?p2 . " + "FILTER STRSTARTS(?label, '" + city + "')" + "}";
 /*     */ 
 /*  58 */     ArrayList results = SparqlExecution.vQuery(this.model, query, new String[] { "s" });
 /*     */ 
@@ -57,11 +58,11 @@ import cn.sh.library.pedigree.utils.StringUtilC;
 /*  69 */     String query = "";
 /*     */ 
 /*  71 */     if (null == locate) {
-/*  72 */       query = this.nsPrefix + "SELECT ?s " + "WHERE { " + "   ?s rdfs:label ?l . " + "FILTER STRSTARTS(?l, '" + prov + "')" + "}";
+/*  72 */       query = Namespace.getNsPrefixString() + "SELECT ?s " + "WHERE { " + "   ?s rdfs:label ?l . " + "FILTER STRSTARTS(?l, '" + prov + "')" + "}";
 /*     */     }
 /*     */     else
 /*     */     {
-/*  79 */       query = this.nsPrefix + "SELECT ?s " + "WHERE { " + "   ?s gn:parentADM2/gn:parentADM1 ?p ; rdfs:label ?l . " + "   ?p rdfs:label ?p_l . " + "FILTER STRSTARTS(?p_l, '" + prov + "')" + "FILTER STRSTARTS(?l, '" + locate + "')" + "}";
+/*  79 */       query = Namespace.getNsPrefixString() + "SELECT ?s " + "WHERE { " + "   ?s gn:parentADM2/gn:parentADM1 ?p ; rdfs:label ?l . " + "   ?p rdfs:label ?p_l . " + "FILTER STRSTARTS(?p_l, '" + prov + "')" + "FILTER STRSTARTS(?l, '" + locate + "')" + "}";
 /*     */     }
 /*     */ 
 /*  89 */     ArrayList results = SparqlExecution.vQuery(this.model, query, new String[] { "s" });
@@ -75,7 +76,7 @@ import cn.sh.library.pedigree.utils.StringUtilC;
 /*     */ 
 /*     */   public String getTownNumber(String county_uri)
 /*     */   {
-/* 100 */     String query = this.nsPrefix + "SELECT ?s " + "WHERE { " + "   ?s gn:parentADM3 <" + county_uri + "> . " + "} ORDER BY DESC(?s) LIMIT 1";
+/* 100 */     String query = Namespace.getNsPrefixString() + "SELECT ?s " + "WHERE { " + "   ?s gn:parentADM3 <" + county_uri + "> . " + "} ORDER BY DESC(?s) LIMIT 1";
 /*     */ 
 /* 106 */     ArrayList results = SparqlExecution.vQuery(this.model, query, new String[] { "s" });
 /*     */ 
@@ -92,7 +93,7 @@ import cn.sh.library.pedigree.utils.StringUtilC;
 /*     */ 
 /*     */   public String getCity4Point(String _long, String lat)
 /*     */   {
-/* 121 */     String query = this.nsPrefix + "SELECT ?label " + "WHERE {" + "   ?s geo:long '" + _long + "'^^xsd:double ; " + "      geo:lat '" + lat + "'^^xsd:double ; " + "      rdfs:label ?label . " + "}";
+/* 121 */     String query = Namespace.getNsPrefixString() + "SELECT ?label " + "WHERE {" + "   ?s geo:long '" + _long + "'^^xsd:double ; " + "      geo:lat '" + lat + "'^^xsd:double ; " + "      rdfs:label ?label . " + "}";
 /*     */ ArrayList _list =SparqlExecution.vQuery(this.graph, query, new String[] { "label" });
                     if(_list!=null && _list.size()>0){
                     	return StringUtilC.getString(((Map)_list.get(0)).get("label"));

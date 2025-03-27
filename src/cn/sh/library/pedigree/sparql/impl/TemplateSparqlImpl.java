@@ -12,6 +12,7 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 /*    */ import cn.sh.library.pedigree.dao.impl.BaseDaoImpl;
 /*    */ import cn.sh.library.pedigree.graph.BFProfile;
 /*    */ import cn.sh.library.pedigree.sparql.TemplateSparql;
+import cn.sh.library.pedigree.webApi.sparql.Namespace;
 /*    */ 
 /*    */ 
 /*    */ @Repository
@@ -19,9 +20,9 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 /*    */ public class TemplateSparqlImpl extends BaseDaoImpl
 /*    */   implements TemplateSparql
 /*    */ {
-/*    */ 
-/*    */   @Resource
-/*    */   private StringBuffer nsPrefix;
+///*    */ 
+///*    */   @Resource
+///*    */   private StringBuffer nsPrefix;
 /*    */ 
 /*    */   public void addBFProfile(String template_str)
 /*    */   {
@@ -32,7 +33,7 @@ import cn.sh.library.pedigree.annoation.GraphDefine;
 /*    */ 
 /*    */   public String getLatestTemplate()
 /*    */   {
-/* 32 */     String query = this.nsPrefix + "SELECT ?s " + "WHERE {" + "   ?s dc:date ?date . " + "}" + "ORDER BY DESC(?date) LIMIT 1";
+/* 32 */     String query = Namespace.getNsPrefixString() + "SELECT ?s " + "WHERE {" + "   ?s dc:date ?date . " + "}" + "ORDER BY DESC(?date) LIMIT 1";
 /*    */ 
 /* 39 */     ArrayList results = SparqlExecution.vQuery(this.graph, query, new String[] { "s" });
 /*    */ 

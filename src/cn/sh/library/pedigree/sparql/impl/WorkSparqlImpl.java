@@ -27,6 +27,7 @@ import cn.sh.library.pedigree.sparql.MergeSearchParts;
 import cn.sh.library.pedigree.sparql.PlaceSparql;
 import cn.sh.library.pedigree.sparql.WorkSparql;
 import cn.sh.library.pedigree.utils.RDFUtils;
+import cn.sh.library.pedigree.webApi.sparql.Namespace;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -73,10 +74,10 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 				+ "')"
 				+ "   }}" + "}" + "}";
 
-		String countQuery = this.nsPrefix
+		String countQuery = Namespace.getNsPrefixString()
 				+ "SELECT (COUNT(DISTINCT ?work) AS ?count) " + sql;
 
-		/* 97 */String workQuery = this.nsPrefix + "SELECT DISTINCT ?work "
+		/* 97 */String workQuery = Namespace.getNsPrefixString() + "SELECT DISTINCT ?work "
 				+ sql + "OFFSET " + start + " LIMIT " + size;
 
 		Map countMap = (Map) SparqlExecution.vQuery(this.graph, countQuery,
@@ -94,7 +95,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 			for (int i = 0; i < works.size(); i++) {
 				String uri = ((Map) works.get(i)).get("work").toString();
 
-				String query = this.nsPrefix
+				String query = Namespace.getNsPrefixString()
 						+ "SELECT DISTINCT ?work ?dtitle ?title "
 						+ "?doi ?desc "
 						+ "(GROUP_CONCAT(DISTINCT ?t;separator=';') AS ?subtitles) "
@@ -149,7 +150,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 
 	@Override
 	public Long countItemsByWork(WorkSearchBean bean){
-		String sparql = this.nsPrefix 
+		String sparql = Namespace.getNsPrefixString() 
 				+ " SELECT COUNT(DISTINCT ?item) as ?count "
 				+ " from <" + Constant.GRAPH_WORK+ "> "
 				+ " from <" + Constant.GRAPH_INSTANCE+ "> "
@@ -171,10 +172,10 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 		String sql = "WHERE {    ?work a bf:Work ; dc:title ?dtitle." + clause
 				+ "}";
 
-		String countQuery = this.nsPrefix
+		String countQuery = Namespace.getNsPrefixString()
 				+ "SELECT (COUNT(DISTINCT ?work) AS ?count) " + sql;
 
-		String workQuery = this.nsPrefix + "SELECT DISTINCT ?work " + sql
+		String workQuery = Namespace.getNsPrefixString() + "SELECT DISTINCT ?work " + sql
 				+ "OFFSET " + start + " LIMIT " + size;
 
 		Map countMap = (Map) SparqlExecution.vQuery(this.graph, countQuery,
@@ -192,7 +193,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 			for (int i = 0; i < works.size(); i++) {
 				String uri = ((Map) works.get(i)).get("work").toString();
 
-				String query = this.nsPrefix
+				String query = Namespace.getNsPrefixString()
 						+ "SELECT DISTINCT ?work ?dtitle ?title ?desc ?doi "
 						+ "(GROUP_CONCAT(DISTINCT ?t;separator=';') AS ?subtitles) "
 						+ "(GROUP_CONCAT(DISTINCT ?creator;separator=';') AS ?creators) "
@@ -238,7 +239,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 	}
 
 	public ArrayList getTitles(String work_uri) {
-		String query = this.nsPrefix + "SELECT ?title ?type " + "WHERE {"
+		String query = Namespace.getNsPrefixString() + "SELECT ?title ?type " + "WHERE {"
 				+ "   <" + work_uri + "> bf:workTitle ?t ."
 				+ "   ?t bf:titleValue ?title ; "
 				+ "      bf:titleType ?type . " + "FILTER (?type != '0')" + "}";
@@ -248,7 +249,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 	}
 
 	public ArrayList getCreator(String work_uri) {
-		String query = this.nsPrefix + "SELECT ?name " + "WHERE {" + "   <"
+		String query = Namespace.getNsPrefixString() + "SELECT ?name " + "WHERE {" + "   <"
 				+ work_uri + "> dc:creator ?name . " + "}";
 
 		return SparqlExecution.vQuery(this.graph, query,
@@ -256,7 +257,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 	}
 
 	public ArrayList getWorksInLatLong(String place_str) {
-		String query = this.nsPrefix + "";
+		String query = Namespace.getNsPrefixString() + "";
 
 		if (place_str.startsWith("http://")) {
 			query = query
@@ -311,7 +312,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 			}
 		}
 
-		String query = this.nsPrefix + "SELECT DISTINCT ?work (if (STRLEN(STR(?title )) > 0, ?title, ?dtitle) AS ?title) "
+		String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?work (if (STRLEN(STR(?title )) > 0, ?title, ?dtitle) AS ?title) "
 				+ "WHERE { " + "   ?work a bf:Work; dc:title ?dtitle;bf:title ?ts ; "
 				+ "         bf:subject ?subject ; "
 				+ "         shl:place ?place . " + "optional{SELECT ?ts ?title FROM <"
@@ -376,7 +377,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 	}
 
 	public ArrayList getWorksInLatLong(String place_str, String familyName) {
-		String query = this.nsPrefix + "";
+		String query = Namespace.getNsPrefixString() + "";
 
 		if (place_str.startsWith("http://")) {
 			query = query
@@ -417,7 +418,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 	}
 
 	public ArrayList getWorkPlaces(String work_uri) {
-		String query = this.nsPrefix + "SELECT ?place ?label " + "WHERE {"
+		String query = Namespace.getNsPrefixString() + "SELECT ?place ?label " + "WHERE {"
 				+ "   <" + work_uri + "> bf:place ?place . "
 				+ "   {SELECT ?place ?label FROM <"
 				+ "http://gen.library.sh.cn/graph/place" + "> WHERE {"
@@ -435,7 +436,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 			String str = "";
 			String str1 = "";
 
-			String query = this.nsPrefix + "SELECT DISTINCT ?uri FROM <"
+			String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri FROM <"
 					+ "http://gen.library.sh.cn/graph/person" + "> "
 					+ "WHERE {" + "   ?uri a shl:Person .";
 
@@ -472,7 +473,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 
 		filter = filter + ") ";
 
-		String query = this.nsPrefix
+		String query = Namespace.getNsPrefixString()
 				+ "SELECT ?work (GROUP_CONCAT(DISTINCT ?cr;separator=';') AS ?creator) ?dtitle ?title (GROUP_CONCAT(DISTINCT ?t;separator=';') AS ?subtitles) ?note ?roles FROM <"
 				+ "http://gen.library.sh.cn/graph/work"
 				+ "> "
@@ -517,7 +518,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 	}
 
 	public Map getWorkInfos(String work_uri) {
-		String query = this.nsPrefix
+		String query = Namespace.getNsPrefixString()
 				+ "SELECT ?dtitle ?title "
 				+ "(GROUP_CONCAT(DISTINCT ?tv; separator=';') AS ?subtitle) "
 				+ "(GROUP_CONCAT(DISTINCT ?creator; separator=';') AS ?creator) ?note (GROUP_CONCAT(DISTINCT ?label; separator=';') AS ?label) "
@@ -581,7 +582,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 	}
 
 	public ArrayList getInstances4Work(String work_uri) {
-		String query = this.nsPrefix
+		String query = Namespace.getNsPrefixString()
 				+ "SELECT DISTINCT ?ins ?temporal ?extent ?edition ?category ?item (GROUP_CONCAT(DISTINCT ?description ;separator=';') AS ?description ) ?hbs ?ab ?place ?org ?addr ?shelf ?doi ?accessLevel "
 				+ "FROM <"
 				+ "http://gen.library.sh.cn/graph/instance"
@@ -650,7 +651,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 	}
 
 	public ArrayList getAllWorksWithGeo() {
-		String query = this.nsPrefix + "SELECT ?work ?title ?note ?begin ?end "
+		String query = Namespace.getNsPrefixString() + "SELECT ?work ?title ?note ?begin ?end "
 				+ "WHERE {" + "   ?work dc:title ?title ;"
 				+ "         bf:place ?place . "
 				+ "   OPTIONAL { ?work bf:hasAnnotation ?ann . "
@@ -669,7 +670,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 	}
 
 	public ArrayList getWorksInYear(String begin, String end, int limit) {
-		String query = this.nsPrefix
+		String query = Namespace.getNsPrefixString()
 				+ "SELECT ?work ?dtitle ?title (GROUP_CONCAT(DISTINCT ?t;separator=';') AS ?subtitles) ?note (if (STRLEN(STR(?time)) > 0, ?time, ?tb) AS ?begin) ?label ?long ?lat "
 				+ "WHERE {"
 				+ "   ?work bf:title ?ts ; dc:title ?dtitle ; shl:place ?ps . "
@@ -719,7 +720,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 	}
 
 	public ArrayList getWorksInChao(String year) {
-		String query = this.nsPrefix
+		String query = Namespace.getNsPrefixString()
 				+ "SELECT DISTINCT ?work ?title ?place"
 				+ " (if (STRLEN(STR(?time)) > 0, ?time, ?tb) AS ?begin) ?long ?lat "
 				+ "WHERE {"
@@ -761,21 +762,21 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 	public OutputStream getWorkAllInfos(String work_uri) {
 		Model m = ModelFactory.createDefaultModel();
 
-		String query = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "WHERE {{"
+		String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "WHERE {{"
 				+ "   ?s ?p ?o ." + "   FILTER (STR(?s) = '" + work_uri + "')"
 				+ "} UNION {" + "   <" + work_uri + "> bf:workTitle ?s ."
 				+ "   ?s ?p ?o ." + "}" + "}";
 
 		m.add(SparqlExecution.construct(this.graph, query));
 
-		query = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "FROM <"
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <"
 				+ "http://gen.library.sh.cn/graph/annotation" + "> "
 				+ "WHERE {" + "   ?s ?p ?o ." + "{SELECT DISTINCT ?s WHERE {"
 				+ "   <" + work_uri + "> bf:hasAnnotation ?s ." + "}}" + "}";
 
 		m.add(SparqlExecution.construct(this.graph, query));
 
-		query = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "FROM <"
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <"
 				+ "http://gen.library.sh.cn/graph/instance" + "> " + "WHERE {{"
 				+ "   ?s ?p ?o ." + "   {SELECT DISTINCT ?s WHERE {"
 				+ "       <" + work_uri + "> bf:hasInstance ?s ." + "   }}"
@@ -793,20 +794,20 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 
 	public OutputStream getResource(String work_uri) {
 		Model temp_m = ModelFactory.createDefaultModel();
-		String query = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "FROM <"
+		String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <"
 				+ "http://gen.library.sh.cn/graph/work" + "> " + "WHERE {"
 				+ "   ?s ?p ?o . " + "   FILTER (?s = <" + work_uri + ">)"
 				+ "}";
 
 		temp_m.add(SparqlExecution.construct(this.graph, query));
 
-		query = this.nsPrefix + "CONSTRUCT {?s ?p ?o}" + "FROM <"
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o}" + "FROM <"
 				+ "http://gen.library.sh.cn/graph/instance" + "> " + "WHERE {"
 				+ "   ?s ?p ?o ; bf:instanceOf <" + work_uri + "> ." + "}";
 
 		temp_m.add(SparqlExecution.construct(this.graph, query));
 
-		query = this.nsPrefix + "CONSTRUCT {?s ?p ?o}" + "FROM <"
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o}" + "FROM <"
 				+ "http://gen.library.sh.cn/graph/item" + "> " + "WHERE {"
 				+ "   ?s bf:itemOf ?ins ; ?p ?o ." + "   {SELECT ?ins FROM <"
 				+ "http://gen.library.sh.cn/graph/instance" + "> WHERE {"
@@ -826,7 +827,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 
 		String clause = MergeSearchParts.workSearchClause(search);
 
-		String sql = this.nsPrefix + "SELECT DISTINCT ?work " + "WHERE { "
+		String sql = Namespace.getNsPrefixString() + "SELECT DISTINCT ?work " + "WHERE { "
 				+ "   ?work a bf:Work ; dc:title ?dtitle." + clause
 				+ "} LIMIT 100";
 
@@ -846,20 +847,20 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 
 	private Model getWorkModel(String work_uri) {
 		Model temp_m = ModelFactory.createDefaultModel();
-		String query = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "FROM <"
+		String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <"
 				+ "http://gen.library.sh.cn/graph/work" + "> " + "WHERE {"
 				+ "   ?s ?p ?o . " + "   FILTER (?s = <" + work_uri + ">)"
 				+ "}";
 
 		temp_m.add(SparqlExecution.construct(this.graph, query));
 
-		query = this.nsPrefix + "CONSTRUCT {?s ?p ?o}" + "FROM <"
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o}" + "FROM <"
 				+ "http://gen.library.sh.cn/graph/instance" + "> " + "WHERE {"
 				+ "   ?s ?p ?o ; bf:instanceOf <" + work_uri + "> ." + "}";
 
 		temp_m.add(SparqlExecution.construct(this.graph, query));
 
-		query = this.nsPrefix + "CONSTRUCT {?s ?p ?o}" + "FROM <"
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o}" + "FROM <"
 				+ "http://gen.library.sh.cn/graph/item" + "> " + "WHERE {"
 				+ "   ?s bf:itemOf ?ins ; ?p ?o ." + "   {SELECT ?ins FROM <"
 				+ "http://gen.library.sh.cn/graph/instance" + "> WHERE {"
@@ -868,7 +869,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 
 		temp_m.add(SparqlExecution.construct(this.graph, query));
 
-		query = this.nsPrefix + "CONSTRUCT {?s shl:relatedWork <" + work_uri
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s shl:relatedWork <" + work_uri
 				+ "> .} " + "FROM <" + "http://gen.library.sh.cn/graph/person"
 				+ "> " + "WHERE {" + "   ?s shl:roleOfFamily ?role ; "
 				+ "      shl:relatedWork <" + work_uri + "> ." + "} LIMIT 50";

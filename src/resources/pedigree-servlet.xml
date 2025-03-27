@@ -114,11 +114,8 @@
 		<bean
 			class="org.springframework.mobile.device.site.SitePreferenceHandlerInterceptor" />
 		<!-- 登录拦截 -->
-		<mvc:interceptor>
-			<!-- 需拦截的地址 -->
-			<!-- 一级目录 -->
+		 <mvc:interceptor>
 			<mvc:mapping path="/**" />
-			<!-- 不参与拦截的路径：等同于拦截器中的url过滤 -->
 			<mvc:exclude-mapping path="/userlogin/**" />
 			<mvc:exclude-mapping path="/to_login" />
 			<mvc:exclude-mapping path="/res/**" />
@@ -131,18 +128,15 @@
 		<mvc:mapping path="/webapi/**" />
 		  <bean class="cn.sh.library.pedigree.interceptor.WebAPIAccessInterceptor" />
 		</mvc:interceptor>
-		<mvc:interceptor>
-			<!-- 需拦截的地址 -->
-			<!-- 一级目录 -->
+	<mvc:interceptor>
 			<mvc:mapping path="/**" />
-			<!-- 不参与拦截的路径：等同于拦截器中的url过滤 -->
 			<mvc:exclude-mapping path="/userlogin/**" />
 			<mvc:exclude-mapping path="/to_login" />
 			<mvc:exclude-mapping path="/res/**" />
 			<mvc:exclude-mapping path="/doc/**" />
 			<mvc:exclude-mapping path="/home/**" />
 			 <bean  class="cn.sh.library.pedigree.interceptor.IpWarningInterceptor" />
-		</mvc:interceptor>
+		</mvc:interceptor> 
 	</mvc:interceptors>
 	
 	<!--静态资源配置 -->

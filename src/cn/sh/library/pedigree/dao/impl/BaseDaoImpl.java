@@ -48,6 +48,10 @@ public abstract class BaseDaoImpl implements BaseDao {
 			model = getModel(graphDefine.name());
 			modelCache.put(graphDefine.name(), model);
 		}
+		modelCache.put("http://gen.library.sh.cn/graph/place",
+				getModel("http://gen.library.sh.cn/graph/place"));
+		modelCache.put("http://gen.library.sh.cn/graph/baseinfo",
+				getModel("http://gen.library.sh.cn/graph/baseinfo"));
 		modelCache.put("http://gen.library.sh.cn/graph/instance",
 				getModel("http://gen.library.sh.cn/graph/instance"));
 		modelCache.put("http://gen.library.sh.cn/graph/work",

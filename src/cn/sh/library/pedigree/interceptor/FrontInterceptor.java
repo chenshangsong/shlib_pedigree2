@@ -30,13 +30,6 @@ public class FrontInterceptor implements HandlerInterceptor {
     	   prot=":"+prot;
        }
        Constant.ProjectPath= request.getScheme()+"://"+ request.getServerName()+prot+request.getContextPath();
-      /* String url = request.getScheme()+"://"+ request.getServerName()+request.getRequestURI()+"?"+request.getQueryString();  
-       System.out.println("获取全路径（协议类型：//域名/项目名/命名空间/action名称?其他参数）url="+url);  
-       String url2=request.getScheme()+"://"+ request.getServerName();//+request.getRequestURI();  
-       System.out.println("协议名：//域名="+url2);  
-       System.out.println("获取项目名="+request.getContextPath());  
-       System.out.println("获取参数="+request.getQueryString());  
-       System.out.println("获取全路径="+request.getRequestURL());  */
        Constant.ProjectRealPath=request.getSession().getServletContext().getRealPath("/").replace("\\", "/")+"/" + "WEB-INF";
    }
 
@@ -44,18 +37,4 @@ public class FrontInterceptor implements HandlerInterceptor {
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
 
     }
-/*    HttpServletResponse response = ServletActionContext.getResponse();  
-    HttpServletRequest request = ServletActionContext.getRequest();  
-String url = request.getScheme()+"://"+ request.getServerName()+request.getRequestURI()+"?"+request.getQueryString();  
-System.out.println("获取全路径（协议类型：//域名/项目名/命名空间/action名称?其他参数）url="+url);  
-String url2=request.getScheme()+"://"+ request.getServerName();//+request.getRequestURI();  
-System.out.println("协议名：//域名="+url2);  
-
-
-System.out.println("获取项目名="+request.getContextPath());  
-System.out.println("获取参数="+request.getQueryString());  
-System.out.println("获取全路径="+request.getRequestURL());  
-request.getSession().getServletContext().getRealPath("/");//获取web项目的路径  
-this.getClass().getResource("/").getPath()//获取类的当前目录  
-*/
 }

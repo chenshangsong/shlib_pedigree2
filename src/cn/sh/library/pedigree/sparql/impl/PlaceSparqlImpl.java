@@ -23,15 +23,16 @@ import cn.sh.library.pedigree.sparql.PlaceSparql;
 import cn.sh.library.pedigree.utils.RDFUtils;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
+import cn.sh.library.pedigree.webApi.sparql.Namespace;
  
  @Repository
  @GraphDefine(name="http://gen.library.sh.cn/graph/place")
  public class PlaceSparqlImpl extends BaseDaoImpl
    implements PlaceSparql
  {
- 
-   @javax.annotation.Resource
-   private StringBuffer nsPrefix;
+// 
+//   @javax.annotation.Resource
+//   private StringBuffer nsPrefix;
  
    @javax.annotation.Resource
    private BaseinfoSparql baseinfoSparql;
@@ -41,7 +42,7 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
    
    @Override
    public List<Map<String, String>> getRemoteAllPlaces(){
-	   String query = this.nsPrefix  
+	   String query = Namespace.getNsPrefixString()  
 			   + " SELECT DISTINCT ?uri ?prov ?city ?county ?label "
 			   + " WHERE{ ?uri a shl:Place ;  shl:province ?prov ; bf:label ?label. " 
 			   + " OPTIONAL{?uri shl:city ?city .} "
@@ -56,20 +57,20 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
  
    public ArrayList getFullLocations(String province, String label)
    {
-/*  35 */     String query = this.nsPrefix + "SELECT DISTINCT ((if (?cou = ?city, ?c, ?uri)) AS ?s) ?label " + "((if (?cou = ?city, 'null', ?cou)) AS ?county) ?city ?province " + "FROM <" + "http://www.cba.ac.cn/graph/geography" + "> " + "WHERE {" + "   ?uri rdfs:label ?label ;" + "      rdfs:label ?cou ; " + "      gn:parentADM2/rdfs:label ?city ; " + "      gn:parentADM2 ?c ." + "   ?c gn:parentADM1/rdfs:label ?province . ";
+/*  35 */     String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ((if (?cou = ?city, ?c, ?uri)) AS ?s) ?label " + "((if (?cou = ?city, 'null', ?cou)) AS ?county) ?city ?province " + "FROM <" + "http://www.cba.ac.cn/graph/geography" + "> " + "WHERE {" + "   ?uri rdfs:label ?label ;" + "      rdfs:label ?cou ; " + "      gn:parentADM2/rdfs:label ?city ; " + "      gn:parentADM2 ?c ." + "   ?c gn:parentADM1/rdfs:label ?province . ";
  
 /*  46 */     if (StringUtils.isNotBlank(province)) {
 /*  47 */       if (StringUtils.isNotBlank(label)) {
 /*  48 */         query = query + "FILTER (REGEX(?label, '" + label + "') && REGEX(?province, '" + province + "'))" + "}";
        }
        else {
-/*  51 */         query = this.nsPrefix + "SELECT DISTINCT ?s (?province AS ?label) ?county ?city ?province " + "FROM <" + "http://www.cba.ac.cn/graph/geography" + "> " + "WHERE {" + "   ?s rdfs:label ?province . " + "FILTER REGEX(?province, '" + province + "') " + "} ORDER BY ASC(?s) LIMIT 1";
+/*  51 */         query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?s (?province AS ?label) ?county ?city ?province " + "FROM <" + "http://www.cba.ac.cn/graph/geography" + "> " + "WHERE {" + "   ?s rdfs:label ?province . " + "FILTER REGEX(?province, '" + province + "') " + "} ORDER BY ASC(?s) LIMIT 1";
        }
  
      }
      else
      {
-/*  60 */       query = this.nsPrefix + "SELECT ?s ?label " + "FROM <" + "http://www.cba.ac.cn/graph/geography" + "> " + "WHERE {" + "   ?s rdfs:label ?label . " + "FILTER REGEX(?label, '" + label + "')" + "}";
+/*  60 */       query = Namespace.getNsPrefixString() + "SELECT ?s ?label " + "FROM <" + "http://www.cba.ac.cn/graph/geography" + "> " + "WHERE {" + "   ?s rdfs:label ?label . " + "FILTER REGEX(?label, '" + label + "')" + "}";
      }
  
 /*  69 */     return SparqlExecution.vQuery(this.graph, query, new String[] { "s", "label", "county", "city", "province" });
@@ -77,7 +78,7 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
  
    public ArrayList getPlacesInArea(String points)
    {
-/*  77 */     String query = this.nsPrefix + "SELECT DISTINCT ?place ?label ?long ?lat " + "WHERE {" + "   ?place owl:sameAs ?as ; " + "          bf:label ?label . " + "FILTER (lang(?label)='cht')" + "{" + "   SELECT ?as ?long ?lat FROM <" + "http://www.cba.ac.cn/graph/geography" + "> " + "   WHERE {" + "       ?as geo:geometry ?geo ; " + "           geo:long ?long ; " + "           geo:lat ?lat . " + "   FILTER (bif:st_within(bif:st_point(?long, ?lat), bif:st_geomfromtext('" + points + "'))) " + "   }" + "}" + "{" + "   SELECT ?place FROM <" + "http://gen.library.sh.cn/graph/work" + "> " + "   WHERE {" + "       ?work shl:place ?place . " +  "}" + "}" + "}";
+/*  77 */     String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?place ?label ?long ?lat " + "WHERE {" + "   ?place owl:sameAs ?as ; " + "          bf:label ?label . " + "FILTER (lang(?label)='cht')" + "{" + "   SELECT ?as ?long ?lat FROM <" + "http://www.cba.ac.cn/graph/geography" + "> " + "   WHERE {" + "       ?as geo:geometry ?geo ; " + "           geo:long ?long ; " + "           geo:lat ?lat . " + "   FILTER (bif:st_within(bif:st_point(?long, ?lat), bif:st_geomfromtext('" + points + "'))) " + "   }" + "}" + "{" + "   SELECT ?place FROM <" + "http://gen.library.sh.cn/graph/work" + "> " + "   WHERE {" + "       ?work shl:place ?place . " +  "}" + "}" + "}";
  
 /*  95 */     return SparqlExecution.vQuery(this.graph, query, new String[] { "place", "label", "long", "lat" });
    }
@@ -90,7 +91,7 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
      {
        String uri = xing.get("uri").toString();
  
-       String query = this.nsPrefix + "SELECT DISTINCT ?place ?label ?long ?lat " + "WHERE {" + "   ?place owl:sameAs ?as ; " + "          bf:label ?label . " + "FILTER (lang(?label)='cht')" + "{" + "   SELECT ?as ?long ?lat FROM <" + "http://www.cba.ac.cn/graph/geography" + "> " + "   WHERE {" + "       ?as geo:geometry ?geo ; " + "           geo:long ?long ; " + "           geo:lat ?lat . " + "   FILTER (bif:st_within(bif:st_point(?long, ?lat), bif:st_geomfromtext('" + points + "'))) " + "   }" + "}" + "{" + "   SELECT ?place FROM <" + "http://gen.library.sh.cn/graph/work" + "> " + "   WHERE {" + "       ?work shl:place ?place ; " + "             bf:subject <" + uri + "> . " + "   }" + "}" + "}";
+       String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?place ?label ?long ?lat " + "WHERE {" + "   ?place owl:sameAs ?as ; " + "          bf:label ?label . " + "FILTER (lang(?label)='cht')" + "{" + "   SELECT ?as ?long ?lat FROM <" + "http://www.cba.ac.cn/graph/geography" + "> " + "   WHERE {" + "       ?as geo:geometry ?geo ; " + "           geo:long ?long ; " + "           geo:lat ?lat . " + "   FILTER (bif:st_within(bif:st_point(?long, ?lat), bif:st_geomfromtext('" + points + "'))) " + "   }" + "}" + "{" + "   SELECT ?place FROM <" + "http://gen.library.sh.cn/graph/work" + "> " + "   WHERE {" + "       ?work shl:place ?place ; " + "             bf:subject <" + uri + "> . " + "   }" + "}" + "}";
  
        return SparqlExecution.vQuery(this.graph, query, new String[] { "place", "label", "long", "lat" });
      }
@@ -128,7 +129,7 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
 			clause += "{?work bf:subject <" + uri+ ">}";
 		}
 
-		String query = this.nsPrefix + "SELECT DISTINCT ?place ?label ?long ?lat (count(distinct ?work) as ?cnt)"
+		String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?place ?label ?long ?lat (count(distinct ?work) as ?cnt)"
 				+ " FROM <http://gen.library.sh.cn/graph/person>" 
 				+ " FROM <http://gen.library.sh.cn/graph/baseinfo>"
 				+ " FROM <http://www.cba.ac.cn/graph/geography>" 
@@ -186,7 +187,7 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
 			clause += "{?work bf:subject <" + uri+ ">}";
 		}
 
-		String query = this.nsPrefix + "SELECT  (count(distinct ?work) as ?cnt)"
+		String query = Namespace.getNsPrefixString() + "SELECT  (count(distinct ?work) as ?cnt)"
 				+ " FROM <http://gen.library.sh.cn/graph/person>" 
 				+ " FROM <http://gen.library.sh.cn/graph/baseinfo>"
 				+ " FROM <http://www.cba.ac.cn/graph/geography>" 
@@ -222,41 +223,41 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
 	   if(!StringUtilC.isEmpty(keyWord)){
 		   sqlwhere+=".{?uri bf:label ?label .FILTER (CONTAINS(?label, '"+ keyWord + "'))}";
 	   }
-     String query = this.nsPrefix + "SELECT DISTINCT ?uri ?prov ?city ?county " + "WHERE { " + "   ?uri a shl:Place ; " + "        shl:province ?prov . " + "OPTIONAL {" + "   ?uri shl:city ?city . " + "}" + "OPTIONAL {" + "   ?uri shl:county ?county . " + "}" + sqlwhere+"} ORDER BY ASC(?prov) ASC(?city) ASC(?county)";
+     String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri ?prov ?city ?county " + "WHERE { " + "   ?uri a shl:Place ; " + "        shl:province ?prov . " + "OPTIONAL {" + "   ?uri shl:city ?city . " + "}" + "OPTIONAL {" + "   ?uri shl:county ?county . " + "}" + sqlwhere+"} ORDER BY ASC(?prov) ASC(?city) ASC(?county)";
  
      return SparqlExecution.vQuery(this.model, query, new String[] { "uri", "prov", "city", "county" });
    }
    
    public ArrayList getAllPlaces()
    {
-     String query = this.nsPrefix + "SELECT DISTINCT ?uri ?prov ?city ?county " + "WHERE { " + "   ?uri a shl:Place ; " + "        shl:province ?prov . " + "OPTIONAL {" + "   ?uri shl:city ?city . " + "}" + "OPTIONAL {" + "   ?uri shl:county ?county . " + "}" + "} ORDER BY ASC(?prov) ASC(?city) ASC(?county)";
+     String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri ?prov ?city ?county " + "WHERE { " + "   ?uri a shl:Place ; " + "        shl:province ?prov . " + "OPTIONAL {" + "   ?uri shl:city ?city . " + "}" + "OPTIONAL {" + "   ?uri shl:county ?county . " + "}" + "} ORDER BY ASC(?prov) ASC(?city) ASC(?county)";
  
      return SparqlExecution.vQuery(this.model, query, new String[] { "uri", "prov", "city", "county" });
    }
    public ArrayList getAllPlacesInOrigin()
    {
-     String query = this.nsPrefix + "SELECT DISTINCT ?prov ?uri ?label " + "WHERE { " + "   ?uri bf:label ?label . " + "OPTIONAL {" + "   ?uri shl:province ?prov . " + "}" + "FILTER (lang(?label) = 'chs')" + "} ORDER BY ASC(?prov)";
+     String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?prov ?uri ?label " + "WHERE { " + "   ?uri bf:label ?label . " + "OPTIONAL {" + "   ?uri shl:province ?prov . " + "}" + "FILTER (lang(?label) = 'chs')" + "} ORDER BY ASC(?prov)";
  
      return SparqlExecution.vQuery(this.model, query, new String[] { "prov", "uri", "label" });
    }
  
    public ArrayList getRDF(String place_uri)
    {
-     String query = this.nsPrefix + "SELECT ?s ?p ?o " + "WHERE {" + "   ?s ?p ?o ." + "FILTER (STR(?s) = '" + place_uri + "')" + "}";
+     String query = Namespace.getNsPrefixString() + "SELECT ?s ?p ?o " + "WHERE {" + "   ?s ?p ?o ." + "FILTER (STR(?s) = '" + place_uri + "')" + "}";
  
      return SparqlExecution.vQuery(this.graph, query, new String[] { "s", "p", "o" });
    }
  
    public ArrayList getStandPlace(String place_uri)
    {
-     String query = this.nsPrefix + "SELECT ?country ?prov ?city ?county ?label " + "WHERE {" + "   <" + place_uri + "> bf:label ?label ; " + "       shl:country ?country ." + "FILTER (lang(?country)='cht') " + "OPTIONAL {" + "   <" + place_uri + "> shl:province ?prov . " + "}" + "OPTIONAL {" + "   <" + place_uri + "> shl:city ?city . " + "}" + "OPTIONAL {" + "   <" + place_uri + "> shl:county ?county . " + "}" + "FILTER (lang(?label) = 'cht')" + "}";
+     String query = Namespace.getNsPrefixString() + "SELECT ?country ?prov ?city ?county ?label " + "WHERE {" + "   <" + place_uri + "> bf:label ?label ; " + "       shl:country ?country ." + "FILTER (lang(?country)='cht') " + "OPTIONAL {" + "   <" + place_uri + "> shl:province ?prov . " + "}" + "OPTIONAL {" + "   <" + place_uri + "> shl:city ?city . " + "}" + "OPTIONAL {" + "   <" + place_uri + "> shl:county ?county . " + "}" + "FILTER (lang(?label) = 'cht')" + "}";
  
      return SparqlExecution.vQuery(this.graph, query, new String[] { "country", "prov", "city", "county", "label" });
    }
  
    public ArrayList getPlaces(String work_uri)
    {
-     String query = this.nsPrefix + "SELECT ?place ?label (CONCAT(?country,?prov,?city,?county) AS ?tag) " + "WHERE {" + "   ?place a shl:Place; bf:label ?label ." + "FILTER (lang(?label)='chs') " + "OPTIONAL { " + "   ?place shl:country ?country ." + "FILTER (lang(?country)='chs') " + "}" + "OPTIONAL { " + "   ?place shl:province ?prov . " + "}" + "OPTIONAL { " + "   ?place shl:city ?city . " + "}" + "OPTIONAL { " + "   ?place shl:county ?county . " + "}" + "{" + "   SELECT ?place FROM <" + "http://gen.library.sh.cn/graph/work" + "> WHERE {" + "       <" + work_uri + "> shl:place ?place . " + "   }" + "}" + "}";
+     String query = Namespace.getNsPrefixString() + "SELECT ?place ?label (CONCAT(?country,?prov,?city,?county) AS ?tag) " + "WHERE {" + "   ?place a shl:Place; bf:label ?label ." + "FILTER (lang(?label)='chs') " + "OPTIONAL { " + "   ?place shl:country ?country ." + "FILTER (lang(?country)='chs') " + "}" + "OPTIONAL { " + "   ?place shl:province ?prov . " + "}" + "OPTIONAL { " + "   ?place shl:city ?city . " + "}" + "OPTIONAL { " + "   ?place shl:county ?county . " + "}" + "{" + "   SELECT ?place FROM <" + "http://gen.library.sh.cn/graph/work" + "> WHERE {" + "       <" + work_uri + "> shl:place ?place . " + "   }" + "}" + "}";
  
      ArrayList results = SparqlExecution.vQuery(this.model, query, new String[] { "place", "label", "tag" });
  
@@ -299,7 +300,7 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
  
    public String getLabel(String place_uri)
    {
-     String query = this.nsPrefix + "SELECT ?label " + "WHERE {" + "   <" + place_uri + "> bf:label ?label ." + "}";
+     String query = Namespace.getNsPrefixString() + "SELECT ?label " + "WHERE {" + "   <" + place_uri + "> bf:label ?label ." + "}";
  
      return ((Map)SparqlExecution.vQuery(this.graph, query, new String[] { "label" }).get(0)).get("label").toString();
    }
@@ -308,7 +309,7 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
    {
      ArrayList results = getStandPlace(place_uri);
  
-     String query = this.nsPrefix + "";
+     String query = Namespace.getNsPrefixString() + "";
  
      if (results.size() > 0) {
        Object prov = ((Map)results.get(0)).get("prov");
@@ -329,13 +330,13 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
                place = city.toString();
              }
  
-             query = this.nsPrefix + "SELECT ?long ?lat FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?s rdfs:label '" + place + "' ; " + "      gn:parentADM2 ?a ; " + "      geo:long ?long ; " + "      geo:lat ?lat . " + "}";
+             query = Namespace.getNsPrefixString() + "SELECT ?long ?lat FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?s rdfs:label '" + place + "' ; " + "      gn:parentADM2 ?a ; " + "      geo:long ?long ; " + "      geo:lat ?lat . " + "}";
            }
  
          }
          else if (prov != null)
          {
-           query = this.nsPrefix + "SELECT ?long ?lat FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?s rdfs:label '" + prov
+           query = Namespace.getNsPrefixString() + "SELECT ?long ?lat FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?s rdfs:label '" + prov
              .toString() + "' ;" + "      owl:seeAlso/geo:long ?long ;" + "      owl:seeAlso/geo:lat ?lat . " + "}";
          }
  
@@ -359,14 +360,14 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
  
    public String getUri4StandPlace(String prov, String label)
    {
-     String query = this.nsPrefix + "SELECT ?uri " + "WHERE {" + "   ?uri bf:label ?label ; " + "        shl:province ?prov . " + "FILTER STRSTARTS('" + label + "', ?label) " + "FILTER (?prov = '" + prov + "')" + "}";
+     String query = Namespace.getNsPrefixString() + "SELECT ?uri " + "WHERE {" + "   ?uri bf:label ?label ; " + "        shl:province ?prov . " + "FILTER STRSTARTS('" + label + "', ?label) " + "FILTER (?prov = '" + prov + "')" + "}";
  
      return ((Map)SparqlExecution.vQuery(this.graph, query, new String[] { "uri" }).get(0)).get("uri").toString();
    }
  
    public void linkPlace2Geo()
    {
-     String query = this.nsPrefix + "SELECT ?uri ?label ?prov ?city ?county ?town " + "WHERE {" + "   ?uri shl:province ?prov ; " + "        bf:label ?label . " + "OPTIONAL {" + "   ?uri shl:city ?city . " + "} " + "OPTIONAL {" + "   ?uri shl:county ?county . " + "} " + "OPTIONAL {" + "   ?uri shl:town ?town . " + "} " + "FILTER NOT EXISTS {" + "   ?uri owl:sameAs ?as . " + "}" + "}";
+     String query = Namespace.getNsPrefixString() + "SELECT ?uri ?label ?prov ?city ?county ?town " + "WHERE {" + "   ?uri shl:province ?prov ; " + "        bf:label ?label . " + "OPTIONAL {" + "   ?uri shl:city ?city . " + "} " + "OPTIONAL {" + "   ?uri shl:county ?county . " + "} " + "OPTIONAL {" + "   ?uri shl:town ?town . " + "} " + "FILTER NOT EXISTS {" + "   ?uri owl:sameAs ?as . " + "}" + "}";
  
      ArrayList results = SparqlExecution.vQuery(this.graph, query, new String[] { "uri", "label", "prov", "city", "county", "town" });
  
@@ -381,7 +382,7 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
        if ((town != null) || (county != null) || (city != null)) {
          if (town != null)
          {
-           query = this.nsPrefix + "SELECT ?s FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?s rdfs:label '" + town
+           query = Namespace.getNsPrefixString() + "SELECT ?s FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?s rdfs:label '" + town
              .toString() + "' ; " + "      gn:parentADM3 ?a . " + "}";
          }
          else if ((county != null) || (city != null)) {
@@ -393,13 +394,13 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
              place = city.toString();
            }
  
-           query = this.nsPrefix + "SELECT ?s FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?s rdfs:label '" + place + "' ; " + "      gn:parentADM2 ?a . " + "}";
+           query = Namespace.getNsPrefixString() + "SELECT ?s FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?s rdfs:label '" + place + "' ; " + "      gn:parentADM2 ?a . " + "}";
          }
  
        }
        else if (prov != null)
        {
-         query = this.nsPrefix + "SELECT ?s FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?a rdfs:label '" + prov
+         query = Namespace.getNsPrefixString() + "SELECT ?s FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?a rdfs:label '" + prov
            .toString() + "' ;" + "      owl:seeAlso ?s . " + "}";
        }
  
@@ -424,9 +425,9 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
        filter = "FILTER CONTAINS(?label, '" + q + "')";
      }
  
-     String countQuery = this.nsPrefix + "SELECT (COUNT(DISTINCT ?uri) AS ?count) " + "WHERE {" + "   ?uri a shl:Place ;" + "        bf:label ?label . " + filter + "}";
+     String countQuery = Namespace.getNsPrefixString() + "SELECT (COUNT(DISTINCT ?uri) AS ?count) " + "WHERE {" + "   ?uri a shl:Place ;" + "        bf:label ?label . " + filter + "}";
  
-     String query = this.nsPrefix + "SELECT DISTINCT ?uri ?chs ?province ?country " + "WHERE {" + "   ?uri a shl:Place ; " + "        bf:label ?chs ;" + "        bf:label ?label ; " + "        shl:country ?country . " + "OPTIONAL {?uri shl:province ?province .}" + "FILTER (lang(?chs) = 'chs') " + "FILTER (lang(?country) = 'chs') " + filter + "} " + "OFFSET " + start + " LIMIT " + size;
+     String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri ?chs ?province ?country " + "WHERE {" + "   ?uri a shl:Place ; " + "        bf:label ?chs ;" + "        bf:label ?label ; " + "        shl:country ?country . " + "OPTIONAL {?uri shl:province ?province .}" + "FILTER (lang(?chs) = 'chs') " + "FILTER (lang(?country) = 'chs') " + filter + "} " + "OFFSET " + start + " LIMIT " + size;
  
      Map countMap = (Map)SparqlExecution.vQuery(this.graph, countQuery, new String[] { "count" }).get(0);
      Long count = Long.valueOf(Long.parseLong(RDFUtils.toString(countMap.get("count"))));
@@ -442,7 +443,7 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
    public OutputStream getTriples(String uri, String format)
    {
      Model temp_m = ModelFactory.createDefaultModel();
-     String query = this.nsPrefix + "CONSTRUCT {?s ?p ?o} " + "WHERE {" + "   ?s ?p ?o . " + "   FILTER (?s = <" + uri + ">)" + "   FILTER (?p != owl:sameAs)" + "}";
+     String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "WHERE {" + "   ?s ?p ?o . " + "   FILTER (?s = <" + uri + ">)" + "   FILTER (?p != owl:sameAs)" + "}";
  
      temp_m.add(SparqlExecution.construct(this.graph, query));
  
@@ -487,7 +488,7 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
      if ((town != null) || (county != null) || (city != null)) {
        if (town != null)
        {
-         query = this.nsPrefix + "SELECT ?s FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?s rdfs:label '" + town
+         query = Namespace.getNsPrefixString() + "SELECT ?s FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?s rdfs:label '" + town
            .toString() + "' ; " + "      gn:parentADM3 ?a . " + "}";
        }
        else if ((county != null) || (city != null)) {
@@ -499,13 +500,13 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparql;
            place = city.toString();
          }
  
-         query = this.nsPrefix + "SELECT ?s FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?s rdfs:label '" + place + "' ; " + "      gn:parentADM2 ?a . " + "}";
+         query = Namespace.getNsPrefixString() + "SELECT ?s FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?s rdfs:label '" + place + "' ; " + "      gn:parentADM2 ?a . " + "}";
        }
  
      }
      else if (prov != null)
      {
-       query = this.nsPrefix + "SELECT ?s FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?a rdfs:label '" + prov
+       query = Namespace.getNsPrefixString() + "SELECT ?s FROM <" + "http://www.cba.ac.cn/graph/geography" + ">" + "WHERE {" + "   ?a rdfs:label '" + prov
          .toString() + "' ;" + "      owl:seeAlso ?s . " + "}";
      }
  

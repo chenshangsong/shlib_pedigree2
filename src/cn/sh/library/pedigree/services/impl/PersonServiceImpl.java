@@ -141,7 +141,7 @@ public class PersonServiceImpl extends BaseServiceImpl implements PersonService 
 				person.setTriples(new ArrayList<Map<String, String>>());
 				for (Map<String, Object> map : list) {
 					String s = RDFUtils.toString(map.get("s"));
-					String p = RDFUtils.toString(map.get("p"));
+					String p = RDFUtils.getLabel(map.get("p"));
 					// String o = RDFUtils.toString(map.get("o"));
 					String o = map.get("o").toString();
 					Map<String, String> tmp = new HashMap<>();
@@ -154,35 +154,35 @@ public class PersonServiceImpl extends BaseServiceImpl implements PersonService 
 						person.setUri(s);
 					}
 
-					if (p.equalsIgnoreCase("rdf:type")) {
+					if (p.equalsIgnoreCase("type")) {
 						person.setType(o);
-					} else if (p.equalsIgnoreCase("shl:endYear")) {
+					} else if (p.equalsIgnoreCase("endYear")) {
 						person.setEndYear(StringUtilC.getString(RDFUtils
 								.getValue(o)));
-					} else if (p.equalsIgnoreCase("shl:beginYear")) {
+					} else if (p.equalsIgnoreCase("beginYear")) {
 						person.setBeginYear(StringUtilC.getString(RDFUtils
 								.getValue(o)));
-					} else if (p.equalsIgnoreCase("shl:temporalValue")) {
+					} else if (p.equalsIgnoreCase("temporalValue")) {
 						person.setDynasty(o);
-					} else if (p.equalsIgnoreCase("shl:courtesyName")) {// 字
+					} else if (p.equalsIgnoreCase("courtesyName")) {// 字
 						person.setCourtesyName(o);
-					} else if (p.equalsIgnoreCase("shl:relatedWork")) {// shl:relatedWork
+					} else if (p.equalsIgnoreCase("relatedWork")) {// shl:relatedWork
 						person.setRelatedWork(o);
 
 					}
 
-					else if (p.equalsIgnoreCase("shl:pseudonym")) {// 号
+					else if (p.equalsIgnoreCase("pseudonym")) {// 号
 						person.setPseudonym(o);
-					} else if (p.equalsIgnoreCase("shl:orderOfSeniority")) {// 行
+					} else if (p.equalsIgnoreCase("orderOfSeniority")) {// 行
 						person.setOrderOfSeniority(o);
-					} else if (p.equalsIgnoreCase("shl:posthumousName")) {// 谥
+					} else if (p.equalsIgnoreCase("posthumousName")) {// 谥
 						person.setPosthumousName(o);
-					} else if (p.equalsIgnoreCase("shl:birthday")) {// 生
+					} else if (p.equalsIgnoreCase("birthday")) {// 生
 						person.setBirthday(o);
 
-					} else if (p.equalsIgnoreCase("shl:deathday")) {// 卒
+					} else if (p.equalsIgnoreCase("deathday")) {// 卒
 						person.setDeathday(o);
-					} else if (p.equalsIgnoreCase("bf:label")) {
+					} else if (p.equalsIgnoreCase("label")) {
 						if (s.toString().contains("/person/")) {
 							if (o.endsWith("@en")) {
 								person.setEnName(o.substring(0, o.length() - 3));

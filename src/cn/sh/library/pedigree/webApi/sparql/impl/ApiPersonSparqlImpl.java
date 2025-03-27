@@ -12,17 +12,18 @@ import cn.sh.library.pedigree.common.SparqlExecution;
 import cn.sh.library.pedigree.dao.impl.BaseDaoImpl;
 import cn.sh.library.pedigree.utils.RDFUtils;
 import cn.sh.library.pedigree.webApi.sparql.ApiPersonSparql;
+import cn.sh.library.pedigree.webApi.sparql.Namespace;
 
 @Repository
 @GraphDefine(name = "http://gen.library.sh.cn/graph/person")
 public class ApiPersonSparqlImpl extends BaseDaoImpl implements ApiPersonSparql {
 
-	@Resource
-	private StringBuffer nsPrefix;
+//	@Resource
+//	private StringBuffer nsPrefix;
 
 	@Override
 	public List<Map<String, String>> getPlacesInfos4Person(String prov) {
-		String sql = this.nsPrefix
+		String sql = Namespace.getNsPrefixString()
 				+ "SELECT (?f as ?furi) ?proName (COUNT(DISTINCT ?s) AS ?count) WHERE {?s a shl:Person ;       bf:label ?name ; shl:relatedWork ?work ;       foaf:familyName ?f .    FILTER (lang(?name)='cht')  { ?s shl:relatedWork ?work . {SELECT ?work ?proName FROM <http://gen.library.sh.cn/graph/work>WHERE{?work shl:place ?place .   {SELECT ?place ?proName FROM <http://gen.library.sh.cn/graph/place>    WHERE {       ?place shl:province ?proName . FILTER (STR(?proName)='"
 				+ prov + "')   }}}}}} order by DESC(?count)";
 		List<Map<String, String>> list = RDFUtils
@@ -33,7 +34,7 @@ public class ApiPersonSparqlImpl extends BaseDaoImpl implements ApiPersonSparql 
 
 	@Override
 	public List<Map<String, String>> getProvList() {
-		String sql = this.nsPrefix
+		String sql = Namespace.getNsPrefixString()
 				+ "with graph<http://gen.library.sh.cn/graph/place>select ?pro where{?s a shl:Place; shl:province ?pro} group by ?pro";
 		List<Map<String, String>> list = RDFUtils
 				.transformListMap(SparqlExecution.vQuery(this.graph, sql,
@@ -43,7 +44,7 @@ public class ApiPersonSparqlImpl extends BaseDaoImpl implements ApiPersonSparql 
 
 	@Override
 	public List<Map<String, String>> getPersonsFromFamilyRules() {
-		String RDF_QUERY_PERSONS_FROM_FAMILY_RULES = this.nsPrefix
+		String RDF_QUERY_PERSONS_FROM_FAMILY_RULES = Namespace.getNsPrefixString()
 				+ " select distinct (?person as ?uri)  (str(?label) as ?label) (?familyName as ?familyNameUri) "
 				+ " (str(?familyNameCht) as ?familyName) (GROUP_CONCAT(str(?work); separator=',') AS ?releatedWorks) "
 				+ "  from <http://gen.library.sh.cn/graph/baseinfo> "
@@ -70,7 +71,7 @@ public class ApiPersonSparqlImpl extends BaseDaoImpl implements ApiPersonSparql 
 
 	@Override
 	public List<Map<String, String>> getProvsFromFamilyRules() {
-		String RDF_QUERY_PROVS_FROM_FAMILY_RULES = this.nsPrefix
+		String RDF_QUERY_PROVS_FROM_FAMILY_RULES = Namespace.getNsPrefixString()
 				+ " select distinct ?province (GROUP_CONCAT(distinct str(?work); separator=',') AS ?releatedWorks) "
 				+ "  from <http://gen.library.sh.cn/graph/baseinfo> "
 				+ " from <http://gen.library.sh.cn/graph/work>   "

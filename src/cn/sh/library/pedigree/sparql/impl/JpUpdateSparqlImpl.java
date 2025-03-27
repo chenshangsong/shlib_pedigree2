@@ -1013,7 +1013,7 @@ blankNode = NodeFactory.createAnon();
 //		    p = RDFUtils.getLink(this.model, p);
 
 		String query = "";
-		query = this.nsPrefix + "WITH <" + g + "> DELETE { " + "   <" + s + "> ?p ?o . " + "} WHERE {" + "   <" + s
+		query = Namespace.getNsPrefixString() + "WITH <" + g + "> DELETE { " + "   <" + s + "> ?p ?o . " + "} WHERE {" + "   <" + s
 				+ "> ?p ?o . }";
 
 		SparqlExecution.update(this.graph, query);
@@ -1026,10 +1026,10 @@ blankNode = NodeFactory.createAnon();
 //	    p = RDFUtils.getLink(this.model, p);
 
 		String query = "";
-//		query = this.nsPrefix
+//		query = Namespace.getNsPrefixString()
 //				+ "with graph <http://gen.library.sh.cn/graph/person> delete {?s ?p ?o} where {?s ?p ?o .{?s a shl:Person; shl:relatedWork <"
 //				+ workUri + ">;shl:roleOfFamily <" + role + ">}}";
-		query = this.nsPrefix+"DELETE {\r\n"
+		query = Namespace.getNsPrefixString()+"DELETE {\r\n"
 				+ "  GRAPH <http://gen.library.sh.cn/graph/person> {\r\n"
 				+ "    ?s ?p ?o\r\n"
 				+ "  }\r\n"
@@ -1051,7 +1051,7 @@ blankNode = NodeFactory.createAnon();
 		SparqlExecution.update(this.graph, query);
 		
 		//只删除传入的符合WorkUri，和角色的，并且除了传入的workUri 不存在其他 workUri的 person chenss 20240920
-		query = this.nsPrefix+"DELETE {\r\n"
+		query = Namespace.getNsPrefixString()+"DELETE {\r\n"
 				+ "  GRAPH <http://gen.library.sh.cn/graph/person> {\r\n"
 				+ "    ?s shl:relatedWork <"+workUri+">\r\n"
 				+ "  }\r\n"
@@ -1073,7 +1073,7 @@ blankNode = NodeFactory.createAnon();
 //	    p = RDFUtils.getLink(this.model, p);
 
 		String query = "";
-		query = this.nsPrefix
+		query = Namespace.getNsPrefixString()
 				+ "delete { \r\n"
 				+ "  graph <http://gen.library.sh.cn/graph/person> { ?person ?p ?o } \r\n"
 				+ "} \r\n"
@@ -1096,7 +1096,7 @@ blankNode = NodeFactory.createAnon();
 	}
 
 	private boolean deleteResourceByO(String g, String o) {
-		String query = this.nsPrefix + "WITH <" + g + "> DELETE {?s ?p ?o} where {?s ?p ?o .{select ?s where {?s ?p <"
+		String query = Namespace.getNsPrefixString() + "WITH <" + g + "> DELETE {?s ?p ?o} where {?s ?p ?o .{select ?s where {?s ?p <"
 				+ o + ">}}}";
 
 		SparqlExecution.update(this.graph, query);
@@ -1106,14 +1106,14 @@ blankNode = NodeFactory.createAnon();
 
 	// 删除没任何用的空节点 chenss 20240704
 	private boolean deleteNodeByS(String g, String s) {
-//		String query = this.nsPrefix + "WITH <" + g + "> DELETE WHERE {"
+//		String query = Namespace.getNsPrefixString() + "WITH <" + g + "> DELETE WHERE {"
 //				+ "  ?s ?p ?o ."
 //				+ "  FILTER NOT EXISTS { ?s ?p2 ?o2 . FILTER (?p2 != ?p || ?o2 != ?o) }"
 //				+ "  FILTER NOT EXISTS { ?s2 ?p3 ?s . FILTER (?s2 != ?s || ?p3 != ?p) }"
 //				+ "  FILTER (str(?s)='"+s+"')"
 //				+ "}";
 
-		String query = this.nsPrefix + "WITH <" + g + "> DELETE { ?s ?p ?o }\r\n" + "WHERE {\r\n" + "  ?s ?p ?o .\r\n"
+		String query = Namespace.getNsPrefixString() + "WITH <" + g + "> DELETE { ?s ?p ?o }\r\n" + "WHERE {\r\n" + "  ?s ?p ?o .\r\n"
 				+ "  FILTER (isBlank(?s))\r\n" + "  FILTER NOT EXISTS { ?s1 ?p2 ?s }\r\n" + "}";
 		SparqlExecution.update(this.graph, query);
 
@@ -1121,7 +1121,7 @@ blankNode = NodeFactory.createAnon();
 	}
 
 	private boolean insertTriples(String str) {
-		String sql = this.nsPrefix + "INSERT DATA { " + "GRAPH <" + this.graph.getGraphName() + "> { " + str + "}"
+		String sql = Namespace.getNsPrefixString() + "INSERT DATA { " + "GRAPH <" + this.graph.getGraphName() + "> { " + str + "}"
 				+ "} ";
 
 		SparqlExecution.update(this.graph, sql);
@@ -1202,7 +1202,7 @@ blankNode = NodeFactory.createAnon();
 	@Override
 	public void deleteTriplesBySp(String s, String p,  String graph) throws Exception {
 	
-		String query = this.nsPrefix + "WITH <" + graph + "> DELETE {<"+s+"> "+p+" ?o} where {<"+s+"> "+p+" ?o }";
+		String query = Namespace.getNsPrefixString() + "WITH <" + graph + "> DELETE {<"+s+"> "+p+" ?o} where {<"+s+"> "+p+" ?o }";
 
 		SparqlExecution.update(this.graph, query);
 		
