@@ -52,11 +52,11 @@ public class RedisUtils {
 	// 每分钟限流访问次数 30次
 	private static final Integer MAX_REQUESTS_PER_MINUTE = 30;
 
-	public boolean ifLimitVisit(Integer vistCount, Integer outTime) {
+	public boolean ifLimitVisit(String keyPre,Integer vistCount, Integer outTime) {
 		vistCount = vistCount == null ? MAX_REQUESTS_PER_MINUTE : vistCount;
 		outTime = outTime == null ? 1 : outTime;
 		String clientIp = IPUtils.getIpAddr();
-		String redisKey = "rate_limit_" + clientIp;
+		String redisKey = "rate_limit_".concat(keyPre).concat("_")+ clientIp;
 		//如果是外网IP，则1分钟只让访问20次
 		if(!IPUtils.isPrivateIP(true)){
 			vistCount=20;

@@ -122,7 +122,7 @@ public class ApiHomeController extends BaseController {
 		Map<String, Object> data = new HashMap<>();
 		jsonResult = new HashMap<>();
 		// 1分钟30次访问限制
-		if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+		if (!redisUtil.ifLimitVisit("api_homePageInit",redis_maxVistCount, redis_timeOut)) {
 			jsonResult.put("result", "-1");// 数据来源索引标记
 			jsonResult.put("code", "43003");// 数据来源索引标记
 			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
@@ -188,7 +188,7 @@ public class ApiHomeController extends BaseController {
 			throws Exception {
 		jsonResult = new HashMap<>();
 		// 1分钟30次访问限制
-		if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+		if (!redisUtil.ifLimitVisit("api_getfamilynamelistByChart",redis_maxVistCount, redis_timeOut)) {
 			jsonResult.put("result", "-1");// 数据来源索引标记
 			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
 			return JSONArray.fromObject(jsonResult).toString();
@@ -234,7 +234,7 @@ public class ApiHomeController extends BaseController {
 		try {
 			jsonResult = new HashMap<>();
 			// 1分钟30次访问限制
-			if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+			if (!redisUtil.ifLimitVisit("api_ggetfamilyNameInfoByFname",redis_maxVistCount, redis_timeOut)) {
 				jsonResult.put("result", "-1");// 数据来源索引标记
 				jsonResult.put("code", "43003");// 数据来源索引标记
 				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
@@ -269,7 +269,7 @@ public class ApiHomeController extends BaseController {
 		try {
 			jsonResult = new HashMap<>();
 			// 1分钟30次访问限制
-			if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+			if (!redisUtil.ifLimitVisit("api_getPersonListByFname",redis_maxVistCount, redis_timeOut)) {
 				jsonResult.put("result", "-1");// 数据来源索引标记
 				jsonResult.put("code", "43003");// 数据来源索引标记
 				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
@@ -301,7 +301,7 @@ public class ApiHomeController extends BaseController {
 		try {
 			jsonResult = new HashMap<>();
 			// 1分钟30次访问限制
-			if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+			if (!redisUtil.ifLimitVisit("api_getWorkListByPersonAndWorkUri",redis_maxVistCount, redis_timeOut)) {
 				jsonResult.put("result", "-1");// 数据来源索引标记
 				jsonResult.put("code", "43003");// 数据来源索引标记
 				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
@@ -330,7 +330,7 @@ public class ApiHomeController extends BaseController {
 		try {
 			jsonResult = new HashMap<>();
 			// 1分钟30次访问限制
-			if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+			if (!redisUtil.ifLimitVisit("api_getPersonsByFname",redis_maxVistCount, redis_timeOut)) {
 				jsonResult.put("result", "-1");// 数据来源索引标记
 				jsonResult.put("code", "43003");// 数据来源索引标记
 				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记

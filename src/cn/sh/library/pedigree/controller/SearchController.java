@@ -51,7 +51,7 @@ public class SearchController {
 		Map<String, Object> result = new HashMap<>();
 		
 		// 1分钟30次访问限制
-		if (!redisUtil.ifLimitVisit(30, 1)) {
+		if (!redisUtil.ifLimitVisit("old_search",30, 1)) {
 			result.put("result", "-1");// 数据来源索引标记
 			result.put("code", "43003");// 数据来源索引标记
 			result.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
@@ -81,7 +81,7 @@ public class SearchController {
 	public Map<String, Object> adv(WorkSearchBean search, Pager pager) {
 		Map<String, Object> result = new HashMap<>();
 		// 1分钟30次访问限制
-				if (!redisUtil.ifLimitVisit(30, 1)) {
+				if (!redisUtil.ifLimitVisit("old_adv",30, 1)) {
 					result.put("result", "-1");// 数据来源索引标记
 					result.put("code", "43003");// 数据来源索引标记
 					result.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记

@@ -63,7 +63,7 @@ public class ApiCommonController extends BaseController {
 	public Map<String, Object> tanghaoList(AncTempSearchBean search, Pager pager) {
 		Map<String, Object> resultLast = new HashMap<>();
 		// 1分钟30次访问限制
-		if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+		if (!redisUtil.ifLimitVisit("api_tanghaoList",redis_maxVistCount, redis_timeOut)) {
 			resultLast.put("result", "-1");// 数据来源索引标记
 			resultLast.put("code", "43003");// 数据来源索引标记
 			resultLast.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记

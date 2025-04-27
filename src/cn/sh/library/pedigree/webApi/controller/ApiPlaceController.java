@@ -262,7 +262,7 @@ public class ApiPlaceController extends BaseController {
 	public String getPlaceCList(String keyword) {
 		jsonResult = new HashMap<>();
 		// 1分钟30次访问限制
-				if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+				if (!redisUtil.ifLimitVisit("api_PlaceGetPlaceCList",redis_maxVistCount, redis_timeOut)) {
 					jsonResult.put("result", "-1");// 数据来源索引标记
 					jsonResult.put("code", "43003");// 数据来源索引标记
 					jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
@@ -288,7 +288,7 @@ public class ApiPlaceController extends BaseController {
 	public String getPlaceFList(String keyword) {
 		jsonResult = new HashMap<>();
 		// 1分钟30次访问限制
-				if (!redisUtil.ifLimitVisit(redis_maxVistCount, redis_timeOut)) {
+				if (!redisUtil.ifLimitVisit("api_PlaceGetPlaceFList",redis_maxVistCount, redis_timeOut)) {
 					jsonResult.put("result", "-1");// 数据来源索引标记
 					jsonResult.put("code", "43003");// 数据来源索引标记
 					jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记

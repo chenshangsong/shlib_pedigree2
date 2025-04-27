@@ -94,7 +94,7 @@ public class WorkController extends BaseController {
 		Map<String, Object> result = new HashMap<>();
 
 		// 1分钟30次访问限制
-		if (!redisUtil.ifLimitVisit(30, 1)) {
+		if (!redisUtil.ifLimitVisit("old_workList",30, 1)) {
 			result.put("result", "-1");// 数据来源索引标记
 			result.put("code", "43003");// 数据来源索引标记
 			result.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
@@ -154,7 +154,7 @@ public class WorkController extends BaseController {
 	public Map<String, Object> list(String keyword, Pager pager) {
 		Map<String, Object> result = new HashMap<>();
 		// 1分钟30次访问限制
-		if (!redisUtil.ifLimitVisit(30, 1)) {
+		if (!redisUtil.ifLimitVisit("old_workListPost",30, 1)) {
 			result.put("result", "-1");// 数据来源索引标记
 			result.put("code", "43003");// 数据来源索引标记
 			result.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
@@ -176,7 +176,7 @@ public class WorkController extends BaseController {
 		Work _work = new Work();
 		Constant.virtuosoRetryConn=false;
 		// 1分钟30次访问限制
-		if (!redisUtil.ifLimitVisit(30, 1)) {
+		if (!redisUtil.ifLimitVisit("old_detail_get",30, 1)) {
 			jsonResult = new HashMap<>();
 			jsonResult.put("result", "-1");// 数据来源索引标记
 			jsonResult.put("code", "43003");// 数据来源索引标记
