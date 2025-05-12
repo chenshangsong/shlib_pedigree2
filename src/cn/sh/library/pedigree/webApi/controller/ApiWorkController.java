@@ -84,7 +84,7 @@ public class ApiWorkController extends BaseController {
 	public String getWorkFacetList(ApiWorkSearchBean search) {
 		jsonResult = new HashMap<>();
 		// 1分钟30次访问限制
-		if (!redisUtil.ifLimitVisit("api_workGetWorkFacetList",redis_maxVistCount, redis_timeOut)) {
+		if (!redisUtil.ifLimitVisit("api_workGetWorkFacetList", redis_maxVistCount, redis_timeOut)) {
 			jsonResult.put("result", "-1");// 数据来源索引标记
 			jsonResult.put("code", "43003");// 数据来源索引标记
 			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
@@ -97,7 +97,7 @@ public class ApiWorkController extends BaseController {
 				return CommonUtils.cache_FacetJsonString;
 			}
 		}
-		
+
 		List<Object> _list = new ArrayList<>();
 		try {
 			String types[] = new String[] {};
@@ -303,7 +303,7 @@ public class ApiWorkController extends BaseController {
 	public String searchALl(@Valid ApiWorkSearchBean search, @Valid Pager pager) {
 		jsonResult = new HashMap<>();
 		// 1分钟30次访问限制
-		if (!redisUtil.ifLimitVisit("api_workSearch",redis_maxVistCount, redis_timeOut)) {
+		if (!redisUtil.ifLimitVisit("api_workSearch", redis_maxVistCount, redis_timeOut)) {
 			jsonResult.put("result", "-1");// 数据来源索引标记
 			jsonResult.put("code", "43003");// 数据来源索引标记
 			jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
@@ -324,8 +324,6 @@ public class ApiWorkController extends BaseController {
 		}
 	}
 
-	
-
 	/**
 	 * 根据家谱uri获取work-instance-item信息 编目系统专用：chens 2020-06-20。
 	 * 
@@ -337,7 +335,7 @@ public class ApiWorkController extends BaseController {
 	@RequestMapping(value = "/getDetailByWorkUriForbm", method = RequestMethod.GET)
 	public JSONObject getDetailByWorkUriForBM(@Valid String uri, Integer uid, HttpSession hs) throws Exception {
 		jsonResult = new HashMap<>();
-		Constant.virtuosoRetryConn=false;
+		Constant.virtuosoRetryConn = false;
 		Map _mapTemp = null;
 		try {
 			String redisWorkKeyBm = RedisUtils.key_work_bm.concat(uri);
@@ -355,18 +353,18 @@ public class ApiWorkController extends BaseController {
 					// V1直接向缓存中添加数据
 					redisUtil.set(redisWorkKeyBm, RedisUtils.serialize(_mapTemp));
 				}
-				
+
 			}
 			jsonResult.put("data", _mapTemp);
 		} catch (Exception e) {
 			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
 			jsonResult.put("msg", "error");
-			StringUtilC.restartService(); //重置链接 20240113
+			StringUtilC.restartService(); // 重置链接 20240113
 		}
-		//如果系统进行了重连，则进行服务重启,再次请求负载均衡到其他机器 chensss 20240113
-		//如果系统进行了重连，则进行服务重启,再次请求负载均衡到其他机器 chensss 20240113
-		if( Constant.virtuosoRetryConn) {
-			jsonResult.put("serverCtrl",StringUtilC.restartService() );
+		// 如果系统进行了重连，则进行服务重启,再次请求负载均衡到其他机器 chensss 20240113
+		// 如果系统进行了重连，则进行服务重启,再次请求负载均衡到其他机器 chensss 20240113
+		if (Constant.virtuosoRetryConn) {
+			jsonResult.put("serverCtrl", StringUtilC.restartService());
 		}
 		jsonResult.put("server", RequestFilter.threadLocalRequest.get().getLocalAddr());
 		return JSONObject.fromObject(jsonResult);
@@ -374,21 +372,22 @@ public class ApiWorkController extends BaseController {
 
 	@ResponseBody
 	@RequestMapping(value = "/getDetailByWorkUri", method = RequestMethod.GET)
-	public JSONObject getDetailByWorkUri_redis(@Valid String uri, Integer uid, HttpServletRequest request) throws Exception {
+	public JSONObject getDetailByWorkUri_redis(@Valid String uri, Integer uid, String referer,
+			HttpServletRequest request) throws Exception {
 		jsonResult = new HashMap<>();
-		Constant.virtuosoRetryConn=false;
+		Constant.virtuosoRetryConn = false;
 		try {
 			// 1分钟30次访问限制
-			if (!redisUtil.ifLimitVisit("api_workGetDetailByWorkUri",redis_maxVistCount, redis_timeOut)) {
+			if (!redisUtil.ifLimitVisit("api_workGetDetailByWorkUri", redis_maxVistCount, redis_timeOut)) {
 				jsonResult.put("result", "-1");// 数据来源索引标记
 				jsonResult.put("code", "43003");// 数据来源索引标记
 				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。");// 数据来源索引标记
 				return JSONObject.fromObject(jsonResult);
 			}
-			if(uid == null){
+			if (uid == null) {
 				uid = UserUtil.getUserId(request);
 			}
-					String redisWorkKey = RedisUtils.key_work.concat(uri);
+			String redisWorkKey = RedisUtils.key_work.concat(uri);
 			Map _mapTemp = null;
 
 			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
@@ -411,11 +410,27 @@ public class ApiWorkController extends BaseController {
 					// jsonResult.put("indexResult", "create index:"+ indexResult);
 
 				}
-				
-			}
 
+			}
+			if (_mapTemp == null) {
+				_mapTemp = new HashMap();
+				_mapTemp.put("uri", uri);
+				_mapTemp.put("msg", "无此数据。");
+			}
+			// 新增判断逻辑，如果不是编目系统进入，则9状态家谱禁止查看
+			else { // 如果有数据，则继续处理后续业务
+					// 权限处理
+				if (_mapTemp.containsKey("accessLevelUC")) {
+					String rdfaccessLevelUC = String.valueOf(_mapTemp.getOrDefault("accessLevelUC", ""));
+					if ("9".equals(rdfaccessLevelUC) && !"systembm".equals(referer)) {
+						_mapTemp = new HashMap();
+						_mapTemp.put("uri", uri);
+						_mapTemp.put("msg", "无此数据或无权限查看。");
+					}
+				}
+			}
 			// 是否已收藏
-			if (!StringUtilC.isEmpty(uid)) {
+			if (!StringUtilC.isEmpty(uid) && _mapTemp != null && _mapTemp.size() > 0) {
 				ApiWorkFavoriteDto fdto = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, uri);
 				if (fdto != null && !StringUtilC.isEmpty(fdto.getId()) && _mapTemp != null) {
 					_mapTemp.put("favoriteId", fdto.getId());
@@ -425,13 +440,8 @@ public class ApiWorkController extends BaseController {
 				// 已查看数量
 				_mapTemp.put("viewCount", apiWorkViewsCountService.getInfoByWorkUri(uri).getViewCount());
 			}
-			//处理时光的相关数据
-            StringUtilC.ProcessShiGuangMap(_mapTemp);
-            if(_mapTemp==null) {
-            	_mapTemp = new HashMap();
-            	_mapTemp.put("uri", uri);
-				_mapTemp.put("msg", "无此数据。");
-    		}
+			// 处理时光的相关数据
+			StringUtilC.ProcessShiGuangMap(_mapTemp);
 			jsonResult.put("data", _mapTemp);
 		} catch (Exception e) {
 			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
@@ -439,17 +449,18 @@ public class ApiWorkController extends BaseController {
 			jsonResult.put("msgType", "Exception");
 //			StringUtilC.restartService(); 
 		}
-		//如果系统进行了重连，则进行服务重启,再次请求负载均衡到其他机器 chensss 20250113
-		if( Constant.virtuosoRetryConn) {
-			jsonResult.put("serverCtrl",StringUtilC.restartService() );
+		// 如果系统进行了重连，则进行服务重启,再次请求负载均衡到其他机器 chensss 20250113
+		if (Constant.virtuosoRetryConn) {
+			jsonResult.put("serverCtrl", StringUtilC.restartService());
 		}
 		String ip = RequestFilter.threadLocalRequest.get().getLocalAddr();
-		jsonResult.put("checkinfo", ip.substring(ip.lastIndexOf(".")+1));
+		jsonResult.put("checkinfo", ip.substring(ip.lastIndexOf(".") + 1));
 		return JSONObject.fromObject(jsonResult);
 	}
 
 	/**
 	 * 无限流接口 chenss 20250225 家谱编目系统使用
+	 * 
 	 * @param uri
 	 * @param request
 	 * @return
@@ -457,11 +468,11 @@ public class ApiWorkController extends BaseController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/getDetailByWorkUriNoLimit", method = RequestMethod.GET)
-	public JSONObject getDetailByWorkUriNoLimit(@Valid String uri,  HttpServletRequest request) throws Exception {
+	public JSONObject getDetailByWorkUriNoLimit(@Valid String uri, HttpServletRequest request) throws Exception {
 		jsonResult = new HashMap<>();
-		Constant.virtuosoRetryConn=false;
+		Constant.virtuosoRetryConn = false;
 		try {
-					String redisWorkKey = RedisUtils.key_work.concat(uri);
+			String redisWorkKey = RedisUtils.key_work.concat(uri);
 			Map _mapTemp = null;
 
 			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
@@ -478,29 +489,30 @@ public class ApiWorkController extends BaseController {
 					redisUtil.set(redisWorkKey, RedisUtils.serialize(_mapTemp));
 
 				}
-				
+
 			}
-			//处理时光的相关数据
-            StringUtilC.ProcessShiGuangMap(_mapTemp);
-            if(_mapTemp==null) {
-            	_mapTemp = new HashMap();
-            	_mapTemp.put("uri", uri);
+			// 处理时光的相关数据
+			StringUtilC.ProcessShiGuangMap(_mapTemp);
+			if (_mapTemp == null) {
+				_mapTemp = new HashMap();
+				_mapTemp.put("uri", uri);
 				_mapTemp.put("msg", "无此数据。");
-    		}
+			}
 			jsonResult.put("data", _mapTemp);
 		} catch (Exception e) {
 			logger.info(this.getClass().getName() + "错误：" + DateUtilC.getNowDateTime() + "----" + e);
 			jsonResult.put("msg", "error");
 			jsonResult.put("msgType", "Exception");
 		}
-		//如果系统进行了重连，则进行服务重启,再次请求负载均衡到其他机器 chensss 20240113
-		if( Constant.virtuosoRetryConn) {
-			jsonResult.put("serverCtrl",StringUtilC.restartService() );
+		// 如果系统进行了重连，则进行服务重启,再次请求负载均衡到其他机器 chensss 20240113
+		if (Constant.virtuosoRetryConn) {
+			jsonResult.put("serverCtrl", StringUtilC.restartService());
 		}
 		String ip = RequestFilter.threadLocalRequest.get().getLocalAddr();
-		jsonResult.put("checkinfo", ip.substring(ip.lastIndexOf(".")+1));
+		jsonResult.put("checkinfo", ip.substring(ip.lastIndexOf(".") + 1));
 		return JSONObject.fromObject(jsonResult);
 	}
+
 	/**
 	 * 根据家谱uri获取work-instance-item信息chenss20191205
 	 * 
@@ -538,7 +550,7 @@ public class ApiWorkController extends BaseController {
 	@RequestMapping(value = "/delRedis", method = RequestMethod.GET)
 	public String delRedis(@Valid String uri) {
 		Map<String, Object> jsonResult = new HashMap<>();
-		Constant.virtuosoRetryConn=false;
+		Constant.virtuosoRetryConn = false;
 		try {
 			String redisWorkKey = RedisUtils.key_work.concat(uri);
 			String redisWorkKeyBm = RedisUtils.key_work_bm.concat(uri);
@@ -585,9 +597,9 @@ public class ApiWorkController extends BaseController {
 				jsonResult.put("msg_redisAdd", "索引添加失败，元数据获取异常。");
 				return StringUtil.getString(JSONObject.fromObject(jsonResult));
 			}
-			//如果系统进行了重连，则进行服务重启,再次请求负载均衡到其他机器 chensss 20240113
-			if( Constant.virtuosoRetryConn) {
-				jsonResult.put("serverCtrl",StringUtilC.restartService() );
+			// 如果系统进行了重连，则进行服务重启,再次请求负载均衡到其他机器 chensss 20240113
+			if (Constant.virtuosoRetryConn) {
+				jsonResult.put("serverCtrl", StringUtilC.restartService());
 			}
 			jsonResult.put("server", RequestFilter.threadLocalRequest.get().getLocalAddr());
 			return StringUtil.getString(JSONObject.fromObject(jsonResult));

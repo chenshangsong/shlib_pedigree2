@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.github.houbb.heaven.util.lang.StringUtil;
+
 import cn.sh.library.pedigree.base.Constant;
 import cn.sh.library.pedigree.common.FWConstants;
 import cn.sh.library.pedigree.common.JSonUtils;
@@ -23,6 +25,7 @@ import cn.sh.library.pedigree.controller.BaseController;
 import cn.sh.library.pedigree.sysManager.model.UserInfoModel;
 import cn.sh.library.pedigree.utils.DateUtilC;
 import cn.sh.library.pedigree.utils.RedisUtils;
+import cn.sh.library.pedigree.utils.SparqlEndpointUpdate;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import cn.sh.library.pedigree.webApi.services.ApiJpUpdateService;
 
@@ -79,11 +82,19 @@ public class ApiJpUpdateController extends BaseController {
 		UserInfoModel _user = (UserInfoModel) (session.getAttribute("userSession"));
 		try {
 			String workUri = jsonObject.getString("workUri");
+			String accFlag = StringUtilC.getString(jsonObject.getOrDefault("workAccFlag", null));
 			String redisWorkKey = RedisUtils.key_work.concat(workUri);
 			apiJpUpdateService.updateJpWorkAccFlag(jsonObject, _user);
 			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
 				redisUtil.remove(redisWorkKey);
 			}
+			//如果是作废，或者关闭，则10.1.31.192、172.29.45.107、172.29.45.108 竞赛服务同时关闭相关数据：20250512&& (accFlag == "9" || accFlag == "2")
+			if (StringUtil.isNotEmpty(accFlag) ) {
+				SparqlEndpointUpdate.closeWork(workUri);
+			} else { //如果标记是空
+				SparqlEndpointUpdate.openWork(workUri);
+			}
+
 			result.put("result", FWConstants.result_success);
 			result.put("data", "修改成功！");
 			result.put("workUri", jsonObject.getString("workUri"));
@@ -122,14 +133,13 @@ public class ApiJpUpdateController extends BaseController {
 		}
 		return JSonUtils.toJSon(result);
 	}
-	
+
 	/**
-	 * 家谱新增删除封面属性API chenss 202400812
-	 * {
-    "graph":"http://gen.library.sh.cn/graph/work",
-    "s":"http://data.library.sh.cn/jp/resource/work/04rlz3mk133p0al2",
-    "p":"shl:coverImage"
-}
+	 * 家谱新增删除封面属性API chenss 202400812 {
+	 * "graph":"http://gen.library.sh.cn/graph/work",
+	 * "s":"http://data.library.sh.cn/jp/resource/work/04rlz3mk133p0al2",
+	 * "p":"shl:coverImage" }
+	 * 
 	 * @param model
 	 * @return
 	 */
@@ -142,7 +152,7 @@ public class ApiJpUpdateController extends BaseController {
 			String s = jsonObject.getString("s");
 			String p = jsonObject.getString("p");
 			String graph = jsonObject.getString("graph");
-			apiJpUpdateService.deleteTriplesBySp(s, p,graph);
+			apiJpUpdateService.deleteTriplesBySp(s, p, graph);
 			String redisWorkKey = RedisUtils.key_work.concat(s);
 			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则删除缓存
 				redisUtil.remove(redisWorkKey);
@@ -155,6 +165,7 @@ public class ApiJpUpdateController extends BaseController {
 		}
 		return JSonUtils.toJSon(result);
 	}
+
 	/**
 	 * 新增家谱
 	 * 
@@ -196,7 +207,7 @@ public class ApiJpUpdateController extends BaseController {
 			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
 				redisUtil.remove(redisWorkKey);
 			}
-			System.out.println("新增成功：workUri:"+workUri);
+			System.out.println("新增成功：workUri:" + workUri);
 			result.put("result", FWConstants.result_success);
 			result.put("workUri", workUri);
 			result.put("instanceUri", instanceUri);
@@ -241,7 +252,7 @@ public class ApiJpUpdateController extends BaseController {
 //		}
 //		return JSonUtils.toJSon(result);
 //	}
-	
+
 	/**
 	 * 删除家谱
 	 * 

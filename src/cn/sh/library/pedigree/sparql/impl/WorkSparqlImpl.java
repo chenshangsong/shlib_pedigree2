@@ -519,7 +519,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 
 	public Map getWorkInfos(String work_uri) {
 		String query = Namespace.getNsPrefixString()
-				+ "SELECT ?dtitle ?title "
+				+ "SELECT ?accessLevelUC ?dtitle ?title "
 				+ "(GROUP_CONCAT(DISTINCT ?tv; separator=';') AS ?subtitle) "
 				+ "(GROUP_CONCAT(DISTINCT ?creator; separator=';') AS ?creator) ?note (GROUP_CONCAT(DISTINCT ?label; separator=';') AS ?label) "
 				+ "WHERE{"
@@ -538,6 +538,9 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 				+ "       FILTER (lang(?title)='cht') "
 				+ "   }}"
 				+ "}"
+				+ "OPTIONAL { <"
+				+ work_uri
+				+ "> shl:accessLevelUC ?accessLevelUC} "
 				+ "OPTIONAL { <"
 				+ work_uri
 				+ "> shl:description ?note . } "
@@ -571,10 +574,10 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 				+ "http://gen.library.sh.cn/graph/baseinfo"
 				+ "> WHERE {"
 				+ "       ?th a shl:TitleOfAncestralTemple ; bf:label ?label . "
-				+ "   FILTER (lang(?label)='cht')" + "   }}" + "}" + "}";
+				+ "   FILTER (lang(?label)='cht')" + "   }}" + "} .FILTER(!BOUND(?accessLevelUC) || str(?accessLevelUC) != '9')}";
 
 		List list = SparqlExecution.vQuery(this.graph, query, new String[] {
-				"dtitle", "title", "subtitle", "creator", "note", "label" });
+				"dtitle", "accessLevelUC","title", "subtitle", "creator", "note", "label" });
 		if (CollectionUtils.isNotEmpty(list)) {
 			return (Map) list.get(0);
 		}

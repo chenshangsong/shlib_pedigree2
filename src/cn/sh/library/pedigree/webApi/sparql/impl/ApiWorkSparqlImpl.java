@@ -99,7 +99,8 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 			sql = "WHERE {    ?work a bf:Work ; dc:title ?dtitle " + zxsjsql + clause + "}";
 		}
 		String countQuery = Namespace.getNsPrefixString() + "SELECT (COUNT(DISTINCT ?work) AS ?count) " + sql;
-		String workQuery = Namespace.getNsPrefixString() + "SELECT DISTINCT ?work " + sql + " OFFSET " + start + " LIMIT " + size;
+		String workQuery = Namespace.getNsPrefixString() + "SELECT DISTINCT ?work " + sql + " OFFSET " + start
+				+ " LIMIT " + size;
 		Long count = 0L;
 		List<Map<String, String>> _listCount = RDFUtils
 				.transformListMap(SparqlExecution.vQuery(this.graph, countQuery, new String[] { "count" }));
@@ -164,14 +165,16 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 	}
 
 	public ArrayList getTitles(String work_uri) {
-		String query = Namespace.getNsPrefixString() + "SELECT ?title ?type " + "WHERE {" + "   <" + work_uri + "> bf:workTitle ?t ."
-				+ "   ?t bf:titleValue ?title ; " + "      bf:titleType ?type . " + "FILTER (?type != '0')" + "}";
+		String query = Namespace.getNsPrefixString() + "SELECT ?title ?type " + "WHERE {" + "   <" + work_uri
+				+ "> bf:workTitle ?t ." + "   ?t bf:titleValue ?title ; " + "      bf:titleType ?type . "
+				+ "FILTER (?type != '0')" + "}";
 
 		return SparqlExecution.vQuery(this.graph, query, new String[] { "title", "type" });
 	}
 
 	public ArrayList getCreator(String work_uri) {
-		String query = Namespace.getNsPrefixString() + "SELECT ?name " + "WHERE {" + "   <" + work_uri + "> dc:creator ?name . " + "}";
+		String query = Namespace.getNsPrefixString() + "SELECT ?name " + "WHERE {" + "   <" + work_uri
+				+ "> dc:creator ?name . " + "}";
 
 		return SparqlExecution.vQuery(this.graph, query, new String[] { "name" });
 	}
@@ -403,9 +406,9 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 	}
 
 	public ArrayList getWorkPlaces(String work_uri) {
-		String query = Namespace.getNsPrefixString() + "SELECT ?place ?label " + "WHERE {" + "   <" + work_uri + "> bf:place ?place . "
-				+ "   {SELECT ?place ?label FROM <" + "http://gen.library.sh.cn/graph/place" + "> WHERE {"
-				+ "       ?place a shl:Place; bf:label ?label ." + "   }}" + "}";
+		String query = Namespace.getNsPrefixString() + "SELECT ?place ?label " + "WHERE {" + "   <" + work_uri
+				+ "> bf:place ?place . " + "   {SELECT ?place ?label FROM <" + "http://gen.library.sh.cn/graph/place"
+				+ "> WHERE {" + "       ?place a shl:Place; bf:label ?label ." + "   }}" + "}";
 
 		return SparqlExecution.vQuery(this.graph, query, new String[] { "place", "label" });
 	}
@@ -418,8 +421,8 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 			String str = "";
 			String str1 = "";
 
-			String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri FROM <" + "http://gen.library.sh.cn/graph/person"
-					+ "> " + "WHERE {" + "   ?uri a shl:Person .";
+			String query = Namespace.getNsPrefixString() + "SELECT DISTINCT ?uri FROM <"
+					+ "http://gen.library.sh.cn/graph/person" + "> " + "WHERE {" + "   ?uri a shl:Person .";
 
 			int num = 0;
 			for (String ns : this.appConfig.getPersonSameAs()) {
@@ -463,8 +466,8 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 				+ "(GROUP_CONCAT(DISTINCT ?note;separator=';') AS ?note)  ?roles FROM <"
 				+ "http://gen.library.sh.cn/graph/work" + "> " + "WHERE{" + "   ?work a bf:Work; dc:title ?dtitle . "
 				+ "   FILTER (lang(?dtitle) = 'chs')" + "   OPTIONAL {?work shl:description ?note .} "
-				+ "OPTIONAL {?work bf:title ?ts . " + "   {SELECT ?ts ?title FROM <"
-				+ "http://gen.library.sh.cn/graph/title" + "> WHERE {"
+				+ "   OPTIONAL {?work shl:accessLevelUC ?accessLevelUC .} " + "OPTIONAL {?work bf:title ?ts . "
+				+ "   {SELECT ?ts ?title FROM <" + "http://gen.library.sh.cn/graph/title" + "> WHERE {"
 				+ "       ?ts a bf:WorkTitle; bf:label ?title . FILTER (lang(?title)='chs')" + "   }}" + "}"
 				+ "OPTIONAL {?work bf:title ?sts . " + "   {SELECT ?sts ?t FROM <"
 				+ "http://gen.library.sh.cn/graph/title" + "> WHERE {"
@@ -477,7 +480,8 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 				+ "http://gen.library.sh.cn/graph/person" + "> WHERE{" + "       <" + person_uri
 				+ "> shl:relatedWork ?work . " + "   OPTIONAL {<" + person_uri + "> shl:roleOfFamily ?r . "
 				+ "   {SELECT ?r ?role FROM <" + "http://gen.library.sh.cn/graph/baseinfo" + "> WHERE {"
-				+ "       ?r bf:label ?role . " + "   FILTER (lang(?role)='chs')" + "   }}" + "}" + "   }}" + "}";
+				+ "       ?r bf:label ?role . " + "   FILTER (lang(?role)='chs')" + "   }}" + "}" + "   }}"
+				+ ".FILTER(!BOUND(?accessLevelUC) || str(?accessLevelUC) != '9')}";
 
 		return SparqlExecution.vQuery(this.graph, query, new String[] { "work", "creator", "dtitle", "title",
 				"subtitles", "note", "roles", "doi", "accessLevel", "hasimg" });
@@ -593,7 +597,8 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 			// ".FILTER(?access='0'||?access='1')";chenss20180424
 			fulllinkCalse = ".FILTER (?access!='9')";
 		}
-		String query = Namespace.getNsPrefixString() + "SELECT ?work " + "(GROUP_CONCAT(DISTINCT  ?access;separator=';') AS  ?access)"
+		String query = Namespace.getNsPrefixString() + "SELECT ?work "
+				+ "(GROUP_CONCAT(DISTINCT  ?access;separator=';') AS  ?access)"
 				+ "(GROUP_CONCAT(DISTINCT  ?doi;separator=';') AS  ?doi)"
 				+ "(GROUP_CONCAT(DISTINCT  ?hasimg;separator=';') AS  ?hasimg)"
 				+ " ?dtitle ?title (GROUP_CONCAT(DISTINCT ?t;separator=';') AS ?subtitles)"
@@ -670,23 +675,23 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 	public OutputStream getWorkAllInfos(String work_uri) {
 		Model m = ModelFactory.createDefaultModel();
 
-		String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "WHERE {{" + "   ?s ?p ?o ." + "   FILTER (STR(?s) = '"
-				+ work_uri + "')" + "} UNION {" + "   <" + work_uri + "> bf:workTitle ?s ." + "   ?s ?p ?o ." + "}"
-				+ "}";
+		String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "WHERE {{" + "   ?s ?p ?o ."
+				+ "   FILTER (STR(?s) = '" + work_uri + "')" + "} UNION {" + "   <" + work_uri + "> bf:workTitle ?s ."
+				+ "   ?s ?p ?o ." + "}" + "}";
 
 		m.add(SparqlExecution.construct(this.graph, query));
 
-		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <" + "http://gen.library.sh.cn/graph/annotation" + "> "
-				+ "WHERE {" + "   ?s ?p ?o ." + "{SELECT DISTINCT ?s WHERE {" + "   <" + work_uri
-				+ "> bf:hasAnnotation ?s ." + "}}" + "}";
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <"
+				+ "http://gen.library.sh.cn/graph/annotation" + "> " + "WHERE {" + "   ?s ?p ?o ."
+				+ "{SELECT DISTINCT ?s WHERE {" + "   <" + work_uri + "> bf:hasAnnotation ?s ." + "}}" + "}";
 
 		m.add(SparqlExecution.construct(this.graph, query));
 
-		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <" + "http://gen.library.sh.cn/graph/instance" + "> "
-				+ "WHERE {{" + "   ?s ?p ?o ." + "   {SELECT DISTINCT ?s WHERE {" + "       <" + work_uri
-				+ "> bf:hasInstance ?s ." + "   }}" + "} UNION {" + "   ?s ?p ?o ;" + "      shl:holdingFor ?in ."
-				+ "   {SELECT DISTINCT ?in WHERE {" + "       <" + work_uri + "> bf:hasInstance ?s . " + "   }}" + "}"
-				+ "}";
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <"
+				+ "http://gen.library.sh.cn/graph/instance" + "> " + "WHERE {{" + "   ?s ?p ?o ."
+				+ "   {SELECT DISTINCT ?s WHERE {" + "       <" + work_uri + "> bf:hasInstance ?s ." + "   }}"
+				+ "} UNION {" + "   ?s ?p ?o ;" + "      shl:holdingFor ?in ." + "   {SELECT DISTINCT ?in WHERE {"
+				+ "       <" + work_uri + "> bf:hasInstance ?s . " + "   }}" + "}" + "}";
 
 		m.add(SparqlExecution.construct(this.graph, query));
 
@@ -698,20 +703,22 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 
 	public OutputStream getResource(String work_uri) {
 		Model temp_m = ModelFactory.createDefaultModel();
-		String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <" + "http://gen.library.sh.cn/graph/work" + "> "
-				+ "WHERE {" + "   ?s ?p ?o . " + "   FILTER (?s = <" + work_uri + ">)" + "}";
+		String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <"
+				+ "http://gen.library.sh.cn/graph/work" + "> " + "WHERE {" + "   ?s ?p ?o . " + "   FILTER (?s = <"
+				+ work_uri + ">)" + "}";
 
 		temp_m.add(SparqlExecution.construct(this.graph, query));
 
-		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o}" + "FROM <" + "http://gen.library.sh.cn/graph/instance" + "> "
-				+ "WHERE {" + "   ?s ?p ?o ; bf:instanceOf <" + work_uri + "> ." + "}";
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o}" + "FROM <"
+				+ "http://gen.library.sh.cn/graph/instance" + "> " + "WHERE {" + "   ?s ?p ?o ; bf:instanceOf <"
+				+ work_uri + "> ." + "}";
 
 		temp_m.add(SparqlExecution.construct(this.graph, query));
 
-		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o}" + "FROM <" + "http://gen.library.sh.cn/graph/item" + "> "
-				+ "WHERE {" + "   ?s bf:itemOf ?ins ; ?p ?o ." + "   {SELECT ?ins FROM <"
-				+ "http://gen.library.sh.cn/graph/instance" + "> WHERE {" + "       ?ins bf:instanceOf <" + work_uri
-				+ "> ." + "   }}" + "}";
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o}" + "FROM <"
+				+ "http://gen.library.sh.cn/graph/item" + "> " + "WHERE {" + "   ?s bf:itemOf ?ins ; ?p ?o ."
+				+ "   {SELECT ?ins FROM <" + "http://gen.library.sh.cn/graph/instance" + "> WHERE {"
+				+ "       ?ins bf:instanceOf <" + work_uri + "> ." + "   }}" + "}";
 
 		temp_m.add(SparqlExecution.construct(this.graph, query));
 
@@ -726,8 +733,8 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 
 		String clause = ApiMergeSearchParts.workSearchClause(search);
 
-		String sql = Namespace.getNsPrefixString() + "SELECT DISTINCT ?work " + "WHERE { " + "   ?work a bf:Work ; dc:title ?dtitle."
-				+ clause + "} LIMIT 100";
+		String sql = Namespace.getNsPrefixString() + "SELECT DISTINCT ?work " + "WHERE { "
+				+ "   ?work a bf:Work ; dc:title ?dtitle." + clause + "} LIMIT 100";
 
 		ArrayList works = SparqlExecution.vQuery(this.graph, sql, new String[] { "work" });
 		for (int i = 0; i < works.size(); i++) {
@@ -744,20 +751,22 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 
 	private Model getWorkModel(String work_uri) {
 		Model temp_m = ModelFactory.createDefaultModel();
-		String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <" + "http://gen.library.sh.cn/graph/work" + "> "
-				+ "WHERE {" + "   ?s ?p ?o . " + "   FILTER (?s = <" + work_uri + ">)" + "}";
+		String query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o} " + "FROM <"
+				+ "http://gen.library.sh.cn/graph/work" + "> " + "WHERE {" + "   ?s ?p ?o . " + "   FILTER (?s = <"
+				+ work_uri + ">)" + "}";
 
 		temp_m.add(SparqlExecution.construct(this.graph, query));
 
-		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o}" + "FROM <" + "http://gen.library.sh.cn/graph/instance" + "> "
-				+ "WHERE {" + "   ?s ?p ?o ; bf:instanceOf <" + work_uri + "> ." + "}";
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o}" + "FROM <"
+				+ "http://gen.library.sh.cn/graph/instance" + "> " + "WHERE {" + "   ?s ?p ?o ; bf:instanceOf <"
+				+ work_uri + "> ." + "}";
 
 		temp_m.add(SparqlExecution.construct(this.graph, query));
 
-		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o}" + "FROM <" + "http://gen.library.sh.cn/graph/item" + "> "
-				+ "WHERE {" + "   ?s bf:itemOf ?ins ; ?p ?o ." + "   {SELECT ?ins FROM <"
-				+ "http://gen.library.sh.cn/graph/instance" + "> WHERE {" + "       ?ins bf:instanceOf <" + work_uri
-				+ "> ." + "   }}" + "}";
+		query = Namespace.getNsPrefixString() + "CONSTRUCT {?s ?p ?o}" + "FROM <"
+				+ "http://gen.library.sh.cn/graph/item" + "> " + "WHERE {" + "   ?s bf:itemOf ?ins ; ?p ?o ."
+				+ "   {SELECT ?ins FROM <" + "http://gen.library.sh.cn/graph/instance" + "> WHERE {"
+				+ "       ?ins bf:instanceOf <" + work_uri + "> ." + "   }}" + "}";
 
 		temp_m.add(SparqlExecution.construct(this.graph, query));
 
@@ -902,37 +911,6 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 			break;
 		}
 		String sql = "";
-		// if (!StringUtilC.isEmpty(bean.getFreeText())) {
-		// // 如果简单检索字段不为空，则进行简单检索
-		// if (!StringUtilC.isEmpty(bean.getFreeText())) {
-		// sql =
-		// "WHERE { { ?work a bf:Work ; dc:title ?dtitle. ?dtitle bif:contains '\""
-		// + bean.getFreeText()
-		// + "\"'"
-		// + "} UNION {"
-		// + " ?work bf:subject ?th . "
-		// + " {SELECT ?th FROM <"
-		// + "http://gen.library.sh.cn/graph/baseinfo"
-		// + "> WHERE { "
-		// + " ?th bf:label ?slabel . ?slabel bif:contains '\""
-		// + bean.getFreeText()
-		// + "\"'"
-		// + " }}"
-		// +
-		// " UNION {?work a bf:Work .{SELECT ?work FROM
-		// <http://gen.library.sh.cn/graph/person> WHERE { ?uri shl:relatedWork ?work ;
-		// bf:label ?clabel .?clabel bif:contains '\""
-		// + bean.getFreeText()
-		// + "\"'"
-		// + "}}}"
-		// + "}"
-		// + facetQueryString + "}";
-		// }
-		// } else {
-		// sql = "WHERE { ?work a bf:Work; dc:title ?dtitle"
-		// + facetQueryString + "." + clause + "}";
-		// }
-		// freeText 的条件转到ApiMergeSearchParts.workSearchClause
 		sql = "WHERE { ?work a bf:Work; dc:title ?dtitle" + facetQueryString + "." + clause + "}";
 		String queryLast = Namespace.getNsPrefixString() + "select " + facetColumns
 				+ " (count(distinct ?work) as ?count) from<http://gen.library.sh.cn/graph/work>"
@@ -947,8 +925,8 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 	public ArrayList getFreeResultList(String free_text, Integer maxCount) {
 		free_text = StringUtilC.StringFilter(free_text.trim());
 		String course = ". ?x bif:contains '\"" + free_text + "\"'";
-		String sql = Namespace.getNsPrefixString() + "SELECT ?x " + "WHERE  { {  ?work a bf:Work ; dc:title ?x" + course + " } "
-				+ "UNION {{SELECT  ?x FROM <http://gen.library.sh.cn/graph/baseinfo> " + "WHERE {[] bf:label ?x"
+		String sql = Namespace.getNsPrefixString() + "SELECT ?x " + "WHERE  { {  ?work a bf:Work ; dc:title ?x" + course
+				+ " } " + "UNION {{SELECT  ?x FROM <http://gen.library.sh.cn/graph/baseinfo> " + "WHERE {[] bf:label ?x"
 				+ course + "  }} }" + ".FILTER (lang(?x)='chs')" + "}" + "GROUP BY ?x " + "ORDER BY STRLEN(?x) (?x)"
 				+ "LIMIT " + maxCount;
 		ArrayList works = SparqlExecution.vQuery(this.graph, sql, new String[] { "x" });
@@ -996,22 +974,16 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 				+ " FROM <http://gen.library.sh.cn/graph/person>" + " FROM <http://gen.library.sh.cn/graph/baseinfo>"
 				+ " FROM <http://gen.library.sh.cn/graph/place> FROM <http://gen.library.sh.cn/graph/temporal>";
 
-		String strsql = "SELECT ?coverImage ?fnameLabel ?temporalUri ?temporalName ?editionUri ?categoryUri ?temporalInt ?temporal ?edition ?category ?extent ?ins ?work ?dtitle \r\n"
+		String strsql = "SELECT  ?coverImage ?fnameLabel ?temporalUri ?temporalName ?editionUri ?categoryUri ?temporalInt ?temporal ?edition ?category ?extent ?ins ?work ?dtitle \r\n"
 				+ "       (IF(STRLEN(str(?titlezheng))>0,?titlezheng,?dtitle) AS ?titlezheng)\r\n"
-				+ "       (GROUP_CONCAT(DISTINCT ?titlefu ; separator=';') AS ?titlefu ) \r\n"
-				+ "     ?note \r\n"
+				+ "       (GROUP_CONCAT(DISTINCT ?titlefu ; separator=';') AS ?titlefu ) \r\n" + "     ?note \r\n"
 				+ "       (GROUP_CONCAT(DISTINCT ?creator ; separator=';') AS ?creator) \r\n"
 				+ "       (GROUP_CONCAT(DISTINCT ?tanghao; separator=';') AS ?tanghao) \r\n"
-				+ "     ?placeUri ?place ?place_province ?place_city\r\n"
-				+strGraph
-				+ "WHERE {\r\n"
-				+ "?ins a bf:Instance;\r\n"
-				+ "        bf:instanceOf ?work.\r\n"
-				+ "  OPTIONAL {?work a bf:Work ;\r\n"
+				+ "     ?placeUri ?place ?place_province ?place_city\r\n" + strGraph + "WHERE {\r\n"
+				+ "?ins a bf:Instance;\r\n" + "        bf:instanceOf ?work.\r\n" + "  OPTIONAL {?work a bf:Work ;\r\n"
 				+ "                  dc:title ?dtitle FILTER (lang(?dtitle) = 'chs') }\r\n"
 				+ "  OPTIONAL {?work bf:identifiedBy ?identifiedBy}\r\n"
-				+ "  OPTIONAL {?work dc:subject ?fnameLabel}\r\n"
-				+ "  OPTIONAL {?work shl:coverImage ?coverImage}\r\n"
+				+ "  OPTIONAL {?work dc:subject ?fnameLabel}\r\n" + "  OPTIONAL {?work shl:coverImage ?coverImage}\r\n"
 				+ "  OPTIONAL {?work bf:title ?titlezhengUri .{ ?titlezhengUri  a bf:WorkTitle;\r\n"
 				+ "                  bf:label ?titlezheng FILTER (lang(?titlezheng)='chs') }}\r\n"
 				+ "  OPTIONAL {?work bf:title ?titlefuUri .{?titlefuUri \r\n"
@@ -1019,41 +991,35 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 				+ "                  bf:label ?titlefu FILTER (lang(?titlefu)='chs') }}\r\n"
 				+ "  OPTIONAL {?work shl:description ?note }\r\n"
 				+ "  OPTIONAL {?work dc:creator ?dccreator FILTER (lang(?dccreator) = 'chs')}\r\n"
-				+ "  OPTIONAL {?work bf:creator ?creatorUri .{?creatorUri \r\n"
-				+ "                  a shl:Person;\r\n"
+				+ "  OPTIONAL {?work bf:creator ?creatorUri .{?creatorUri \r\n" + "                  a shl:Person;\r\n"
 				+ "                  bf:label ?bfcreator FILTER (lang(?bfcreator) = 'chs') }}\r\n"
 				+ "  OPTIONAL {?work bf:subject ?thUri .{?thUri \r\n"
 				+ "                  a shl:TitleOfAncestralTemple ;\r\n"
 				+ "                  bf:label ?tanghao FILTER (lang(?tanghao)='chs') }}\r\n"
-				+ "  OPTIONAL {?work shl:place ?placeUri.{?placeUri\r\n"
-				+ "                  a shl:Place.\r\n"
+				+ "  OPTIONAL {?work shl:place ?placeUri.{?placeUri\r\n" + "                  a shl:Place.\r\n"
 				+ "                  OPTIONAL {?placeUri shl:city ?place_city}\r\n"
 				+ "                  OPTIONAL {?placeUri shl:province ?place_province}\r\n"
-				+ "                  OPTIONAL {?placeUri bf:label ?place FILTER (lang(?place)='chs')}\r\n"
-				+ "}\r\n"
-				+ "  }.\r\n"
-				+ "  FILTER(?work = <" + workUri + ">)\r\n"
+				+ "                  OPTIONAL {?placeUri bf:label ?place FILTER (lang(?place)='chs')}\r\n" + "}\r\n"
+				+ "  }.\r\n" + "  FILTER(?work = <" + workUri + ">)\r\n"
 				+ "  OPTIONAL {?ins shl:temporalValue ?temporal FILTER (datatype(?temporal)!= xsd:integer) }\r\n"
 				+ "  OPTIONAL {?ins shl:temporalValue ?temporalInt FILTER (datatype(?temporalInt) = xsd:integer) }\r\n"
 				+ "  OPTIONAL {?ins shl:temporal ?temporalUri .{?temporalUri\r\n"
-				+ "                  a shl:Temporal;\r\n"
-				+ "                  shl:dynasty ?temporalName }}\r\n"
-				+ "  OPTIONAL {?ins bf:edition ?editionUri .{?editionUri\r\n"
-				+ "                  a bf:Category;\r\n"
+				+ "                  a shl:Temporal;\r\n" + "                  shl:dynasty ?temporalName }}\r\n"
+				+ "  OPTIONAL {?ins bf:edition ?editionUri .{?editionUri\r\n" + "                  a bf:Category;\r\n"
 				+ "                  bf:categoryType 'edition';\r\n"
 				+ "                  bf:label ?edition FILTER (lang(?edition)='chs') }}\r\n"
 				+ "  OPTIONAL {?ins bf:category ?categoryUri .{?categoryUri\r\n"
-				+ "                  a bf:Category;\r\n"
-				+ "                  bf:categoryType 'category';\r\n"
+				+ "                  a bf:Category;\r\n" + "                  bf:categoryType 'category';\r\n"
 				+ "                  bf:label ?category FILTER (lang(?category)='chs') }}\r\n"
 				+ "  OPTIONAL {?ins bf:extent ?extent }\r\n"
-				+ "  BIND(IF(STRLEN(str(?dccreator))>0,?dccreator,?bfcreator) AS ?creator)\r\n"
-				+ "}";
+				+ "  BIND(IF(STRLEN(str(?dccreator))>0,?dccreator,?bfcreator) AS ?creator)}";
+//				+ ".FILTER(!BOUND(?accessLevelUC) || str(?accessLevelUC) != '9')}";
 		// 获取work,instance单条信息
 		List _list = SparqlExecution.vQuery(this.graph, strsql,
-				new String[] {"coverImage",  "fnameLabel", "temporal", "edition", "category", "extent", "ins", "work",
-						"dtitle", "titlezheng", "titlefu", "note", "creator", "tanghao", "placeUri", "place",
-						"editionUri", "categoryUri", "temporalInt", "temporalUri", "temporalName" , "place_province","place_city"});
+				new String[] { "coverImage", "accessLevelUC", "fnameLabel", "temporal", "edition", "category", "extent",
+						"ins", "work", "dtitle", "titlezheng", "titlefu", "note", "creator", "tanghao", "placeUri",
+						"place", "editionUri", "categoryUri", "temporalInt", "temporalUri", "temporalName",
+						"place_province", "place_city" });
 		if (_list != null && _list.size() > 0) {
 			// 查询item列表
 			String itemSql = "select ?item ?ins ?work ?copyDescription ?extent ?doi ?accessLevel ?shelfMark ?hasFullImg ?carrierUri ?carrierLabel ?description ?orgUri (IF(STRLEN(str(?orgShort))>0,?orgShort,?description) AS ?orgShort)  (IF(STRLEN(str(?orgFull))>0,?orgFull,?description) AS ?orgFull) ?address "
@@ -1071,7 +1037,8 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 					+ "} ORDER BY desc (?orgUri)";
 			List _itemList = RDFUtils.transformListMap(SparqlExecution.vQuery(this.graph, itemSql,
 					new String[] { "item", "ins", "work", "doi", "accessLevel", "shelfMark", "hasFullImg",
-							"description", "copyDescription",  "orgUri", "orgShort", "orgFull", "address", "extent", "carrierUri", "carrierLabel" }));
+							"description", "copyDescription", "orgUri", "orgShort", "orgFull", "address", "extent",
+							"carrierUri", "carrierLabel" }));
 			Map _map = RDFUtils.transform((Map) _list.get(0));
 			// 将itemList放入map中
 			_map.put("itemList", _itemList);
@@ -1098,7 +1065,7 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 						+ "}" + ".filter(?work=<" + workUri + ">) } ORDER BY ?serialNo";
 				List creatorList = RDFUtils
 						.transformListMap(SparqlExecution.vQuery(this.graph, creatorSql, new String[] { "creatorUri",
-								"creatorName", "serialNo","creatorRoleUri", "creatorRoleName", "time", "timeUri" }));
+								"creatorName", "serialNo", "creatorRoleUri", "creatorRoleName", "time", "timeUri" }));
 				// 将责任者、其他责任者列表放入map中：key为：createrList、contributorList
 				_map.put(createrAndContribution[i].split(":")[1] + "List", creatorList);
 			}
@@ -1114,25 +1081,37 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 			_map.put("tanghaoList", tanghaoSqlList);
 
 			// 新增堂号字段抽取：chenss 2020-04-27 end
-			//新增谱籍地抽取 begin 20201202
-			List placeList = RDFUtils.transformListMap(placeSparql.getStandPlace(StringUtilC.getString(_map.get("placeUri"))));
-			_map.put("placeMap",new HashMap());
-			if(placeList!=null && placeList.size()>0) {
+
+			// 新增谱籍地抽取 begin 20201202
+			List placeList = RDFUtils
+					.transformListMap(placeSparql.getStandPlace(StringUtilC.getString(_map.get("placeUri"))));
+			_map.put("placeMap", new HashMap());
+			if (placeList != null && placeList.size() > 0) {
 				_map.put("placeMap", placeList.get(0));
 			}
-			//新增谱籍地抽取end 20201202
+			// 新增谱籍地抽取end 20201202
 			// 新增 联合编目系统卷数字段抽取：chenss 2020-06-16 begin
+			// 合并开放标记字段和卷数字段的SPARQL查询：chenss 2025-05-09 begin
+			String combinedSql = "SELECT ?accessLevelUC ?volumes " + strGraph + " WHERE { " + "   ?work a bf:Work . "
+					+ "   OPTIONAL { ?work shl:accessLevelUC ?accessLevelUC . } " + "   OPTIONAL { "
+					+ "     ?work bf:title ?titleUri . " + "     ?titleUri a bf:WorkTitle; shl:volumes ?volumes . "
+					+ "     FILTER (lang(?volumes)='chs') " + "   } " + "   FILTER(?work=<" + workUri + ">) " + "}";
+            String accessLevelUC = "";String volumes= "";
+			List<Map<String, Object>> resultList = RDFUtils.transformListMap(
+					SparqlExecution.vQuery(this.graph, combinedSql, new String[] { "accessLevelUC", "volumes" }));
 
-			String volumesSql = "select ?volumes " + strGraph
-					+ " where {?work a bf:Work; bf:title ?titleUri.{?titleUri a bf:WorkTitle;shl:volumes ?volumes . FILTER (lang(?volumes)='chs')  }"
-					+ ".filter(?work=<" + workUri + ">)}";
-			List volumesList = RDFUtils
-					.transformListMap(SparqlExecution.vQuery(this.graph, volumesSql, new String[] { "volumes" }));
-			String volumes = "";
-			if (volumesList != null && volumesList.size() > 0) {
-				volumes = ((Map) volumesList.get(0)).get("volumes").toString();
+			if (resultList != null && !resultList.isEmpty()) {
+				Map<String, Object> resultMap = resultList.get(0);
+				// 处理accessLevelUC字段
+				if (resultMap.containsKey("accessLevelUC")) {
+					accessLevelUC= StringUtilC.getString(resultMap.get("accessLevelUC"));
+				}
+				// 处理volumes字段
+				if (resultMap.containsKey("volumes")) {
+					volumes =StringUtilC.getString(resultMap.get("volumes"));
+				}
 			}
-			// 将卷数字段放入map中
+			_map.put("accessLevelUC",accessLevelUC);
 			_map.put("title_volumes", volumes);
 			// 新增 出版发行者、版本说明项、附注项 字段抽取：chenss 2020-06-16 begin
 			String pub_banben_fuzhuSql = "select ?ins ?work ?publisher ?banbenUri ?ins_banbenx ?fuzhuUri ?ins_fuzhux "
@@ -1158,14 +1137,15 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 
 	@Override
 	public Map getQxTjInfo(String fname) {
-		String sql = "select distinct ?family str(?fname) as ?fname count(distinct ?person) as ?personCount  count(distinct ?oriPlace) as ?oriPlaceCount  count(distinct ?locaPlace) as ?locaPlaceCount min(xsd:integer(?minyear)) as ?minYear  from  <http://gen.library.sh.cn/graph/migrationevent> from  <http://gen.library.sh.cn/graph/baseinfo>  where {?s a shl:MigrationEvent {?s foaf:familyName  ?family .{?family a shl:FamilyName; bf:label ?fname .filter (str(?fname)= '"+fname+"')}} optional{?s shl:person ?person} optional{?s shl:temporal ?tem{?tem a shl:Temporal ;shl:begin ?minyear .filter isBlank(?tem)}} optional{?s shl:originalLocality ?oriPlace} optional{?s  shl:locality ?locaPlace}  }"; 
+		String sql = "select distinct ?family str(?fname) as ?fname count(distinct ?person) as ?personCount  count(distinct ?oriPlace) as ?oriPlaceCount  count(distinct ?locaPlace) as ?locaPlaceCount min(xsd:integer(?minyear)) as ?minYear  from  <http://gen.library.sh.cn/graph/migrationevent> from  <http://gen.library.sh.cn/graph/baseinfo>  where {?s a shl:MigrationEvent {?s foaf:familyName  ?family .{?family a shl:FamilyName; bf:label ?fname .filter (str(?fname)= '"
+				+ fname
+				+ "')}} optional{?s shl:person ?person} optional{?s shl:temporal ?tem{?tem a shl:Temporal ;shl:begin ?minyear .filter isBlank(?tem)}} optional{?s shl:originalLocality ?oriPlace} optional{?s  shl:locality ?locaPlace}  }";
 
-
-		List volumesList = RDFUtils
-				.transformListMap(SparqlExecution.vQuery(this.graph, sql, new String[] { "family","fname","personCount","oriPlaceCount" ,"locaPlaceCount","minYear"}));
+		List volumesList = RDFUtils.transformListMap(SparqlExecution.vQuery(this.graph, sql,
+				new String[] { "family", "fname", "personCount", "oriPlaceCount", "locaPlaceCount", "minYear" }));
 		String volumes = "";
 		if (volumesList != null && volumesList.size() > 0) {
-			return  ((Map) volumesList.get(0));
+			return ((Map) volumesList.get(0));
 		}
 		return null;
 	}
@@ -1173,40 +1153,40 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 	@Override
 	public Map getPlaceTjInfo(String fname) {
 		Map _map = new HashMap();
-		String sqlCount = "select count(distinct ?s) as ?workCount count(distinct ?prov) as ?provCount from <http://gen.library.sh.cn/graph/work> from <http://gen.library.sh.cn/graph/baseinfo> from <http://gen.library.sh.cn/graph/place> where {?s a bf:Work;shl:place ?place.{?place a shl:Place;shl:province ?prov}{?s bf:subject ?f.{?f a shl:FamilyName;bf:label '"+fname+"'@chs}}}"; 
-		String sqlProv = "select ?prov count(?s) as ?workCount from <http://gen.library.sh.cn/graph/work> from <http://gen.library.sh.cn/graph/baseinfo>  from <http://gen.library.sh.cn/graph/place> where {?s a bf:Work;bf:subject ?f.{?f a shl:FamilyName;bf:label '"+fname+"'@chs} {?s shl:place ?place.{?place a shl:Place;shl:province ?prov}} } group by ?prov order by desc (?workCount) limit 3"; 
-		List volumesList = RDFUtils
-				.transformListMap(SparqlExecution.vQuery(this.graph, sqlCount, new String[] { "workCount","provCount"}));
-		
+		String sqlCount = "select count(distinct ?s) as ?workCount count(distinct ?prov) as ?provCount from <http://gen.library.sh.cn/graph/work> from <http://gen.library.sh.cn/graph/baseinfo> from <http://gen.library.sh.cn/graph/place> where {?s a bf:Work;shl:place ?place.{?place a shl:Place;shl:province ?prov}{?s bf:subject ?f.{?f a shl:FamilyName;bf:label '"
+				+ fname + "'@chs}}}";
+		String sqlProv = "select ?prov count(?s) as ?workCount from <http://gen.library.sh.cn/graph/work> from <http://gen.library.sh.cn/graph/baseinfo>  from <http://gen.library.sh.cn/graph/place> where {?s a bf:Work;bf:subject ?f.{?f a shl:FamilyName;bf:label '"
+				+ fname
+				+ "'@chs} {?s shl:place ?place.{?place a shl:Place;shl:province ?prov}} } group by ?prov order by desc (?workCount) limit 3";
+		List volumesList = RDFUtils.transformListMap(
+				SparqlExecution.vQuery(this.graph, sqlCount, new String[] { "workCount", "provCount" }));
+
 		if (volumesList != null && volumesList.size() > 0) {
 			_map = ((Map) volumesList.get(0));
 		}
 		List provList = RDFUtils
-				.transformListMap(SparqlExecution.vQuery(this.graph, sqlProv, new String[] { "prov","workCount"}));
+				.transformListMap(SparqlExecution.vQuery(this.graph, sqlProv, new String[] { "prov", "workCount" }));
 		_map.put("provList", provList);
 		_map.put("fname", fname);
 		return _map;
 	}
-	
+
 	@Override
 	public Integer getWorkCountByPlaceAndFname(List<String> place, String fnameUri) {
-		String fnameFilter="";
-		//姓氏URI
-		if(!StringUtil.isBlank(fnameUri)) {
-			fnameFilter = "bf:subject <"+fnameFilter+">;";
+		String fnameFilter = "";
+		// 姓氏URI
+		if (!StringUtil.isBlank(fnameUri)) {
+			fnameFilter = "bf:subject <" + fnameFilter + ">;";
 		}
-		String query ="select count(?s) as ?count from <http://gen.library.sh.cn/graph/work> where {?s a bf:Work;"
-				+fnameFilter
-				+ "shl:place ?place .values ?place {\r\n"
-				+StringUtils.join(place.toArray()," ")
-				+ "\r\n"
-				+ "}}";
-		
-		List<Map<String,String>> _list =  RDFUtils
-				.transformListMap(SparqlExecution.vQuery(this.graph, query, new String[] { "count"}));
-		if(_list!=null && _list.size()>0) {
+		String query = "select count(?s) as ?count from <http://gen.library.sh.cn/graph/work> where {?s a bf:Work;"
+				+ fnameFilter + "shl:place ?place .values ?place {\r\n" + StringUtils.join(place.toArray(), " ")
+				+ "\r\n" + "}}";
+
+		List<Map<String, String>> _list = RDFUtils
+				.transformListMap(SparqlExecution.vQuery(this.graph, query, new String[] { "count" }));
+		if (_list != null && _list.size() > 0) {
 			return Integer.valueOf(_list.get(0).get("count"));
-		 }
+		}
 		return 0;
 	}
 }

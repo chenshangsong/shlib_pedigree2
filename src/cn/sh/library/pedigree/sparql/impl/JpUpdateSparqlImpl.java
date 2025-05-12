@@ -24,6 +24,7 @@ import cn.sh.library.pedigree.common.SparqlExecution;
 import cn.sh.library.pedigree.dao.impl.BaseDaoImpl;
 import cn.sh.library.pedigree.sparql.JpUpdateSparql;
 import cn.sh.library.pedigree.sysManager.sysMnagerSparql.Namespace;
+import cn.sh.library.pedigree.utils.SparqlEndpointUpdate;
 import cn.sh.library.pedigree.utils.StringUtilC;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -963,7 +964,7 @@ blankNode = NodeFactory.createAnon();
 		Graph workGraph = getModel(Constant.GRAPH_WORK).getGraph();
 		// 更新 Work的停用标记
 		String workUri = jsonObject.getString("workUri");
-		String accFlag = jsonObject.getString("workAccFlag");
+		String accFlag = StringUtilC.getString(jsonObject.getOrDefault("workAccFlag",null));
 		List<Triple> triples = new ArrayList<Triple>();
 		// 将三元组添加到 work的graph下。
 		workGraph.getTransactionHandler().begin();
@@ -972,9 +973,16 @@ blankNode = NodeFactory.createAnon();
 		// accFlag 1:前台禁用。2，前台禁用+后台查重禁用。3：后台禁用
 		if (StringUtils.isNotBlank(accFlag)) {
 			triples.add(buildTriple(workUri, Namespace.SHL.getUri() + "accessLevelUC", accFlag));
+			GraphUtil.add(workGraph, triples);
 		}
-		GraphUtil.add(workGraph, triples);
 		workGraph.getTransactionHandler().commit();
+		//如果是作废，或者关闭，则10.1.31.192、172.29.45.107、172.29.45.108 竞赛服务同时关闭相关数据：20250512
+//		if (!StringUtilC.isEmpty(accFlag) && (accFlag == "9" || accFlag == "2")) {
+//			SparqlEndpointUpdate.closeWork(workUri);
+//		} else { //如果标记是空
+//			SparqlEndpointUpdate.openWork(workUri);
+//		}
+
 		System.out.println("5:更新Work访问标记成功。");
 
 	}
