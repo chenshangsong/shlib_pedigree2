@@ -36,8 +36,8 @@ import cn.sh.library.pedigree.webApi.sparql.ApiWorkSparqlNew;
 import cn.sh.library.pedigree.webApi.sparql.Namespace;
 import virtuoso.jena.driver.VirtGraph;
 
-@Repository
-@GraphDefine(name = "http://gen.library.sh.cn/graph/work11111")
+//@Repository 暂时没用 chenss 20250517
+//@GraphDefine(name = "http://gen.library.sh.cn/graph/work11111")
 public class ApiWorkSparqlImplNew extends BaseDaoImpl implements ApiWorkSparqlNew {
 
 //	@Resource

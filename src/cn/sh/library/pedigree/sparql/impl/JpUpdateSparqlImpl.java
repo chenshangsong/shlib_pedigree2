@@ -370,7 +370,7 @@ public class JpUpdateSparqlImpl extends BaseDaoImpl implements JpUpdateSparql {
 				GraphUtil.add(personGraph, person);
 				personGraph.getTransactionHandler().commit();
 			}
-
+			personGraph.getTransactionHandler().abort();//事务终止
 		}
 
 	}
@@ -421,6 +421,7 @@ public class JpUpdateSparqlImpl extends BaseDaoImpl implements JpUpdateSparql {
 
 			throw new Exception(e);
 		}
+		baseinfoGraph.getTransactionHandler().abort();//事务终止
 		return work;
 
 	}
@@ -487,6 +488,7 @@ public class JpUpdateSparqlImpl extends BaseDaoImpl implements JpUpdateSparql {
 			System.out.println("insertWork SQLException" + e);
 			throw new Exception(e);
 		}
+		personGraph.getTransactionHandler().abort();//事务终止
 		return work;
 	}
 
@@ -548,6 +550,7 @@ public class JpUpdateSparqlImpl extends BaseDaoImpl implements JpUpdateSparql {
 			insertTriples(StringUtilC.str2Uri(workUri) + " bf:title " + StringUtilC.str2Uri(titleFuUri));// chenss
 
 		}
+		titleGraph.getTransactionHandler().abort();//事务终止
 		return work;
 	}
 
@@ -964,25 +967,30 @@ blankNode = NodeFactory.createAnon();
 		Graph workGraph = getModel(Constant.GRAPH_WORK).getGraph();
 		// 更新 Work的停用标记
 		String workUri = jsonObject.getString("workUri");
+		//不公开标记："9"
 		String accFlag = StringUtilC.getString(jsonObject.getOrDefault("workAccFlag",null));
+		//标记描述：一般是作废原因+作废人+时间 chenss20250518 编目用
+		String workAccDesc = StringUtilC.getString(jsonObject.getOrDefault("workAccDesc",null));
 		List<Triple> triples = new ArrayList<Triple>();
 		// 将三元组添加到 work的graph下。
 		workGraph.getTransactionHandler().begin();
 		// 先删除Work下的accFlag，即：启用
 		deleteProperties(workUri, Namespace.SHL.getUri() + "accessLevelUC", null, workGraph);
+		//标记描述信息，一般是作废原因+作废人+时间  chenss20250518 编目用
+		deleteProperties(workUri, Namespace.SHL.getUri() + "accessLevelUCDescription", null, workGraph);
 		// accFlag 1:前台禁用。2，前台禁用+后台查重禁用。3：后台禁用
 		if (StringUtils.isNotBlank(accFlag)) {
 			triples.add(buildTriple(workUri, Namespace.SHL.getUri() + "accessLevelUC", accFlag));
 			GraphUtil.add(workGraph, triples);
 		}
+		if (StringUtils.isNotBlank(workAccDesc)) {
+			triples.add(buildTriple(workUri, Namespace.SHL.getUri() + "accessLevelUCDescription", workAccDesc));	
+			GraphUtil.add(workGraph, triples);
+		}
+		
+		
 		workGraph.getTransactionHandler().commit();
-		//如果是作废，或者关闭，则10.1.31.192、172.29.45.107、172.29.45.108 竞赛服务同时关闭相关数据：20250512
-//		if (!StringUtilC.isEmpty(accFlag) && (accFlag == "9" || accFlag == "2")) {
-//			SparqlEndpointUpdate.closeWork(workUri);
-//		} else { //如果标记是空
-//			SparqlEndpointUpdate.openWork(workUri);
-//		}
-
+		workGraph.getTransactionHandler().abort();
 		System.out.println("5:更新Work访问标记成功。");
 
 	}

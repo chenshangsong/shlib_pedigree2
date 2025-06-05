@@ -156,10 +156,10 @@ public class ApiInstanceSparqlImpl extends BaseDaoImpl implements
 		List<Map<String, String>> subList = new ArrayList<Map<String, String>>();
 		String RDF_QUERY_FAMILYRULE_FROM = Namespace.getNsPrefixString()
 				+ " select ?s "
-				+ " where{?s a shl:FamilyRule; dct:isPartOf <%1$s>; shl:code ?code} order by ?code ";
+				+ " from <http://gen.library.sh.cn/graph/instance> where{ ?s a shl:FamilyRule; dct:isPartOf <%1$s>; shl:code ?code} order by ?code ";
 		if (StringUtilC.isEmpty(uri)) {
 			RDF_QUERY_FAMILYRULE_FROM = Namespace.getNsPrefixString() + " select ?s "
-					+ " where {" + "?s a shl:FamilyRule "
+					+ " from <http://gen.library.sh.cn/graph/instance> where {" + "?s a shl:FamilyRule "
 					+ ".filter not exists{?s dct:isPartOf ?isp} "
 					+ "} limit 20";
 
@@ -191,7 +191,7 @@ public class ApiInstanceSparqlImpl extends BaseDaoImpl implements
 		}
 		String RDF_COUNT_FAMILYRULE_BYWORKS = Namespace.getNsPrefixString()
 				+ "select count(distinct ?uri) as ?count  "
-				+ "where{?uri a shl:FamilyRule; shl:code ?code .?uri bf:familyRuleFrom ?instance "
+				+ "from <http://gen.library.sh.cn/graph/instance> where{?uri a shl:FamilyRule; shl:code ?code .?uri bf:familyRuleFrom ?instance "
 				+ ".filter not exists{?uri dct:isPartOf ?isPartOf} .?instance bf:instanceOf ?work"
 				+ ". values ?work {" + worksFilter + "} "
 				+ "}";
@@ -209,7 +209,7 @@ public class ApiInstanceSparqlImpl extends BaseDaoImpl implements
 			
 			String RDF_QUERY_FAMILYRULE_BYWORKS = Namespace.getNsPrefixString()
 					+ "select distinct ?uri  "
-					+ "where{?uri a shl:FamilyRule; shl:code ?code .?uri bf:familyRuleFrom ?instance "
+					+ "from <http://gen.library.sh.cn/graph/instance> where{?uri a shl:FamilyRule; shl:code ?code .?uri bf:familyRuleFrom ?instance "
 					+ ".filter not exists{?uri dct:isPartOf ?isPartOf} .?instance bf:instanceOf ?work"
 					+ ". values ?work {" + worksFilter + "} "
 					+ "} order by ?code  " + limit;

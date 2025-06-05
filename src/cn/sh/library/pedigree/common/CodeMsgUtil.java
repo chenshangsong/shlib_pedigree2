@@ -15,7 +15,9 @@ public class CodeMsgUtil {
 
 	public final static ResourceBundle config = ResourceBundle
 			.getBundle("resources.config");
-
+	
+	public final static ResourceBundle dbconfig = ResourceBundle
+			.getBundle("resources.dbConfig");
 	/**
 	 * res/config.properties文件读取
 	 * 
@@ -28,6 +30,15 @@ public class CodeMsgUtil {
 	public static String getConfig(String key, Object... param) {
 		try {
 			String msg = config.getString(key);
+			return MessageFormat.format(msg, param);
+		} catch (Exception e) {
+			return "";
+		}
+
+	}
+	public static String getDbConfig(String key, Object... param) {
+		try {
+			String msg = dbconfig.getString(key);
 			return MessageFormat.format(msg, param);
 		} catch (Exception e) {
 			return "";

@@ -8,7 +8,10 @@ import javax.servlet.http.HttpSession;
 
 import cn.sh.library.pedigree.utils.HttpsUtil;
 import cn.sh.library.pedigree.utils.IPUtils;
+import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.UserUtil;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +24,7 @@ import org.springframework.web.servlet.ModelAndView;
 import cn.sh.library.pedigree.common.CodeMsgUtil;
 import cn.sh.library.pedigree.common.JSonUtils;
 import cn.sh.library.pedigree.common.dataImport.DataUtilC;
+import cn.sh.library.pedigree.common.onlineInfomation.RequestFilter;
 import cn.sh.library.pedigree.services.FullImgAnnotationService;
 import cn.sh.library.pedigree.sysManager.model.FullImgAnnotationModel;
 import cn.sh.library.pedigree.sysManager.model.UserInfoModel;
@@ -39,6 +43,9 @@ public class FullLinkViewerController extends BaseController {
 	@Resource
 	private FullImgAnnotationService fullImgAnnotationService;
 
+	@Autowired
+	private RedisUtils redisUtil;
+	
 	@RequestMapping(value = "/{org:.+}/{manifest:.+}", method = RequestMethod.GET)
 	public ModelAndView Plist(@PathVariable(value = "org") String org,
 			@PathVariable(value = "manifest") String manifest, 
@@ -99,6 +106,14 @@ public class FullLinkViewerController extends BaseController {
 	@RequestMapping(value = "/search",method = RequestMethod.GET)
 	public String search(String uri, HttpSession session) {
 		try {
+			// 1分钟30次访问限制
+			if (!redisUtil.ifLimitVisit("api_full-imgSearch", redis_maxVistCount, redis_timeOut)) {
+				jsonResult.put("result", "-1");// 数据来源索引标记
+				jsonResult.put("code", "43003");// 数据来源索引标记
+				jsonResult.put("msg", "对不起，您访问过于频繁，请稍后再试。请禁止恶意访问行为，我们将进行行为追溯。");// 数据来源索引标记
+				System.out.println("异常IP: "+ 	IPUtils.getIpAddr(RequestFilter.threadLocalRequest.get()));
+				return JSONArray.fromObject(jsonResult).toString();
+			}
 			System.out.println("canvasId: "+ uri);
 			UserInfoModel user = this.getUser(session);
 			String userId = "";

@@ -6,7 +6,7 @@ import cn.sh.library.pedigree.webApi.sparql.SparqlNew.SparqlExecutionNew;
 public class SparqlEndpointTester {
 	public static void main(String[] args) {
 //		10.1.31.192、172.29.45.107、172.29.45.108
-		SparqlExecutionNew.init("172.29.45.108", 1111, "dba", "Shlibrary123");
+		SparqlExecutionNew.init("10.1.31.194", 1111, "dba", "Shlibrary123");
 		String graphUri = "http://gen.library.sh.cn/graph/work";
 
 		// SPARQL更新语句

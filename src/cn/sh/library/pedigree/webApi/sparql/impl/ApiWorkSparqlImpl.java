@@ -1092,8 +1092,8 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 			// 新增谱籍地抽取end 20201202
 			// 新增 联合编目系统卷数字段抽取：chenss 2020-06-16 begin
 			// 合并开放标记字段和卷数字段的SPARQL查询：chenss 2025-05-09 begin
-			String combinedSql = "SELECT ?accessLevelUC ?volumes " + strGraph + " WHERE { " + "   ?work a bf:Work . "
-					+ "   OPTIONAL { ?work shl:accessLevelUC ?accessLevelUC . } " + "   OPTIONAL { "
+			String combinedSql = "SELECT ?accessLevelUC ?accessLevelUCDescription ?volumes " + strGraph + " WHERE { " + "   ?work a bf:Work . "
+					+ "   OPTIONAL { ?work shl:accessLevelUC ?accessLevelUC . } OPTIONAL { ?work shl:accessLevelUCDescription ?accessLevelUCDescription . } " + "   OPTIONAL { "
 					+ "     ?work bf:title ?titleUri . " + "     ?titleUri a bf:WorkTitle; shl:volumes ?volumes . "
 					+ "     FILTER (lang(?volumes)='chs') " + "   } " + "   FILTER(?work=<" + workUri + ">) " + "}";
             String accessLevelUC = "";String volumes= "";
@@ -1105,6 +1105,10 @@ public class ApiWorkSparqlImpl extends BaseDaoImpl implements ApiWorkSparql {
 				// 处理accessLevelUC字段
 				if (resultMap.containsKey("accessLevelUC")) {
 					accessLevelUC= StringUtilC.getString(resultMap.get("accessLevelUC"));
+				}
+				// 处理accessLevelUC字段
+				if (resultMap.containsKey("accessLevelUCDescription")) {
+					accessLevelUC= StringUtilC.getString(resultMap.get("accessLevelUCDescription"));
 				}
 				// 处理volumes字段
 				if (resultMap.containsKey("volumes")) {

@@ -375,6 +375,8 @@ public class ApiWorkController extends BaseController {
 	public JSONObject getDetailByWorkUri_redis(@Valid String uri, Integer uid, String referer,
 			HttpServletRequest request) throws Exception {
 		jsonResult = new HashMap<>();
+		//提前处理Uri,如果有家谱编目系统进入，uri为18位，则按规则截取到16位
+		String tempUri  = processUrl(uri);
 		Constant.virtuosoRetryConn = false;
 		try {
 			// 1分钟30次访问限制
@@ -387,7 +389,7 @@ public class ApiWorkController extends BaseController {
 			if (uid == null) {
 				uid = UserUtil.getUserId(request);
 			}
-			String redisWorkKey = RedisUtils.key_work.concat(uri);
+			String redisWorkKey = RedisUtils.key_work.concat(tempUri);
 			Map _mapTemp = null;
 
 			if (redisUtil.exists(redisWorkKey)) {// 如果redis缓存存在数据，则返回数据
@@ -398,7 +400,8 @@ public class ApiWorkController extends BaseController {
 				FullLink.SetFullLinkHref(_mapTemp);// 从缓存中取的内容，需要重新设置全文链接
 
 			} else {// 如果不存在，则先查询，再放入缓存。
-				_mapTemp = apiWorkService.getDetailByWorkUri(uri);
+				
+				_mapTemp = apiWorkService.getDetailByWorkUri(tempUri);
 				// 结果繁体转简体
 //				_mapTemp = convertMapTosChs(_mapTemp); 2024-04-07 chenss
 				if (_mapTemp != null && _mapTemp.size() > 0) {
@@ -414,7 +417,7 @@ public class ApiWorkController extends BaseController {
 			}
 			if (_mapTemp == null) {
 				_mapTemp = new HashMap();
-				_mapTemp.put("uri", uri);
+				_mapTemp.put("uri", tempUri);
 				_mapTemp.put("msg", "无此数据。");
 			}
 			// 新增判断逻辑，如果不是编目系统进入，则9状态家谱禁止查看
@@ -422,7 +425,7 @@ public class ApiWorkController extends BaseController {
 					// 权限处理
 				if (_mapTemp.containsKey("accessLevelUC")) {
 					String rdfaccessLevelUC = String.valueOf(_mapTemp.getOrDefault("accessLevelUC", ""));
-					if ("9".equals(rdfaccessLevelUC) && !"systembm".equals(referer)) {
+					if ("9".equals(rdfaccessLevelUC) && uri.substring(uri.lastIndexOf('/')+1).length()!=18) {
 						_mapTemp = new HashMap();
 						_mapTemp.put("uri", uri);
 						_mapTemp.put("msg", "无此数据或无权限查看。");
@@ -431,14 +434,14 @@ public class ApiWorkController extends BaseController {
 			}
 			// 是否已收藏
 			if (!StringUtilC.isEmpty(uid) && _mapTemp != null && _mapTemp.size() > 0) {
-				ApiWorkFavoriteDto fdto = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, uri);
+				ApiWorkFavoriteDto fdto = apiWorkFavoriteService.getApiWorkFavoriteByWorkUri(uid, tempUri);
 				if (fdto != null && !StringUtilC.isEmpty(fdto.getId()) && _mapTemp != null) {
 					_mapTemp.put("favoriteId", fdto.getId());
 				}
 			}
 			if (_mapTemp != null && _mapTemp.size() > 0) {
 				// 已查看数量
-				_mapTemp.put("viewCount", apiWorkViewsCountService.getInfoByWorkUri(uri).getViewCount());
+				_mapTemp.put("viewCount", apiWorkViewsCountService.getInfoByWorkUri(tempUri).getViewCount());
 			}
 			// 处理时光的相关数据
 			StringUtilC.ProcessShiGuangMap(_mapTemp);
@@ -457,6 +460,7 @@ public class ApiWorkController extends BaseController {
 		jsonResult.put("checkinfo", ip.substring(ip.lastIndexOf(".") + 1));
 		return JSONObject.fromObject(jsonResult);
 	}
+
 
 	/**
 	 * 无限流接口 chenss 20250225 家谱编目系统使用
@@ -861,4 +865,34 @@ public class ApiWorkController extends BaseController {
 		}
 		return JSONObject.fromObject(jsonResult);
 	}
+	
+    /**
+     * 处理目标URL，按规则截取并调整最后一段路径
+     * @param url 输入的原始URL（如：http://data.library.sh.cn/jp/resource/work/fntpzzidar5xqdib）
+     * @return 处理后的完整URL
+     */
+    private static String processUrl(String url) {
+        // 定义固定前缀
+        final String PREFIX = "http://data.library.sh.cn/jp/resource/work/";
+        
+        // 1. 截取最后一个斜杠后的内容
+        int lastSlashIndex = url.lastIndexOf('/');
+        if (lastSlashIndex == -1) {
+            throw new IllegalArgumentException("输入的URL格式不正确，缺少斜杠分隔符");
+        }
+        String lastSegment = url.substring(lastSlashIndex + 1);
+        
+        // 2. 长度判断与调整
+        if (lastSegment.length() > 16) {
+            // 确保字符串长度足够操作（至少12位才能删除11-12位）
+            if (lastSegment.length() < 12) {
+                throw new IllegalArgumentException("最后一段路径长度不足，无法执行删除操作");
+            }
+            // 删除第11、12位字符（Java字符串索引从0开始，对应索引10和11）
+            lastSegment = lastSegment.substring(0, 10) + lastSegment.substring(12);
+        }
+        
+        // 3. 拼接结果并返回
+        return PREFIX + lastSegment;
+    }
 }

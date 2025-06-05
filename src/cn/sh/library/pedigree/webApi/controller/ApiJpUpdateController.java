@@ -24,6 +24,7 @@ import cn.sh.library.pedigree.common.JSonUtils;
 import cn.sh.library.pedigree.controller.BaseController;
 import cn.sh.library.pedigree.sysManager.model.UserInfoModel;
 import cn.sh.library.pedigree.utils.DateUtilC;
+import cn.sh.library.pedigree.utils.HttpsUtil;
 import cn.sh.library.pedigree.utils.RedisUtils;
 import cn.sh.library.pedigree.utils.SparqlEndpointUpdate;
 import cn.sh.library.pedigree.utils.StringUtilC;
@@ -90,9 +91,11 @@ public class ApiJpUpdateController extends BaseController {
 			}
 			//如果是作废，或者关闭，则10.1.31.192、172.29.45.107、172.29.45.108 竞赛服务同时关闭相关数据：20250512&& (accFlag == "9" || accFlag == "2")
 			if (StringUtil.isNotEmpty(accFlag) ) {
-				SparqlEndpointUpdate.closeWork(workUri);
+				SparqlEndpointUpdate.deleteWorkData(workUri);
+				SparqlEndpointUpdate.updateQWFlag(workUri, "jp", 1);//关闭全文
 			} else { //如果标记是空
-				SparqlEndpointUpdate.openWork(workUri);
+				SparqlEndpointUpdate.openWorkData(workUri);
+				SparqlEndpointUpdate.updateQWFlag(workUri, "jp", 0);//打开全文
 			}
 
 			result.put("result", FWConstants.result_success);

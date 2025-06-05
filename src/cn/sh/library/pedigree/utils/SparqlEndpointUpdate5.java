@@ -1,7 +1,6 @@
 package cn.sh.library.pedigree.utils;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -11,7 +10,6 @@ import javax.sql.ConnectionPoolDataSource;
 
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.sun.xml.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import cn.sh.library.pedigree.sysManager.sysMnagerSparql.Namespace;
 import cn.sh.library.pedigree.webApi.sparql.SparqlNew.SparqlExecutionNew;
@@ -21,76 +19,14 @@ import virtuoso.jena.driver.VirtGraph;
  * 增强版数据迁移工具类（优化子查询与SPARQL模板） 优化点： 1. 移除所有冗余子查询，改用多图联合匹配 2. 修正CONSTRUCT中变量未绑定问题
  * 3. 用三元组直接匹配替代FILTER，提升查询效率 4. 保持类型化配置扩展能力
  */
-public class SparqlEndpointUpdate {
-	private static final Logger logger = Logger.getLogger(SparqlEndpointUpdate.class.getName());
-	public static String[] dataUrls = new String[] { "http://data.library.sh.cn/jp/resource/work/gr1eanpvw6x2tabt",
-			"http://data.library.sh.cn/jp/resource/work/4321h1wgajpwpdit",
-			"http://data.library.sh.cn/jp/resource/work/pcui814bs7psk6jl",
-			"http://data.library.sh.cn/jp/resource/work/3kyuhuqjd8cix3db",
-			"http://data.library.sh.cn/jp/resource/work/b3bgiggvf7c28lg8",
-			"http://data.library.sh.cn/jp/resource/work/2b6n216i7z7cfewk",
-			"http://data.library.sh.cn/jp/resource/work/311h88o3kfdv6sj7",
-			"http://data.library.sh.cn/jp/resource/work/73j69ptuqhufhibz",
-			"http://data.library.sh.cn/jp/resource/work/cinp7phw4o8qusei",
-			"http://data.library.sh.cn/jp/resource/work/y4hthgs7n6weu4te",
-			"http://data.library.sh.cn/jp/resource/work/if402ox2na2ivshb",
-			"http://data.library.sh.cn/jp/resource/work/jtfcdymlx69t9s8d",
-			"http://data.library.sh.cn/jp/resource/work/uyhiwamopj5g5nct",
-			"http://data.library.sh.cn/jp/resource/work/ilakengn287p43tz",
-			"http://data.library.sh.cn/jp/resource/work/bf3o9wlrivgdxf2p",
-			"http://data.library.sh.cn/jp/resource/work/ymtwzexbtdwkrxqf",
-			"http://data.library.sh.cn/jp/resource/work/w6p8ado87dbvdofe",
-			"http://data.library.sh.cn/jp/resource/work/8psn1m5k2pfhwtmu",
-			"http://data.library.sh.cn/jp/resource/work/qsj8nbc6jvf9tvjq",
-			"http://data.library.sh.cn/jp/resource/work/gtucctst1m6obftf",
-			"http://data.library.sh.cn/jp/resource/work/z850zrxheemqykxt",
-			"http://data.library.sh.cn/jp/resource/work/q6dzsvrsmy5ki7e9",
-			"http://data.library.sh.cn/jp/resource/work/rqkywniu8no1uirc",
-			"http://data.library.sh.cn/jp/resource/work/wxb741n42wfjvmhk",
-			"http://data.library.sh.cn/jp/resource/work/v6wajce37wdpjm2u",
-			"http://data.library.sh.cn/jp/resource/work/x34xoyefxpppquoo",
-			"http://data.library.sh.cn/jp/resource/work/ush8h3wmo3cbjqoa",
-			"http://data.library.sh.cn/jp/resource/work/i83oagirm8x6p9gs",
-			"http://data.library.sh.cn/jp/resource/work/ge3n8p4hs5i5a868",
-			"http://data.library.sh.cn/jp/resource/work/7te5cxnxe7lid595",
-			"http://data.library.sh.cn/jp/resource/work/trfl1suy9ibmwllw",
-			"http://data.library.sh.cn/jp/resource/work/r55bopc6v7pf1746",
-			"http://data.library.sh.cn/jp/resource/work/rbgtr2arypma6o47",
-			"http://data.library.sh.cn/jp/resource/work/7hoyj86ieog7i7gt",
-			"http://data.library.sh.cn/jp/resource/work/lwk1tf6lwzmbjakz",
-			"http://data.library.sh.cn/jp/resource/work/y2pd8tn99t6ay64y",
-			"http://data.library.sh.cn/jp/resource/work/ma5s7cju4zga6blr",
-			"http://data.library.sh.cn/jp/resource/work/aoc51xnslg5dv1kj",
-			"http://data.library.sh.cn/jp/resource/work/1rflqcgxnc0t6zns",
-			"http://data.library.sh.cn/jp/resource/work/om8t3xlyuodgoqop",
-			"http://data.library.sh.cn/jp/resource/work/wtqrefrr4i6r1ad6",
-			"http://data.library.sh.cn/jp/resource/work/9d6t66p1ozcb1cok",
-			"http://data.library.sh.cn/jp/resource/work/cm4x8odv3wtpxp32",
-			"http://data.library.sh.cn/jp/resource/work/rvf9blsa512wtf3w",
-			"http://data.library.sh.cn/jp/resource/work/eec1btso6h924re6",
-			"http://data.library.sh.cn/jp/resource/work/f2cbfutg51r4gutq",
-			"http://data.library.sh.cn/jp/resource/work/7zectq7oug47fhgt",
-			"http://data.library.sh.cn/jp/resource/work/28hps42p5kb76nww",
-			"http://data.library.sh.cn/jp/resource/work/jb8bifiyu9yaijpz",
-			"http://data.library.sh.cn/jp/resource/work/zob12xez79xb8a7p",
-			"http://data.library.sh.cn/jp/resource/work/rphqxk54gymais5p",
-			"http://data.library.sh.cn/jp/resource/work/4qbly47irl8i8txx",
-			"http://data.library.sh.cn/jp/resource/work/8b0kavpjv4ufrm6d",
-			"http://data.library.sh.cn/jp/resource/work/kkgv5g289866rbm4",
-			"http://data.library.sh.cn/jp/resource/work/ka2p6pvsxi18771e",
-			"http://data.library.sh.cn/jp/resource/work/i6cinyvu1atnt3mv",
-			"http://data.library.sh.cn/jp/resource/work/zj1mwbd2t7z47l7x",
-			"http://data.library.sh.cn/jp/resource/work/gkyx47rjc4uj69zp",
-			"http://data.library.sh.cn/jp/resource/work/3bhjarp5r935k79z",
-			"http://data.library.sh.cn/jp/resource/work/zxww5ignvetnkd8d",
-			"http://data.library.sh.cn/jp/resource/work/jklhb5c3ga1rvxe3" };
+public class SparqlEndpointUpdate5 {
+	private static final Logger logger = Logger.getLogger(SparqlEndpointUpdate5.class.getName());
+
 	// 源数据库配置
-	private static final DbServerConfig SOURCE_SERVER = new DbServerConfig("10.1.31.194", 1111, "dba", "Shlibrary123");
+	private static final DbServerConfig SOURCE_SERVER = new DbServerConfig("127.0.0.1", 1111, "dba", "Shlibrary123");
 	// 目标数据库列表（可扩展）
 	private static final List<DbServerConfig> TARGET_SERVERS = Arrays.asList(
-			new DbServerConfig("10.1.31.192", 1111, "dba", "Shlibrary123"),
-			new DbServerConfig("172.29.45.107", 1111, "dba", "Shlibrary123"),
-			new DbServerConfig("172.29.45.108", 1111, "dba", "Shlibrary123"));
+			new DbServerConfig("127.0.0.1", 1112, "dba", "dba"), new DbServerConfig("127.0.0.1", 1113, "dba", "dba"));
 
 	// 实体类型配置（优化后）
 	private enum EntityType {
@@ -160,20 +96,16 @@ public class SparqlEndpointUpdate {
 	}
 
 	public static void main(String[] args) {
-
-//        System.out.print(_m);
-		try {
-//           openWorkData("http://data.library.sh.cn/jp/resource/work/ff6pp6x9s9ghcudh");   //公开
-//			for (String str : dataUrls) {
-////        		 deleteWorkData(str); //关闭
-//
-//				Thread.sleep(10 * 1000);
-//			}
-           deleteWorkData("http://data.library.sh.cn/jp/resource/work/ff6pp6x9s9ghcudh"); //关闭
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "操作失败：" + e.getMessage(), e);
-		}
-	}
+        String workUri = "http://data.library.sh.cn/jp/resource/work/pucyw6kkiop3p71w";
+        try {
+        	getData();//查询并公开
+        	
+//        	  openWorkData(workUri);   //公开
+//            deleteWorkData(workUri); //关闭
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "操作失败：" + e.getMessage(), e);
+        }
+    }
 
 	/**
 	 * 全量数据迁移（包含四类实体）
@@ -188,6 +120,32 @@ public class SparqlEndpointUpdate {
 					}
 				}
 			}
+		}
+		logger.info("================== 全量数据迁移完成 ==================");
+	}
+
+	public static void getData() throws Exception {
+		logger.info("================== 全量数据迁移开始 ==================");
+		try (DatabaseConnection sourceConn = new DatabaseConnection(SOURCE_SERVER)) {
+			// 创建 VirtGraph 时传递数据源
+			VirtGraph workGraph = SparqlExecutionNew.getGraph(EntityType.WORK.sourceGraph);
+			String query = "select distinct ?workUri where {?workUri a bf:Work;?p ?o} limit 2000";
+			List<Map<String, String>> _list = RDFUtils
+					.transformListMap(SparqlExecutionNew.vQuery(workGraph, query, new String[] { "workUri" }));
+			_list.stream().forEach(item -> {
+				String uri = item.get("workUri");
+				int i=0;
+				try {
+					logger.info(i+"迁移------------------------------------------------------------------>"+uri);
+//					openWorkData(uri);
+					deleteWorkData(uri);
+					i++;
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			});
+
 		}
 		logger.info("================== 全量数据迁移完成 ==================");
 	}
@@ -210,15 +168,6 @@ public class SparqlEndpointUpdate {
 			}
 		}
 		logger.info("================== 全量数据删除完成 ==================");
-	}
-
-	//更新全文开放标记状态
-	public static void updateQWFlag(String workUri, String type, Integer status) {
-		Map<String, Object> _parmMap = new HashMap<String, Object>();
-		_parmMap.put("type", type);
-		_parmMap.put("workUri", workUri);
-		_parmMap.put("status", status);
-		HttpsUtil.postJson("https://dhapi.library.sh.cn/service_pdf_race/race/pdf/set/status", null, _parmMap);
 	}
 
 	/**

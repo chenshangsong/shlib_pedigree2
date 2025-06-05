@@ -28,6 +28,7 @@ import cn.sh.library.pedigree.sparql.PlaceSparql;
 import cn.sh.library.pedigree.sparql.WorkSparql;
 import cn.sh.library.pedigree.utils.RDFUtils;
 import cn.sh.library.pedigree.webApi.sparql.Namespace;
+import virtuoso.jena.driver.VirtGraph;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -518,6 +519,7 @@ public class WorkSparqlImpl extends BaseDaoImpl implements WorkSparql {
 	}
 
 	public Map getWorkInfos(String work_uri) {
+		
 		String query = Namespace.getNsPrefixString()
 				+ "SELECT ?accessLevelUC ?dtitle ?title "
 				+ "(GROUP_CONCAT(DISTINCT ?tv; separator=';') AS ?subtitle) "

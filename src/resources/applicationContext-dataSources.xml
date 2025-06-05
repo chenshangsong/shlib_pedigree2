@@ -125,12 +125,17 @@
 <!-- vto数据源 20241220 chenss-->
 <bean id="dataSource" class="virtuoso.jdbc4.VirtuosoConnectionPoolDataSource"
       destroy-method="close">
-    <property name="serverName" value="${db.host}" />
-    <property name="portNumber" value="${db.port}" />
-    <property name="user" value="${db.user}" />
-    <property name="password" value="${db.password}" />
-    <property name="charset" value="${db.charset}" />
-    <property name="initialPoolSize" value="${db.poolSize}" />
+    <property name="serverName" value="${vtdb.host}" />
+    <property name="portNumber" value="${vtdb.port}" />
+    <property name="user" value="${vtdb.user}" />
+    <property name="password" value="${vtdb.password}" />
+    <property name="charset" value="${vtdb.charset}" />
+  <!-- 连接池核心参数（高并发优化） -->
+        <property name="initialPoolSize" value="${vtdb.initialPoolSize}" />  <!-- 初始化连接数（30） -->
+        <property name="minPoolSize" value="${vtdb.minPoolSize}" />          <!-- 最小空闲连接数（50） -->
+        <property name="maxPoolSize" value="${vtdb.maxPoolSize}" />          <!-- 最大连接数（300） -->
+        <property name="loginTimeout" value="${vtdb.loginTimeout}" />        <!-- 连接超时（秒，30） -->
+        <property name="maxIdleTime" value="${vtdb.maxIdleTime}" />          <!-- 空闲连接超时（秒，180） -->
   
     
 </bean>
